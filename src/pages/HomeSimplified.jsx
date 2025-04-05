@@ -29,7 +29,7 @@ function HomeSimplified() {
       </div>
 
       <div className="home-simplified__buttons">
-        <button className="home-simplified__button">Обмен опытом</button>
+        <button className="home-simplified__button">Обмен &nbsp; опытом</button>
         <button className="home-simplified__button">Описание</button>
         <button className="home-simplified__button">ИКР</button>
         <button className="home-simplified__button">Модули проекта</button>

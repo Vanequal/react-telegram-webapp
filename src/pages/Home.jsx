@@ -29,10 +29,20 @@ function Home() {
       </div>
 
       <div className="home__buttons">
-        <button className="home__button">Обмен опытом</button>
-        <button className="home__button">Описание</button>
-        <button className="home__button">ИКР</button>
-        <button className="home__button">Модули проекта</button>
+        {/* Основная кнопка — выделена отдельно */}
+        <button className="home__button home__button--primary">
+          Обмен &nbsp; опытом
+        </button>
+        {/* Остальные кнопки с индивидуальными размерами шрифта */}
+        <button className="home__button home__button--secondary">
+          Описание
+        </button>
+        <button className="home__button home__button--tertiary">
+          Идеальный результат
+        </button>
+        <button className="home__button home__button--quaternary">
+          Модули проекта
+        </button>
       </div>
 
       <div className="home__footerIcons">
