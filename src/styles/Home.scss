@@ -40,17 +40,15 @@
 
   }
   
-  // Блок с плашками-кнопками: устанавливаем ту же ширину и центрирование
   &__buttons {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 15px;
     width: 90%;
-    margin: 30px auto 0; // уменьшенный верхний отступ для сбалансированного расстояния
+    margin: 30px auto 0;
   }
   
-  // Общий стиль для всех кнопок
   &__button {
     width: 100%;
     padding: 10px;
@@ -61,15 +59,13 @@
     cursor: pointer;
   }
   
-  // Кнопка "Обмен опытом": немного уменьшаем размер шрифта, оставляем эффект hover (смещение и тень)
   .home__button--primary {
-    font-size: 28px;  // немного меньше чем ранее
+    font-size: 28px; 
     color: rgb(0, 0, 0) !important;
     transform: translateY(-3px);
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   }
 
-  // При добавлении класса animate запускается анимация bounce
   .home__button--primary.animate {
     animation: bounce 0.3s;
   }
@@ -91,16 +87,19 @@
   
   &__button--secondary {
     font-size: 26px;
+    padding: 6px;
     color: rgb(0, 0, 0) !important;
   }
   
   &__button--tertiary {
-    font-size: 23px;
+    font-size: 22px;
+    padding: 6px;
     color: rgb(0, 0, 0) !important;
   }
   
   &__button--quaternary {
     font-size: 20px;
+    padding: 6px;
     color: rgb(0, 0, 0) !important;
   }
   
@@ -109,12 +108,11 @@
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   }
   
-  // Нижний ряд иконок: также ограничиваем ширину до 90% и центрируем, чтобы они не выпячивались
   &__footerIcons {
     width: 90%;
-    margin: 20px auto 0;  // отступ сверху для сбалансированного расстояния
+    margin: 20px auto 0;  
     display: flex;
-    justify-content: space-between; // иконки выровнены по краям контейнера
+    justify-content: space-between; 
     align-items: center;
     padding: 10px 0;
   }
