@@ -51,9 +51,11 @@
     cursor: pointer;
   }
   
-  &__button--primary {
+  .home__button--primary {
     font-size: 30px;
     color: rgb(0, 0, 0) !important;
+    transform: translateY(-3px);
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   }
   
   &__button--secondary {
