@@ -1,4 +1,6 @@
 import React from 'react';
+import { useState } from 'react';
+
 import Header from '../components/UI/Header';
 import '../styles/Home.scss';
 
@@ -15,11 +17,20 @@ import gearIcon from '../assets/img/gear.webp';
 import headIcon from '../assets/img/head.webp';
 
 function Home() {
+  const [animate, setAnimate] = useState(false);
+
+  const handleClick = () => {
+    setAnimate(true);
+    setTimeout(() => {
+      setAnimate(false);
+    }, 300);
+  };
+
   return (
     <div className="home">
       <Header showShare={true} />
       <h1 className="home__title">Название раздела</h1>
-      
+
       <div className="home__icons">
         <img src={backIcon} alt="Back" className="home__icon" />
         <img src={timeIcon} alt="Time" className="home__icon" />
@@ -29,11 +40,10 @@ function Home() {
       </div>
 
       <div className="home__buttons">
-        {/* Основная кнопка — выделена отдельно */}
-        <button className="home__button home__button--primary">
+        <button className={`home__button home__button--primary ${animate ? 'animate' : ''}`}
+          onClick={handleClick}>
           Обмен &nbsp; опытом
         </button>
-        {/* Остальные кнопки с индивидуальными размерами шрифта */}
         <button className="home__button home__button--secondary">
           Описание
         </button>
