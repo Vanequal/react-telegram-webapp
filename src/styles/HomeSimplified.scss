@@ -1,62 +1,61 @@
-.home {
-    &__title {
-      font-weight: 400;
-      font-size: 36px;
-      text-align: center;
-      text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-      padding: 10px;
-      margin-bottom: 20px;
-    }
-    
-    &__icons {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 30px;
-    }
-    
-    &__icon {
-      width: 50px;
-      height: 50px;
-      cursor: pointer;
-    }
-    
-    &__buttons {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-      width: 90%;
-      margin: 50px auto 0;
-    }
-    
-    &__button {
-      width: 100%;
-      padding: 10px;
-      border: none;
-      color: rgba(30, 136, 211, 1);
-      border-radius: 10px;
-      background: linear-gradient(90deg, rgba(118, 118, 128, 0.12) 0%, rgba(118, 118, 128, 0.12) 99.19%);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, font-size 0.2s ease;
-      cursor: pointer;
-      font-size: 26px;
-    }
-    
-    &__button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-      font-size: 30px;
-    }
-
-    &__footerIcons {
-      position: fixed;
-      bottom: 20px;  
-      left: 0;
-      right: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 30px;
-    }
+.home-simplified {
+  &__title {
+    font-weight: 400;
+    font-size: 36px;
+    text-align: center;
+    text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    padding: 10px;
+    margin-bottom: 20px;
   }
   
+  &__icons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+  }
+  
+  &__icon {
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+  }
+  
+  &__buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 90%;
+    margin: 50px auto 0;
+  }
+  
+  &__button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    color: rgba(30, 136, 211, 1) !important;
+    border-radius: 10px;
+    background: linear-gradient(90deg, rgba(118, 118, 128, 0.12) 0%, rgba(118, 118, 128, 0.12) 99.19%);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, font-size 0.2s ease;
+    cursor: pointer;
+    font-size: 26px;
+  }
+  
+  &__button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    font-size: 30px;
+  }
+  
+  &__footerIcons {
+    position: fixed;
+    bottom: 20px;  
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+  }
+}
