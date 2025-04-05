@@ -3,19 +3,22 @@
   flex-direction: column;
   min-height: 100vh; 
   min-width: 100vw;
-  
+  align-items: center; 
+
   &__title {
     font-weight: 400;
-    font-size: 36px;
+    font-size: 26px; 
     text-align: center;
     text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-    padding: 10px;
-    margin-bottom: 20px;
+    padding: 5px 0;
+    margin-bottom: 10px; 
   }
   
   &__icons {
+    width: 90%;
+    margin: 0 auto 20px; 
     display: flex;
-    justify-content: space-evenly;
+    justify-content: space-between; 
     align-items: center;
     gap: 10px;
     flex-wrap: nowrap;
@@ -24,20 +27,26 @@
   &__icon {
     flex: 1 1 50px;
     max-width: 50px;
-    min-width: 30px;
+    min-width: 50px;  
     width: 100%;
     height: auto;
     object-fit: contain;
     cursor: pointer;
   }
+
+  &__icon--pig {
+    max-width: 55px;
+    min-width: 50px;
+  }
   
+  // Блок с плашками-кнопками: устанавливаем ту же ширину и центрирование
   &__buttons {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 15px;
     width: 90%;
-    margin: 50px auto 0;
+    margin: 30px auto 0; // уменьшенный верхний отступ для сбалансированного расстояния
   }
   
   // Общий стиль для всех кнопок
@@ -51,13 +60,15 @@
     cursor: pointer;
   }
   
+  // Кнопка "Обмен опытом": немного уменьшаем размер шрифта, оставляем эффект hover (смещение и тень)
   .home__button--primary {
-    font-size: 30px;
+    font-size: 28px;  // немного меньше чем ранее
     color: rgb(0, 0, 0) !important;
     transform: translateY(-3px);
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   }
 
+  // При добавлении класса animate запускается анимация bounce
   .home__button--primary.animate {
     animation: bounce 0.3s;
   }
@@ -76,7 +87,6 @@
       transform: translateY(-3px); 
     }
   }
-  
   
   &__button--secondary {
     font-size: 26px;
@@ -98,21 +108,13 @@
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   }
   
+  // Нижний ряд иконок: также ограничиваем ширину до 90% и центрируем, чтобы они не выпячивались
   &__footerIcons {
-    margin-top: auto;
+    width: 90%;
+    margin: 20px auto 0;  // отступ сверху для сбалансированного расстояния
     display: flex;
-    justify-content: space-evenly;
+    justify-content: space-between; // иконки выровнены по краям контейнера
     align-items: center;
     padding: 10px 0;
-    width: 100%;
-  }
-  
-  &__footerIcons .home__icon {
-    flex: 1 1 50px;
-    max-width: 50px;
-    min-width: 30px;
-    width: 100%;
-    height: auto;
-    object-fit: contain;
   }
 }

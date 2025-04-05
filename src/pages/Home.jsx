@@ -1,6 +1,4 @@
-import React from 'react';
-import { useState } from 'react';
-
+import React, { useState } from 'react';
 import Header from '../components/UI/Header';
 import '../styles/Home.scss';
 
@@ -40,7 +38,8 @@ function Home() {
       </div>
 
       <div className="home__buttons">
-        <button className={`home__button home__button--primary ${animate ? 'animate' : ''}`}
+        <button
+          className={`home__button home__button--primary ${animate ? 'animate' : ''}`}
           onClick={handleClick}>
           Обмен &nbsp; опытом
         </button>
@@ -56,7 +55,7 @@ function Home() {
       </div>
 
       <div className="home__footerIcons">
-        <img src={pigIcon} alt="Pig" className="home__icon" />
+        <img src={pigIcon} alt="Pig" className="home__icon home__icon--pig" />
         <img src={headIcon} alt="Head" className="home__icon" />
         <img src={typewriterIcon} alt="Typewriter" className="home__icon" />
         <img src={gearIcon} alt="Gear" className="home__icon" />
