@@ -4,6 +4,7 @@
   min-height: 100vh; 
   min-width: 100vw;
   align-items: center; 
+  background-color: #fff;
 
   &__title {
     font-weight: 400;
@@ -25,7 +26,7 @@
   }
  
   &__icon {
-    flex: 1 1 50px;
+    flex: 1 1 40px;
     max-width: 50px;
     min-width: 50px;  
     width: 100%;
@@ -37,7 +38,6 @@
   &__icon--pig {
     max-width: 58px;
     min-width: 50px;
-
   }
   
   &__buttons {
@@ -110,10 +110,14 @@
   
   &__footerIcons {
     width: 90%;
-    margin: 40px auto 0;  
+    margin: 40px auto 10px;  
+    padding: 10px 0;
+    background-color: #fff;
+    border: 1px solid rgba(224, 224, 224, 1);
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
     display: flex;
     justify-content: space-between; 
     align-items: center;
-    padding: 10px 0;
+    border-radius: 10px;
   }
 }
