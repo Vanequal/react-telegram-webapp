@@ -51,28 +51,26 @@
     cursor: pointer;
   }
   
-  // Основная кнопка "Обмен опытом"
   &__button--primary {
     font-size: 30px;
     color: rgb(0, 0, 0) !important;
   }
   
-  // Вторая кнопка "Описание"
   &__button--secondary {
     font-size: 26px;
+    color: rgb(0, 0, 0) !important;
   }
   
-  // Третья кнопка "Идеальный результат"
   &__button--tertiary {
     font-size: 23px;
+    color: rgb(0, 0, 0) !important;
   }
   
-  // Четвертая кнопка "Модули проекта"
   &__button--quaternary {
     font-size: 20px;
+    color: rgb(0, 0, 0) !important;
   }
   
-  // Hover-эффект для всех кнопок
   &__button:hover {
     transform: translateY(-3px);
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
