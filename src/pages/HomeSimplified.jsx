@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '../components/UI/Header';
 import '../styles/HomeSimplified.scss';
 
@@ -15,28 +15,47 @@ import gearIcon from '../assets/img/gearSimple.webp';
 import headIcon from '../assets/img/headSimple.webp';
 
 function HomeSimplified() {
+  const [animate, setAnimate] = useState(false);
+
+  const handleClick = () => {
+    setAnimate(true);
+    setTimeout(() => {
+      setAnimate(false);
+    }, 300);
+  };
+
   return (
     <div className="home-simplified">
       <Header showShare={true} />
       <h1 className="home-simplified__title">Название раздела</h1>
-      
+
       <div className="home-simplified__icons">
-        <img src={backIcon} alt="Back" className="home-simplified__icon" />
-        <img src={timeIcon} alt="Time" className="home-simplified__icon" />
-        <img src={pautineIcon} alt="Pautine" className="home-simplified__icon" />
-        <img src={messengerIcon} alt="Messenger" className="home-simplified__icon" />
-        <img src={resumeIcon} alt="Resume" className="home-simplified__icon" />
+        <img src={backIcon} alt="Back" className="home__icon" />
+        <img src={timeIcon} alt="Time" className="home__icon" />
+        <img src={pautineIcon} alt="Pautine" className="home__icon" />
+        <img src={messengerIcon} alt="Messenger" className="home__icon" />
+        <img src={resumeIcon} alt="Resume" className="home__icon" />
       </div>
 
       <div className="home-simplified__buttons">
-        <button className="home-simplified__button">Обмен &nbsp; опытом</button>
-        <button className="home-simplified__button">Описание</button>
-        <button className="home-simplified__button">ИКР</button>
-        <button className="home-simplified__button">Модули проекта</button>
+        <button
+          className={`home-simplified__button home-simplified__button--primary ${animate ? 'animate' : ''}`}
+          onClick={handleClick}>
+          Обмен &nbsp; опытом
+        </button>
+        <button className="home-simplified__button home-simplified__button--secondary">
+          Описание
+        </button>
+        <button className="home-simplified__button home-simplified__button--tertiary">
+          Идеальный результат
+        </button>
+        <button className="home-simplified__button home-simplified__button--quaternary">
+          Модули проекта
+        </button>
       </div>
 
       <div className="home-simplified__footerIcons">
-        <img src={pigIcon} alt="Pig" className="home-simplified__icon" />
+        <img src={pigIcon} alt="Pig" className="home-simplified__icon home__icon--pig" />
         <img src={headIcon} alt="Head" className="home-simplified__icon" />
         <img src={typewriterIcon} alt="Typewriter" className="home-simplified__icon" />
         <img src={gearIcon} alt="Gear" className="home-simplified__icon" />
