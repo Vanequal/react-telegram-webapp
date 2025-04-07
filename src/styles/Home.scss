@@ -4,6 +4,7 @@
   min-height: 100vh; 
   min-width: 100vw;
   align-items: center; 
+  -webkit-overflow-scrolling: touch;
   background-color: #fff;
 
   &__title {
