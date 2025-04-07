@@ -8,34 +8,11 @@ function Home() {
   const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
-    if (window.Telegram && window.Telegram.WebApp) {
-      const tg = window.Telegram.WebApp;
-      
-      tg.ready();
-      tg.expand();
-      
-      if (typeof tg.disableVerticalSwipes === 'function') {
-        tg.disableVerticalSwipes();
-      }
-      
-      if (typeof tg.requestFullscreen === 'function') {
-        tg.requestFullscreen();
-      }
-      
-      // Дополнительная настройка для iOS
-      const expandViewport = () => {
-        tg.expand();
-        document.body.style.height = `${tg.viewportHeight}px`;
-        document.documentElement.style.height = `${tg.viewportHeight}px`;
-      };
-      
-      expandViewport();
-      window.addEventListener('resize', expandViewport);
-      setTimeout(expandViewport, 100);
-      
-      return () => {
-        window.removeEventListener('resize', expandViewport);
-      };
+    const tg = window.Telegram.WebApp;
+
+    if (tg) {
+      tg.disableVerticalSwipes();
+      tg.requestFullscreen();
     }
   }, []);
 
