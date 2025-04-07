@@ -16,6 +16,7 @@ function Home() {
       
       try {
         tg.requestFullscreen();
+        tg.setHeaderColor("#1e1e1e");
       } catch (e) {
         console.warn('requestFullscreen не поддерживается:', e);
       }
