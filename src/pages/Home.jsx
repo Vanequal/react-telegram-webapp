@@ -11,12 +11,13 @@ function Home() {
     if (window.Telegram && window.Telegram.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.disableVerticalSwipes();
-   
+  
+      tg.setHeaderColor("#1e1e1e");
+      
       tg.expand();
       
       try {
         tg.requestFullscreen();
-        tg.setHeaderColor("#1e1e1e");
       } catch (e) {
         console.warn('requestFullscreen не поддерживается:', e);
       }
@@ -27,6 +28,7 @@ function Home() {
     }, { passive: false });
     
   }, []);
+  
   
 
   const handleClick = () => {
