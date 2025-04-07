@@ -18,11 +18,24 @@ function Home() {
   const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
-    if (window.Telegram && window.Telegram.WebApp) {
-      window.Telegram.WebApp.ready();
-      window.Telegram.WebApp.expand();
-    }
+    // Получаем доступ к Telegram API
+    const tg = window.Telegram.WebApp;
+
+    // Расширяем WebApp до максимального размера
+    tg.expand();
+
+    // Получаем данные пользователя
+    const userInfo = tg.initDataUnsafe.user;
+    setUser(userInfo);
+
+    // Пример: можно отправить данные обратно в бот
+    // tg.sendData('test data');
   }, []);
+
+  if (!user) {
+    return <div>Загрузка...</div>;
+  }
+
 
   const handleClick = () => {
     setAnimate(true);
