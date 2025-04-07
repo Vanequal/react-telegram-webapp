@@ -11,6 +11,21 @@ function Home() {
     if (window.Telegram && window.Telegram.WebApp) {
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
+      
+      const expandViewport = () => {
+        window.Telegram.WebApp.expand();
+        document.body.style.height = `${window.Telegram.WebApp.viewportHeight}px`;
+        document.documentElement.style.height = `${window.Telegram.WebApp.viewportHeight}px`;
+      };
+      
+      expandViewport();
+      window.addEventListener('resize', expandViewport);
+      
+      setTimeout(expandViewport, 100);
+      
+      return () => {
+        window.removeEventListener('resize', expandViewport);
+      };
     }
   }, []);
 
