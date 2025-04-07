@@ -8,13 +8,19 @@ function Home() {
   const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
-    const tg = window.Telegram.WebApp;
-
-    if (tg) {
+    if (window.Telegram && window.Telegram.WebApp) {
+      const tg = window.Telegram.WebApp;
       tg.disableVerticalSwipes();
-      tg.requestFullscreen();
+      try {
+        tg.requestFullscreen();
+      } catch (e) {
+        console.warn('requestFullscreen is not supported in this version of Telegram WebApp:', e);
+      }
+    } else {
+      console.warn('Telegram WebApp API is not available');
     }
   }, []);
+  
 
   const handleClick = () => {
     setAnimate(true);
