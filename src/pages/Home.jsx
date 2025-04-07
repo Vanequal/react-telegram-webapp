@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/UI/Header';
 import '../styles/Home.scss';
 
@@ -16,6 +16,13 @@ import headIcon from '../assets/img/head.webp';
 
 function Home() {
   const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+    }
+  }, []);
 
   const handleClick = () => {
     setAnimate(true);
