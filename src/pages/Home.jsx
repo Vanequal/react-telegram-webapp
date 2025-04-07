@@ -11,14 +11,22 @@ function Home() {
     if (window.Telegram && window.Telegram.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.disableVerticalSwipes();
-      try {
-        tg.requestFullscreen();
-      } catch (e) {
-        console.warn('requestFullscreen is not supported in this version of Telegram WebApp:', e);
+      
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      
+      if (!isIOS) {
+        try {
+          tg.requestFullscreen();
+        } catch (e) {
+          console.warn('requestFullscreen не поддерживается в этой версии:', e);
+        }
       }
-    } else {
-      console.warn('Telegram WebApp API is not available');
     }
+    
+    document.addEventListener('touchmove', function(e) {
+      if (e.scale !== 1) { e.preventDefault(); }
+    }, { passive: false });
+    
   }, []);
   
 
