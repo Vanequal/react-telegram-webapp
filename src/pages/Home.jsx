@@ -13,14 +13,17 @@ function Home() {
       tg.disableVerticalSwipes();
       
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      
-      if (!isIOS) {
+
+      if (isIOS) {
+        tg.expand();
+      } else {
         try {
           tg.requestFullscreen();
         } catch (e) {
-          console.warn('requestFullscreen не поддерживается в этой версии:', e);
+          console.warn('requestFullscreen не поддерживается:', e);
         }
       }
+      
     }
     
     document.addEventListener('touchmove', function(e) {
