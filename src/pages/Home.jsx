@@ -11,19 +11,14 @@ function Home() {
     if (window.Telegram && window.Telegram.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.disableVerticalSwipes();
+   
+      tg.expand();
       
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-      if (isIOS) {
-        tg.expand();
-      } else {
-        try {
-          tg.requestFullscreen();
-        } catch (e) {
-          console.warn('requestFullscreen не поддерживается:', e);
-        }
+      try {
+        tg.requestFullscreen();
+      } catch (e) {
+        console.warn('requestFullscreen не поддерживается:', e);
       }
-      
     }
     
     document.addEventListener('touchmove', function(e) {
