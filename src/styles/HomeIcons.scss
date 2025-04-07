@@ -1,0 +1,17 @@
+.home-icons {
+    margin: 20px auto 10px;  
+    display: flex;
+    justify-content: center;  
+    align-items: center;
+    gap: 20px;               
+    flex-wrap: nowrap;
+  }
+  
+  .home-icons__icon {
+    flex: 0 0 auto;
+    width: 35px;
+    height: auto;
+    object-fit: contain;
+    cursor: pointer;
+  }
+  
