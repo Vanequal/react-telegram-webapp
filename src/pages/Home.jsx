@@ -24,18 +24,7 @@ function Home() {
     // Расширяем WebApp до максимального размера
     tg.expand();
 
-    // Получаем данные пользователя
-    const userInfo = tg.initDataUnsafe.user;
-    setUser(userInfo);
-
-    // Пример: можно отправить данные обратно в бот
-    // tg.sendData('test data');
   }, []);
-
-  if (!user) {
-    return <div>Загрузка...</div>;
-  }
-
 
   const handleClick = () => {
     setAnimate(true);
