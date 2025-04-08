@@ -1,36 +1,39 @@
+// Home.scss
 .home {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; 
-  min-width: 100vw;
-  align-items: center; 
-  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  min-height: 100vh;
   background-color: #fff;
   overflow-x: hidden;
-  padding-bottom: env(safe-area-inset-bottom, 0);
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   
-  .ios & {
-    padding-top: 80px;
-    &__buttons {
-      margin-top: 60px; 
+  // Добавляем обертку для контента
+  .content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    // Важно! Смещаем контент вниз, чтобы учесть высоту шапки Telegram
+    padding-top: 48px; // Для Android примерно 48px
+    flex: 1;
+  }
+  
+  // Специальные настройки для iOS
+  .ios & .content-wrapper {
+    padding-top: 60px; // Для iOS может потребоваться больший отступ
+  }
+  
+  // Обработка Safari iPhone X и новее с вырезом
+  @supports (padding-top: env(safe-area-inset-top)) {
+    .content-wrapper {
+      padding-top: calc(48px + env(safe-area-inset-top, 0px));
+    }
+    
+    .ios & .content-wrapper {
+      padding-top: calc(60px + env(safe-area-inset-top, 0px));
     }
   }
-
-  .ios .footer-icons {
-    position: fixed;
-    bottom: 300px; 
-    left: 0;
-    right: 0;
-    margin: 0 auto;
-    z-index: 10; 
-  }
-  
 
   &__title {
     font-weight: 400;
@@ -38,7 +41,7 @@
     text-align: center;
     text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     padding: 5px 0; 
-    margin-top: 40px;
+    margin-top: 20px;
   }
   
   &__icons {
@@ -140,21 +143,53 @@
     justify-content: center;    
     align-items: center;
     border-radius: 10px;
-    gap: 20px;                   
+    gap: 20px;    
+    margin-bottom: env(safe-area-inset-bottom, 10px);               
   }
 
   @supports (-webkit-touch-callout: none) {
-    .home {
+    .content-wrapper {
       padding-bottom: env(safe-area-inset-bottom, 20px);
-      
-      &__footerIcons {
-        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
-        margin-bottom: 0;
-        position: sticky;
-        bottom: 0;
-        width: 100%;
-        box-sizing: border-box;
-      }
+    }
+    
+    &__footerIcons {
+      padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
+    }
+  }
+}
+
+// Добавляем стили для тела документа при работе в Telegram WebApp
+body.telegram-webapp {
+  margin: 0;
+  padding: 0;
+  // Убираем скролл на уровне body
+  overflow: hidden;
+  
+  // Telegram WebApp всегда имеет фиксированную шапку сверху
+  &::before {
+    content: '';
+    display: block;
+    height: 48px; // Стандартная высота шапки для Android
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    pointer-events: none; // Чтобы не мешало интерфейсу Telegram
+    background: transparent;
+  }
+  
+  &.ios::before {
+    height: 60px; // Высота шапки для iOS
+  }
+  
+  @supports (height: env(safe-area-inset-top)) {
+    &::before {
+      height: calc(48px + env(safe-area-inset-top, 0px));
+    }
+    
+    &.ios::before {
+      height: calc(60px + env(safe-area-inset-top, 0px));
     }
   }
 }
