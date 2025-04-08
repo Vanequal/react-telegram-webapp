@@ -11,23 +11,25 @@ function Home() {
     if (window.Telegram && window.Telegram.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.disableVerticalSwipes();
-  
       tg.setHeaderColor("#1e1e1e");
-      
       tg.expand();
-      
       try {
         tg.requestFullscreen();
       } catch (e) {
         console.warn('requestFullscreen не поддерживается:', e);
       }
     }
-    
+  
     document.addEventListener('touchmove', function(e) {
       if (e.scale !== 1) { e.preventDefault(); }
     }, { passive: false });
-    
+  
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      document.body.classList.add('ios');
+    }
   }, []);
+  
   
   
 
