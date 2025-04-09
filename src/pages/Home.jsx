@@ -15,6 +15,7 @@ function Home() {
   };
 
   useEffect(() => {
+    // Добавляем Telegram скрипт и инициализацию
     const script = document.createElement('script');
     script.src = "https://telegram.org/js/telegram-web-app.js?version=5.7";
     script.async = true;
@@ -40,6 +41,14 @@ function Home() {
     return () => {
       document.head.removeChild(script);
     };
+  }, []);
+
+  useEffect(() => {
+    // Определяем, является ли устройство iOS, и добавляем класс "ios" к documentElement
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS) {
+      document.documentElement.classList.add('ios');
+    }
   }, []);
 
   return (

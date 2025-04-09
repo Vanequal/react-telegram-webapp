@@ -4,6 +4,11 @@
   --vh: 1vh;
 }
 
+.ios .home {
+  margin-top: env(safe-area-inset-top, 0);
+}
+
+
 html, body {
   margin: 0;
   padding: 0;
@@ -30,7 +35,7 @@ body {
   background: #1e1e1e;
   color: white;
   /* Высота с учётом safe-area */
-  height: calc(56px + env(safe-area-inset-top));
+  height: calc(56px + env(safe-area-inset-top, 0));
   box-sizing: border-box;
   z-index: 1000;
 }
@@ -45,6 +50,10 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   background-color: #fff;
+
+  .ios & {
+    margin-top: env(safe-area-inset-top, 0);
+  }
   
   &__title {
     font-weight: 400;
