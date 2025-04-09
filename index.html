@@ -8,12 +8,41 @@
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    .telegram-webapp header {
+      position: fixed;
+      top: 0px;
+      left: 0px;
+      width: 100%;
+      background: #1e1e1e;
+      color: white;
+      height: 56px;
+      height: calc(56px + env(safe-area-inset-top));
+      box-sizing: border-box;
+      z-index: 1000;
+    }
+  </style>
   <title>Vite + React</title>
 </head>
 
 <body>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
+  <script>
+    if (window.Telegram?.WebApp) {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      tg.requestFullscreen();
+      tg.expand();
+      tg.disableVerticalSwipes();
+
+      const isSmallScreen = window.matchMedia('(max-width: 768px)').matches;
+      const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+      if (isSmallScreen || isTouchDevice) {
+        document.documentElement.classList.add('telegram-webapp');
+      }
+    }
+  </script>
   <script async src="https://telegram.org/js/telegram-web-app.js?version=5.7"></script>
 </body>
 
