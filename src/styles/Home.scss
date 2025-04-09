@@ -5,7 +5,7 @@
 }
 
 .ios .home {
-  margin-top: 56px;
+  height: calc(56px + env(safe-area-inset-top, 0));
 }
 
 

@@ -32,9 +32,11 @@ function Home() {
         const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
         if (isSmallScreen || isTouchDevice) {
           document.documentElement.classList.add('telegram-webapp');
+          document.documentElement.classList.add('ios');
         }
       }
     };
+
 
     document.head.appendChild(script);
 
@@ -44,7 +46,6 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    // Определяем, является ли устройство iOS, и добавляем класс "ios" к documentElement
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     if (isIOS) {
       document.documentElement.classList.add('ios');
