@@ -22,6 +22,19 @@ body {
   bottom: 0;
 }
 
+.telegram-webapp header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #1e1e1e;
+  color: white;
+  /* Высота с учётом safe-area */
+  height: calc(56px + env(safe-area-inset-top));
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
 .home {
   display: flex;
   flex-direction: column;
