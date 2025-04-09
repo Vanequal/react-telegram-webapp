@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../components/UI/Header';
 import HomeIcons from '../components/UI/HomeIcons';
 import FooterIcons from '../components/UI/FooterIcons';
@@ -14,6 +14,34 @@ function Home() {
     }, 300);
   };
 
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = "https://telegram.org/js/telegram-web-app.js?version=5.7";
+    script.async = true;
+
+    script.onload = () => {
+      if (window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.requestFullscreen();
+        tg.expand();
+        tg.disableVerticalSwipes();
+
+        const isSmallScreen = window.matchMedia('(max-width: 768px)').matches;
+        const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+        if (isSmallScreen || isTouchDevice) {
+          document.documentElement.classList.add('telegram-webapp');
+        }
+      }
+    };
+
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
   return (
     <div className="home">
       <Header showShare={true} />
@@ -25,7 +53,7 @@ function Home() {
         <button
           className={`home__button home__button--primary ${animate ? 'animate' : ''}`}
           onClick={handleClick}>
-          Обмен &nbsp; опытом
+          Обмен&nbsp;опытом
         </button>
         <button className="home__button home__button--secondary">
           Описание
