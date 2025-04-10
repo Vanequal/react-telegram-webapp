@@ -1,5 +1,3 @@
-// Home.scss
-// Добавляем переменную для расчёта правильной высоты
 :root {
   --vh: 1vh;
 }
@@ -10,8 +8,7 @@ body {
   padding: 0;
   overflow: hidden;
   width: 100%;
-  height: 100%;
-  height: calc(var(--vh, 1vh) * 100); // Использование переменной вместо vh
+  height: calc(var(--vh, 1vh) * 100);
   background-color: #fff;
 }
 
@@ -30,8 +27,7 @@ body {
   width: 100%;
   background: #1e1e1e;
   color: white;
-  /* Высота с учётом safe-area */
-  height: calc(56px + env(safe-area-inset-top, 0));
+  height: 56px;
   box-sizing: border-box;
   z-index: 1000;
 }
@@ -41,15 +37,10 @@ body {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  height: 100%;
-  height: calc(var(--vh, 1vh) * 100); // Использование переменной вместо vh
+  height: calc(var(--vh, 1vh) * 100);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   background-color: #fff;
-
-  .ios & {
-    margin-top: env(safe-area-inset-top, 0);
-  }
 
   &__title {
     font-weight: 400;
@@ -100,14 +91,14 @@ body {
     cursor: pointer;
   }
 
-  .home__button--primary {
+  &__button--primary {
     font-size: 28px;
     color: rgb(0, 0, 0) !important;
     transform: translateY(-3px);
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   }
 
-  .home__button--primary.animate {
+  &__button--primary.animate {
     animation: bounce 0.3s;
   }
 
@@ -115,15 +106,12 @@ body {
     0% {
       transform: translateY(-3px);
     }
-
     50% {
       transform: translateY(0);
     }
-
     70% {
       transform: translateY(-1px);
     }
-
     100% {
       transform: translateY(-3px);
     }
@@ -152,24 +140,12 @@ body {
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   }
 
-  // Дополнительные стили для iOS
-  .ios & {
-    // Дополнительный отступ для iPhone с челкой
-    padding-top: env(safe-area-inset-top, 0);
-    padding-bottom: env(safe-area-inset-bottom, 0);
-
-    &__footerIcons {
-      padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
-      margin-bottom: env(safe-area-inset-bottom, 10px);
-    }
-  }
-
   .section-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 10px;
-    background-color: #fff !important;
+    background-color: #fff;
 
     &__left {
       display: flex;
@@ -209,23 +185,57 @@ body {
       margin-left: 10px;
     }
   }
+}
 
+.footer-icons {
+  margin-top: auto;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid rgba(224, 224, 224, 1);
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  gap: 20px;
+
+  &__icon {
+    flex: 0 0 auto;
+    width: 35px;
+    height: auto;
+    object-fit: contain;
+    cursor: pointer;
+  }
+
+  &__icon--pig {
+    width: 38px;
+  }
+}
+
+// Только для iOS
+.ios {
+  .home {
+    padding-top: env(safe-area-inset-top, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .footer-icons {
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
+    margin-bottom: env(safe-area-inset-bottom, 10px);
+  }
+
+  .telegram-webapp header,
+  .app-header {
+    height: calc(56px + env(safe-area-inset-top, 0));
+    padding-top: env(safe-area-inset-top, 0);
+  }
 }
 
 // Стили для полноэкранного режима
 :fullscreen,
-::backdrop {
-  background-color: #fff;
-}
-
-:-webkit-full-screen {
-  background-color: #fff;
-}
-
-:-moz-full-screen {
-  background-color: #fff;
-}
-
+::backdrop,
+:-webkit-full-screen,
+:-moz-full-screen,
 :-ms-fullscreen {
   background-color: #fff;
 }
