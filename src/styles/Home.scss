@@ -4,11 +4,6 @@
   --vh: 1vh;
 }
 
-.ios .home__scroll {
-  margin-top: calc(56px + env(safe-area-inset-top, 0));
-}
-
-
 html,
 body {
   margin: 0;
