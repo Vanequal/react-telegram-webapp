@@ -6,30 +6,60 @@ html,
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
   width: 100%;
   height: calc(var(--vh, 1vh) * 100);
   background-color: #fff;
+  overflow: hidden;
 }
 
-body {
-  position: fixed; // Важно для iOS
+// Только на iOS фиксируем body
+.ios body {
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
 }
 
-.telegram-webapp header {
-  position: fixed;
-  top: 0;
-  left: 0;
+body {
+  // на Android scroll работает нормально
+  overflow: auto;
+}
+
+// Обычная шапка для Android (как было)
+.app-header {
+  position: relative;
   width: 100%;
-  background: #1e1e1e;
-  color: white;
+  background-color: #fff;
   height: 56px;
-  box-sizing: border-box;
-  z-index: 1000;
+  z-index: 100;
+}
+
+// Только для iOS — dark mode шапка и safe-area
+.ios {
+  .app-header,
+  .telegram-webapp header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #1e1e1e;
+    color: white;
+    height: calc(56px + env(safe-area-inset-top, 0));
+    padding-top: env(safe-area-inset-top, 0);
+    box-sizing: border-box;
+    z-index: 1000;
+  }
+
+  .home {
+    padding-top: env(safe-area-inset-top, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .footer-icons {
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
+    margin-bottom: env(safe-area-inset-bottom, 10px);
+  }
 }
 
 .home {
@@ -212,26 +242,7 @@ body {
   }
 }
 
-// Только для iOS
-.ios {
-  .home {
-    padding-top: env(safe-area-inset-top, 0);
-    padding-bottom: env(safe-area-inset-bottom, 0);
-  }
-
-  .footer-icons {
-    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
-    margin-bottom: env(safe-area-inset-bottom, 10px);
-  }
-
-  .telegram-webapp header,
-  .app-header {
-    height: calc(56px + env(safe-area-inset-top, 0));
-    padding-top: env(safe-area-inset-top, 0);
-  }
-}
-
-// Стили для полноэкранного режима
+// Полноэкранный режим
 :fullscreen,
 ::backdrop,
 :-webkit-full-screen,
