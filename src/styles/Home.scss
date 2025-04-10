@@ -26,6 +26,15 @@ body {
   overflow: auto;
 }
 
+// Обычная шапка для Android (как было)
+.app-header {
+  position: relative;
+  width: 100%;
+  background-color: #fff;
+  height: 56px;
+  z-index: 100;
+}
+
 body:not(.ios) .app-header {
   position: fixed;
   top: 0;
@@ -37,15 +46,7 @@ body:not(.ios) .app-header {
   box-sizing: border-box;
 }
 
-// Обычная шапка для Android (как было)
-.app-header {
-  position: relative;
-  width: 100%;
-  background-color: #fff;
-  height: 56px;
-  z-index: 100;
-}
-
+// iOS-specific stylings
 .ios {
   .home {
     padding-top: env(safe-area-inset-top, 0);
@@ -70,6 +71,12 @@ body:not(.ios) .app-header {
     box-sizing: border-box;
     z-index: 1000;
   }
+}
+
+// Fix for Telegram WebApp header on Android
+body:not(.ios) .telegram-webapp header {
+  background-color: #fff;
+  color: black;
 }
 
 .home {
