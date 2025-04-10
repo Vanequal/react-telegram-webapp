@@ -1,3 +1,5 @@
+// Home.scss
+// Добавляем переменную для расчёта правильной высоты
 :root {
   --vh: 1vh;
 }
@@ -6,45 +8,32 @@ html,
 body {
   margin: 0;
   padding: 0;
-  width: 100%;
-  height: calc(var(--vh, 1vh) * 100);
-  background-color: #fff;
   overflow: hidden;
+  width: 100%;
+  height: 100%;
+  height: calc(var(--vh, 1vh) * 100); // Использование переменной вместо vh
+  background-color: #fff;
 }
 
-// Только на iOS фиксируем body
-.ios body {
-  position: fixed;
+body {
+  position: fixed; // Важно для iOS
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
 }
 
-body {
-  // на Android scroll работает нормально
-  overflow: auto;
-}
-
-// Обычная шапка для Android (как было)
-.app-header {
-  position: relative;
+.telegram-webapp header {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  background-color: #fff;
-  height: 56px;
-  z-index: 100;
-}
-
-.ios {
-  .home {
-    padding-top: env(safe-area-inset-top, 0);
-    padding-bottom: env(safe-area-inset-bottom, 0);
-  }
-
-  .footer-icons {
-    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
-    margin-bottom: env(safe-area-inset-bottom, 10px);
-  }
+  background: #1e1e1e;
+  color: white;
+  /* Высота с учётом safe-area */
+  height: calc(56px + env(safe-area-inset-top, 0));
+  box-sizing: border-box;
+  z-index: 1000;
 }
 
 .home {
@@ -52,10 +41,15 @@ body {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  height: calc(var(--vh, 1vh) * 100);
+  height: 100%;
+  height: calc(var(--vh, 1vh) * 100); // Использование переменной вместо vh
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   background-color: #fff;
+
+  .ios & {
+    margin-top: env(safe-area-inset-top, 0);
+  }
 
   &__title {
     font-weight: 400;
@@ -106,14 +100,14 @@ body {
     cursor: pointer;
   }
 
-  &__button--primary {
+  .home__button--primary {
     font-size: 28px;
     color: rgb(0, 0, 0) !important;
     transform: translateY(-3px);
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   }
 
-  &__button--primary.animate {
+  .home__button--primary.animate {
     animation: bounce 0.3s;
   }
 
@@ -158,12 +152,24 @@ body {
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   }
 
+  // Дополнительные стили для iOS
+  .ios & {
+    // Дополнительный отступ для iPhone с челкой
+    padding-top: env(safe-area-inset-top, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+
+    &__footerIcons {
+      padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
+      margin-bottom: env(safe-area-inset-bottom, 10px);
+    }
+  }
+
   .section-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 10px;
-    background-color: #fff;
+    background-color: #fff !important;
 
     &__left {
       display: flex;
@@ -204,27 +210,22 @@ body {
     }
   }
 
-  .ios .app-header,
-  .ios .telegram-webapp header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: #1e1e1e;
-    color: white;
-    height: calc(56px + env(safe-area-inset-top, 0));
-    padding-top: env(safe-area-inset-top, 0);
-    box-sizing: border-box;
-    z-index: 1000;
-  }
-
 }
 
-// Полноэкранный режим
+// Стили для полноэкранного режима
 :fullscreen,
-::backdrop,
-:-webkit-full-screen,
-:-moz-full-screen,
+::backdrop {
+  background-color: #fff;
+}
+
+:-webkit-full-screen {
+  background-color: #fff;
+}
+
+:-moz-full-screen {
+  background-color: #fff;
+}
+
 :-ms-fullscreen {
   background-color: #fff;
 }
