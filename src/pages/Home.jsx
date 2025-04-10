@@ -50,49 +50,54 @@ function Home() {
   }, []);
 
   return (
-    <div className="home">
-      <div className="home__scroll">
-        <section className="section-head">
-          <div className="section-head__left">
-            <img src={require('../assets/img/burger.webp')} alt="Меню" className="section-head__icon" />
-          </div>
-          <div className="section-head__center">
-            <input
-              type="text"
-              placeholder="Поиск"
-              className="section-head__search"
-            />
-          </div>
-          <div className="section-head__right">
-            <img src={require('../assets/img/share.webp')} alt="Поделиться" className="section-head__icon" />
-            <img src={require('../assets/img/bell.webp')} alt="Уведомления" className="section-head__icon" />
-          </div>
-        </section>
+    <>
+      <header></header>
 
-        <h1 className="home__title">Название раздела</h1>
+      <div className="home">
+        <div className="home__scroll">
+          <section className="section-head">
+            <div className="section-head__left">
+              <img src={require('../assets/img/burger.webp')} alt="Меню" className="section-head__icon" />
+            </div>
+            <div className="section-head__center">
+              <input
+                type="text"
+                placeholder="Поиск"
+                className="section-head__search"
+              />
+            </div>
+            <div className="section-head__right">
+              <img src={require('../assets/img/share.webp')} alt="Поделиться" className="section-head__icon" />
+              <img src={require('../assets/img/bell.webp')} alt="Уведомления" className="section-head__icon" />
+            </div>
+          </section>
 
-        <HomeIcons />
+          <h1 className="home__title">Название раздела</h1>
 
-        <div className="home__buttons">
-          <button
-            className={`home__button home__button--primary ${animate ? 'animate' : ''}`}
-            onClick={handleClick}>
-            Обмен&nbsp;опытом
-          </button>
-          <button className="home__button home__button--secondary">
-            Описание
-          </button>
-          <button className="home__button home__button--tertiary">
-            Идеальный результат
-          </button>
-          <button className="home__button home__button--quaternary">
-            Модули проекта
-          </button>
+          <HomeIcons />
+
+          <div className="home__buttons">
+            <button
+              className={`home__button home__button--primary ${animate ? 'animate' : ''}`}
+              onClick={handleClick}>
+              Обмен&nbsp;опытом
+            </button>
+            <button className="home__button home__button--secondary">
+              Описание
+            </button>
+            <button className="home__button home__button--tertiary">
+              Идеальный результат
+            </button>
+            <button className="home__button home__button--quaternary">
+              Модули проекта
+            </button>
+          </div>
+
+          <FooterIcons />
         </div>
-
-        <FooterIcons />
       </div>
-    </div>
+
+    </>
   );
 }
 
