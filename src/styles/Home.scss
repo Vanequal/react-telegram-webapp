@@ -26,6 +26,17 @@ body {
   overflow: auto;
 }
 
+body:not(.ios) .app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 56px;
+  background-color: #fff;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
 // Обычная шапка для Android (как было)
 .app-header {
   position: relative;
