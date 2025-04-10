@@ -162,6 +162,7 @@ body {
       padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
       margin-bottom: env(safe-area-inset-bottom, 10px);
     }
+    overflow: auto;
   }
 
   .section-head {
