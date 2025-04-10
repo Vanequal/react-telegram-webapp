@@ -35,18 +35,6 @@ body {
   z-index: 100;
 }
 
-body:not(.ios) .app-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 56px;
-  background-color: #fff;
-  z-index: 1000;
-  box-sizing: border-box;
-}
-
-// iOS-specific stylings
 .ios {
   .home {
     padding-top: env(safe-area-inset-top, 0);
@@ -57,26 +45,6 @@ body:not(.ios) .app-header {
     padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
     margin-bottom: env(safe-area-inset-bottom, 10px);
   }
-
-  .app-header,
-  .telegram-webapp header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: #1e1e1e;
-    color: white;
-    height: calc(56px + env(safe-area-inset-top, 0));
-    padding-top: env(safe-area-inset-top, 0);
-    box-sizing: border-box;
-    z-index: 1000;
-  }
-}
-
-// Fix for Telegram WebApp header on Android
-body:not(.ios) .telegram-webapp header {
-  background-color: #fff;
-  color: black;
 }
 
 .home {
@@ -235,6 +203,21 @@ body:not(.ios) .telegram-webapp header {
       margin-left: 10px;
     }
   }
+
+  .ios .app-header,
+  .ios .telegram-webapp header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #1e1e1e;
+    color: white;
+    height: calc(56px + env(safe-area-inset-top, 0));
+    padding-top: env(safe-area-inset-top, 0);
+    box-sizing: border-box;
+    z-index: 1000;
+  }
+
 }
 
 .footer-icons {
