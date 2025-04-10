@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Header from '../components/UI/Header';
 import '../styles/HomeSimplified.scss';
 
 import backIcon from '../assets/img/back.webp';

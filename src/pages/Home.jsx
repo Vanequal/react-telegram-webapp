@@ -3,6 +3,10 @@ import HomeIcons from '../components/UI/HomeIcons';
 import FooterIcons from '../components/UI/FooterIcons';
 import '../styles/Home.scss';
 
+import burgerIcon from '../assets/img/burger.webp';
+import shareIcon from '../assets/img/share.webp';
+import bellIcon from '../assets/img/bell.webp';
+
 function Home() {
   const [animate, setAnimate] = useState(false);
 
@@ -57,7 +61,7 @@ function Home() {
         <div className="home__scroll">
           <section className="section-head">
             <div className="section-head__left">
-              <img src={require('../assets/img/burger.webp')} alt="Меню" className="section-head__icon" />
+              <img src={burgerIcon} alt="Меню" className="section-head__icon" />
             </div>
             <div className="section-head__center">
               <input
@@ -67,8 +71,8 @@ function Home() {
               />
             </div>
             <div className="section-head__right">
-              <img src={require('../assets/img/share.webp')} alt="Поделиться" className="section-head__icon" />
-              <img src={require('../assets/img/bell.webp')} alt="Уведомления" className="section-head__icon" />
+              <img src={shareIcon} alt="Поделиться" className="section-head__icon" />
+              <img src={bellIcon} alt="Уведомления" className="section-head__icon" />
             </div>
           </section>
 
