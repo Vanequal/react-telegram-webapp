@@ -96,9 +96,8 @@ function Home() {
               Модули проекта
             </button>
           </div>
-
-          <FooterIcons />
         </div>
+        <FooterIcons />
       </div>
 
     </>
