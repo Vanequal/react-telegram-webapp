@@ -51,9 +51,7 @@ function Home() {
 
   return (
     <>
-      <header></header>
-
-      <div className="home">
+       <div className="home">
         <div className="home__scroll">
           <section className="section-head">
             <div className="section-head__left">
