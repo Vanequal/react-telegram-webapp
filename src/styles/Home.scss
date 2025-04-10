@@ -35,22 +35,7 @@ body {
   z-index: 100;
 }
 
-// Только для iOS — dark mode шапка и safe-area
 .ios {
-  .app-header,
-  .telegram-webapp header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: #1e1e1e;
-    color: white;
-    height: calc(56px + env(safe-area-inset-top, 0));
-    padding-top: env(safe-area-inset-top, 0);
-    box-sizing: border-box;
-    z-index: 1000;
-  }
-
   .home {
     padding-top: env(safe-area-inset-top, 0);
     padding-bottom: env(safe-area-inset-bottom, 0);
@@ -136,12 +121,15 @@ body {
     0% {
       transform: translateY(-3px);
     }
+
     50% {
       transform: translateY(0);
     }
+
     70% {
       transform: translateY(-1px);
     }
+
     100% {
       transform: translateY(-3px);
     }
@@ -239,6 +227,20 @@ body {
 
   &__icon--pig {
     width: 38px;
+  }
+
+  .ios .app-header,
+  .ios .telegram-webapp header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #1e1e1e;
+    color: white;
+    height: calc(56px + env(safe-area-inset-top, 0));
+    padding-top: env(safe-area-inset-top, 0);
+    box-sizing: border-box;
+    z-index: 1000;
   }
 }
 
