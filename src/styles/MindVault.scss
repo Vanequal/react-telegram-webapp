@@ -1,0 +1,177 @@
+.mind-vault-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 60px; // запас под футер
+  }
+  
+  .idea-card {
+    background-color: rgba(252, 252, 254, 1);
+    border: 1px solid rgba(252, 252, 254, 1);
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+    padding: 12px;
+    width: 90%;
+    max-height: 350px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+  
+    &.expanded {
+      max-height: none;
+    }
+  
+    &__top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  
+    &__user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  
+    &__user-icon {
+      width: 24px;
+      height: 24px;
+    }
+  
+    &__username {
+      font-family: 'Telegram HPLHS', sans-serif;
+      font-size: 16px;
+      color: #000;
+    }
+  
+    &__pin {
+      width: 20px;
+      height: 20px;
+    }
+  
+    &__text {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      text-align: left;
+      color: #000;
+      word-break: break-word;
+    }
+  
+    &__read-more {
+      background: none;
+      border: none;
+      color: rgba(30, 136, 211, 1);
+      font-family: 'Roboto', sans-serif;
+      font-size: 16px;
+      padding: 0;
+      text-align: left;
+      cursor: pointer;
+    }
+  
+    &__badges {
+      display: flex;
+      gap: 8px;
+    }
+  
+    &__badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background-color: rgba(225, 239, 255, 1);
+      border-radius: 33px;
+      padding: 4px 10px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+    }
+  
+    &__divider {
+      height: 1px;
+      width: 100%;
+      background-color: rgba(226, 230, 233, 1);
+    }
+  
+    &__footer {
+      display: grid;
+      grid-template-columns: auto auto 1fr auto auto auto;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+  
+    &__avatar-stack {
+      width: 50px;
+      height: 28px;
+    }
+  
+    &__comments {
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      color: rgba(30, 136, 211, 1);
+    }
+  
+    &__icon-donat {
+      width: 56px;
+      height: 30px;
+    }
+  
+    &__icon-eye {
+      width: 22px;
+      height: 16px;
+    }
+  
+    &__icon-arrow {
+      transform: scaleX(-1);
+      color: rgba(30, 136, 211, 1);
+    }
+  }
+  
+  .idea-card__text-wrapper {
+    max-height: 130px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  
+    &.expanded {
+      max-height: none;
+    }
+  }
+  
+  .vault-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #EEEFF1;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+    z-index: 100;
+  }
+  
+  .vault-footer__icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+  
+  .vault-footer__input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #E2E6E9;
+    border-radius: 20px;
+    box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    outline: none;
+  }
+  
+  .vault-footer__send {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+  
