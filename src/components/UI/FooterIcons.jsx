@@ -27,12 +27,14 @@ const FooterIcons = ({
   return (
     <div className="footer-icons">
       {showPig && (
-        <img
-          src={pigIcon}
-          alt="Pig"
-          className="footer-icons__icon footer-icons__icon--pig"
-          onClick={onPigClick}
-        />
+        <a href="/mindvault">
+          <img
+            src={pigIcon}
+            alt="Pig"
+            className="footer-icons__icon footer-icons__icon--pig"
+            onClick={onPigClick}
+          />
+        </a>
       )}
       {showHead && (
         <img
