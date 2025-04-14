@@ -11,6 +11,7 @@ const MindVaultHeader = () => {
                     <span className="mind-vault-header__back-text">Назад</span>
                 </div>
                 <h1 className="mind-vault-header__title">Копилка идей</h1>
+                <p style={{margin: '0', padding: '0', color: '#1E88D3'}}>Загловок раздела</p>
             </section>
             <p className="mind-vault-header__description">Подробнее об этой вкладке</p>
         </>
