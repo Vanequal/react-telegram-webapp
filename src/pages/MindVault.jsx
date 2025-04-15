@@ -8,6 +8,7 @@ import dislikeIcon from '../assets/img/dislikeIcon.webp';
 import avatarStack from '../assets/img/avatarStack.webp';
 import donatIcon from '../assets/img/donatIcon.webp';
 import eyeIcon from '../assets/img/eyeIcon.webp';
+import pencilIcon from '../assets/img/pencil.webp';
 import skrepkaIcon from '../assets/img/skrepkaIcon.webp';
 import sendIcon from '../assets/img/sendIcon.webp';
 
@@ -27,7 +28,13 @@ const IdeaCard = ({ idea, onExpand, noHeader = false, forceExpanded = false }) =
     }
   }, []);
 
-  const isDescriptionCard = idea.id === 'about'; // 👈 определяем, что это "подробнее об этой вкладке"
+  const isDescriptionCard = idea.id === 'about';
+  const hasComments = idea.comments > 0;
+
+  const scrollToDiscussion = () => {
+    const el = document.getElementById('discussion-start');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <div className={`idea-card ${noHeader ? 'idea-card--no-header' : ''}`}>
@@ -60,38 +67,50 @@ const IdeaCard = ({ idea, onExpand, noHeader = false, forceExpanded = false }) =
         </button>
       )}
 
-      <div className="idea-card__badges">
-        <div className="idea-card__badge">
-          <img src={likeIcon} alt="Like" />
-          <span>{idea.likes}</span>
-        </div>
-        <div className="idea-card__badge">
-          <img src={dislikeIcon} alt="Dislike" />
-          <span>{idea.dislikes}</span>
-        </div>
-      </div>
+      {!isDescriptionCard && (
+        <>
+          <div className="idea-card__badges">
+            <div className="idea-card__badge">
+              <img src={likeIcon} alt="Like" />
+              <span>{idea.likes}</span>
+            </div>
+            <div className="idea-card__badge">
+              <img src={dislikeIcon} alt="Dislike" />
+              <span>{idea.dislikes}</span>
+            </div>
+          </div>
+          <div className="idea-card__divider"></div>
+        </>
+      )}
 
-      <div className="idea-card__divider"></div>
+      {isDescriptionCard && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '4px' }}>
+          <img src={pencilIcon} alt="Edit" style={{ width: 24, height: 24, opacity: 0.5 }} />
+        </div>
+      )}
 
-      <div className="idea-card__footer">
-        <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
-        <span className="idea-card__comments">{idea.comments} Комментария</span>
-        <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
-        <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
-        <p style={{ margin: '0', color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
-        {!noHeader && (
-          <RiArrowRightSLine
-            size={24}
-            color="#1E88D3"
-            onClick={() => onExpand(idea)}
-            style={{ cursor: 'pointer' }}
-          />
-        )}
-      </div>
+      {hasComments && (
+        <div className="idea-card__footer" onClick={scrollToDiscussion} style={{ cursor: 'pointer' }}>
+          <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
+          <span className="idea-card__comments">{idea.comments} Комментария</span>
+          {!isDescriptionCard && (
+            <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
+          )}
+          <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
+          <p style={{ margin: '0', color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
+          {!noHeader && !isDescriptionCard && (
+            <RiArrowRightSLine
+              size={24}
+              color="#1E88D3"
+              onClick={() => onExpand(idea)}
+              style={{ cursor: 'pointer' }}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 };
-
 
 const MindVaultPage = () => {
   const [fullView, setFullView] = React.useState(null);
@@ -138,7 +157,7 @@ const MindVaultPage = () => {
 
   return (
     <>
-      <MindVaultHeader onDescriptionClick={() => setFullView({ ...descriptionIdea, id: 'about' })} />
+      <MindVaultHeader onDescriptionClick={() => setFullView({ ...descriptionIdea })} />
       <div className="mind-vault-page">
         {ideas.map((idea) => (
           <IdeaCard key={idea.id} idea={idea} onExpand={setFullView} />
@@ -176,6 +195,26 @@ const MindVaultPage = () => {
           <div className="idea-fullscreen__content">
             <IdeaCard idea={fullView} noHeader forceExpanded />
           </div>
+
+          {fullView.id === 'about' && (
+            <div className="vault-footer">
+              <img src={skrepkaIcon} alt="Attach" className="vault-footer__icon" />
+              <div className="vault-footer__input" style={{
+                flex: 1,
+                padding: '8px 12px',
+                border: '1px solid #E2E6E9',
+                borderRadius: '20px',
+                boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
+                fontFamily: 'Roboto, sans-serif',
+                fontSize: '16px',
+                color: '#00000099',
+                backgroundColor: '#fff'
+              }}>
+                Редактировать
+              </div>
+              <img src={sendIcon} alt="Send" className="vault-footer__send" />
+            </div>
+          )}
         </div>
       )}
     </>
