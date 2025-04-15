@@ -2,7 +2,7 @@ import React from 'react';
 import '../../styles/MindVaultHeader.scss';
 import { RiArrowLeftSLine } from "react-icons/ri";
 
-const MindVaultHeader = () => {
+const MindVaultHeader = ({ onDescriptionClick }) => {
     return (
         <>
             <section className="mind-vault-header">
@@ -11,9 +11,15 @@ const MindVaultHeader = () => {
                     <span className="mind-vault-header__back-text">Назад</span>
                 </div>
                 <h1 className="mind-vault-header__title">Копилка идей</h1>
-                <p style={{margin: '0', padding: '0', color: '#1E88D3'}}>Загловок раздела</p>
+                <p style={{ margin: '0', padding: '0', color: '#1E88D3' }}>Заголовок раздела</p>
             </section>
-            <p className="mind-vault-header__description">Подробнее об этой вкладке</p>
+            <p
+                className="mind-vault-header__description"
+                onClick={onDescriptionClick}
+                style={{ color: '#1E88D3', cursor: 'pointer' }}
+            >
+                Подробнее об этой вкладке
+            </p>
         </>
     );
 };

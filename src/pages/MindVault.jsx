@@ -15,8 +15,8 @@ import { RiArrowRightSLine, RiArrowLeftSLine } from "react-icons/ri";
 
 import '../styles/MindVault.scss';
 
-const IdeaCard = ({ text, pinned = true, onExpand, setFullView }) => {
-  const [expanded, setExpanded] = React.useState(false);
+const IdeaCard = ({ idea, onExpand, noHeader = false, forceExpanded = false }) => {
+  const [expanded, setExpanded] = React.useState(forceExpanded);
   const [showReadMore, setShowReadMore] = React.useState(false);
 
   const textWrapperRef = React.useRef(null);
@@ -27,24 +27,34 @@ const IdeaCard = ({ text, pinned = true, onExpand, setFullView }) => {
     }
   }, []);
 
+  const isDescriptionCard = idea.id === 'about'; // 👈 определяем, что это "подробнее об этой вкладке"
+
   return (
-    <div className="idea-card">
-      <div className="idea-card__top">
-        <div className="idea-card__user">
-          <img src={userIcon} alt="User" className="idea-card__user-icon" />
-          <span className="idea-card__username">Имя пользователя</span>
+    <div className={`idea-card ${noHeader ? 'idea-card--no-header' : ''}`}>
+      {isDescriptionCard && (
+        <h2 style={{ fontSize: '22px', margin: '0 0 12px 0', fontWeight: 600 }}>
+          Заголовок
+        </h2>
+      )}
+
+      {!noHeader && (
+        <div className="idea-card__top">
+          <div className="idea-card__user">
+            <img src={userIcon} alt="User" className="idea-card__user-icon" />
+            <span className="idea-card__username">{idea.username}</span>
+          </div>
+          {idea.pinned && <img src={pinIcon} alt="Pin" className="idea-card__pin" />}
         </div>
-        {pinned && <img src={pinIcon} alt="Pin" className="idea-card__pin" />}
-      </div>
+      )}
 
       <div
         ref={textWrapperRef}
         className={`idea-card__text-wrapper ${expanded ? 'expanded' : ''}`}
       >
-        <div className="idea-card__text">{text}</div>
+        <div className="idea-card__text">{idea.preview}</div>
       </div>
 
-      {!expanded && showReadMore && (
+      {!expanded && showReadMore && !noHeader && !forceExpanded && (
         <button className="idea-card__read-more" onClick={() => setExpanded(true)}>
           Читать далее
         </button>
@@ -53,11 +63,11 @@ const IdeaCard = ({ text, pinned = true, onExpand, setFullView }) => {
       <div className="idea-card__badges">
         <div className="idea-card__badge">
           <img src={likeIcon} alt="Like" />
-          <span>5</span>
+          <span>{idea.likes}</span>
         </div>
         <div className="idea-card__badge">
           <img src={dislikeIcon} alt="Dislike" />
-          <span>2</span>
+          <span>{idea.dislikes}</span>
         </div>
       </div>
 
@@ -65,39 +75,74 @@ const IdeaCard = ({ text, pinned = true, onExpand, setFullView }) => {
 
       <div className="idea-card__footer">
         <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
-        <span className="idea-card__comments">3 Комментария</span>
+        <span className="idea-card__comments">{idea.comments} Комментария</span>
         <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
         <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
-        <p style={{ margin: '0', color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>36</p>
-        <RiArrowRightSLine
-          size={24}
-          color="#1E88D3"
-          onClick={() => setFullView('project')}
-          style={{ cursor: 'pointer' }} />
+        <p style={{ margin: '0', color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
+        {!noHeader && (
+          <RiArrowRightSLine
+            size={24}
+            color="#1E88D3"
+            onClick={() => onExpand(idea)}
+            style={{ cursor: 'pointer' }}
+          />
+        )}
       </div>
     </div>
   );
 };
 
+
 const MindVaultPage = () => {
   const [fullView, setFullView] = React.useState(null);
+
+  const ideas = [
+    {
+      id: 'project',
+      username: 'Имя пользователя',
+      preview: 'Разработать информационный ресурс  Рroject of Everything on Wiki.',
+      full: `Разработать информационный ресурс Рroject of Everything on Wiki — платформу моделирования будущего, объединяющую интерактивные преимущества успешных механизмов самоорганизации интернет-энциклопедии Wikipedia, элементы сервисов вопросов и ответов Quora, Stack Exchange, Genon и мессенджера Telegram.
+
+Ресурс выступает инструментом для генерации достоверной информации, направленной на коллективное моделирование будущего и объединяет функциональные элементы различных платформ и методологий.`,
+      likes: 5,
+      dislikes: 2,
+      comments: 3,
+      views: 36,
+      pinned: true
+    },
+    {
+      id: 'bees',
+      username: 'Имя пользователя',
+      preview: 'Разработать новый вид опылителей-насекомых для теплиц.',
+      full: 'Разработать новый вид опылителей-насекомых для теплиц — автономных и устойчивых к условиям среды, с управлением через мобильное приложение.',
+      likes: 2,
+      dislikes: 1,
+      comments: 1,
+      views: 12,
+      pinned: false
+    }
+  ];
+
+  const descriptionIdea = {
+    id: 'about',
+    preview: `Разработать информационный ресурс  Рroject of Everything on Wiki — платформу моделирования будущего, объединяющую интерактивные преимущества успешных механизмов самоорганизации интернет-энциклопедии Wikipedia, элементы сервисов вопросов и ответов Quora, Stack Exchange, Genon и мессенджера Telegram.
+
+Ресурс выступает инструментом для генерации достоверной информации, направленной на коллективное моделирование будущего и объединяет функциональные элементы различных платформ и методологий.`,
+    full: '',
+    likes: 0,
+    dislikes: 0,
+    comments: 0,
+    views: 0,
+    pinned: false
+  };
+
   return (
     <>
-      <MindVaultHeader />
+      <MindVaultHeader onDescriptionClick={() => setFullView({ ...descriptionIdea, id: 'about' })} />
       <div className="mind-vault-page">
-        <IdeaCard
-          text={`Разработать информационный ресурс Project of Everything on Wiki. 
-          Должна быть реализована поддержка разделов, фильтрации, версионности, а также 
-          возможность подключения внешних источников знаний, включая AI-интеграции и сообщество пользователей.`}
-          onExpand={() => setFullView('project')}
-          setFullView={setFullView}
-        />
-        <IdeaCard
-          text={`Разработать новый вид опылителей-насекомых для теплиц.`}
-          pinned={false}
-          onExpand={() => setFullView('project')}
-          setFullView={setFullView}
-        />
+        {ideas.map((idea) => (
+          <IdeaCard key={idea.id} idea={idea} onExpand={setFullView} />
+        ))}
       </div>
 
       <div className="vault-footer">
@@ -109,26 +154,27 @@ const MindVaultPage = () => {
         />
         <img src={sendIcon} alt="Send" className="vault-footer__send" />
       </div>
-      {fullView === 'project' && (
+
+      {fullView && (
         <div className="idea-fullscreen">
           <section className="mind-vault-header">
             <div className="mind-vault-header__left" onClick={() => setFullView(null)}>
               <i className="mind-vault-header__icon">
-                <RiArrowLeftSLine color='#1E88D3' size={36} />
+                <RiArrowLeftSLine
+                  color="#1E88D3"
+                  size={36}
+                  style={{ cursor: 'pointer' }}
+                />
               </i>
-              <span className="mind-vault-header__back-text">Назад</span>
+              <span className="mind-vault-header__back-text" style={{ cursor: 'pointer' }}>
+                Назад
+              </span>
             </div>
             <h1 className="mind-vault-header__title">О ресурсе</h1>
           </section>
 
           <div className="idea-fullscreen__content">
-            <h2>Заголовок</h2>
-            <p>
-              Разработать информационный ресурс Рroject of Everything on Wiki — платформу моделирования будущего, объединяющую интерактивные преимущества успешных механизмов самоорганизации интернет-энциклопедии Wikipedia, элементы сервисов вопросов и ответов Quora, Stack Exchange, Genon и мессенджера Telegram.
-            </p>
-            <p>
-              Ресурс выступает инструментом для генерации достоверной информации, направленной на коллективное моделирование будущего и объединяет функциональные элементы различных платформ и методологий.
-            </p>
+            <IdeaCard idea={fullView} noHeader forceExpanded />
           </div>
         </div>
       )}
