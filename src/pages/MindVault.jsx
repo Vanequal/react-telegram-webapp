@@ -1,5 +1,6 @@
 import React from 'react';
 import MindVaultHeader from '../components/UI/MindVaultHeader';
+import AudioPlayer from '../components/UI/AudioPlayer';
 
 import userIcon from '../assets/img/userIcon.webp';
 import pinIcon from '../assets/img/pinIcon.webp';
@@ -11,6 +12,7 @@ import eyeIcon from '../assets/img/eyeIcon.webp';
 import pencilIcon from '../assets/img/pencil.webp';
 import skrepkaIcon from '../assets/img/skrepkaIcon.webp';
 import sendIcon from '../assets/img/sendIcon.webp';
+import ecologyGif from '../assets/img/ecology.gif';  // Import the image properly
 
 import { RiArrowRightSLine, RiArrowLeftSLine } from "react-icons/ri";
 
@@ -22,18 +24,45 @@ const IdeaCard = ({ idea, onExpand, noHeader = false, forceExpanded = false }) =
 
   const textWrapperRef = React.useRef(null);
 
-  React.useEffect(() => {
-    if (textWrapperRef.current && textWrapperRef.current.scrollHeight > 160) {
-      setShowReadMore(true);
-    }
-  }, []);
-
   const isDescriptionCard = idea.id === 'about';
   const hasComments = idea.comments > 0;
 
   const scrollToDiscussion = () => {
     const el = document.getElementById('discussion-start');
     if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  React.useEffect(() => {
+    if (textWrapperRef.current && textWrapperRef.current.scrollHeight > 160) {
+      setShowReadMore(true);
+    }
+  }, []);
+
+  // вставляем гифку после фразы
+  const renderPreviewWithGif = (text) => {
+    if (!isDescriptionCard) return <div className="idea-card__text">{text}</div>;
+
+    const trigger = "успешных механизмов самоорганизации";
+    const index = text.indexOf(trigger);
+
+    if (index === -1) return <div className="idea-card__text">{text}</div>;
+
+    const before = text.slice(0, index + trigger.length);
+    const after = text.slice(index + trigger.length);
+
+    return (
+      <div className="idea-card__text">
+        {before}
+        <div style={{ margin: '12px 0' }}>
+          <img
+            src={ecologyGif}
+            alt="ecology"
+            style={{ width: '100%', borderRadius: '12px' }}
+          />
+        </div>
+        {after}
+      </div>
+    );
   };
 
   return (
@@ -58,7 +87,7 @@ const IdeaCard = ({ idea, onExpand, noHeader = false, forceExpanded = false }) =
         ref={textWrapperRef}
         className={`idea-card__text-wrapper ${expanded ? 'expanded' : ''}`}
       >
-        <div className="idea-card__text">{idea.preview}</div>
+        {renderPreviewWithGif(idea.preview)}
       </div>
 
       {!expanded && showReadMore && !noHeader && !forceExpanded && (
@@ -89,6 +118,13 @@ const IdeaCard = ({ idea, onExpand, noHeader = false, forceExpanded = false }) =
         </div>
       )}
 
+      {/* кастомный аудиоплеер */}
+      {isDescriptionCard && (
+        <div style={{ marginTop: '16px' }}>
+          <AudioPlayer />
+        </div>
+      )}
+
       {hasComments && (
         <div className="idea-card__footer" onClick={scrollToDiscussion} style={{ cursor: 'pointer' }}>
           <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
@@ -97,7 +133,7 @@ const IdeaCard = ({ idea, onExpand, noHeader = false, forceExpanded = false }) =
             <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
           )}
           <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
-          <p style={{ margin: '0', color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
+          <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
           {!noHeader && !isDescriptionCard && (
             <RiArrowRightSLine
               size={24}
@@ -111,6 +147,7 @@ const IdeaCard = ({ idea, onExpand, noHeader = false, forceExpanded = false }) =
     </div>
   );
 };
+
 
 const MindVaultPage = () => {
   const [fullView, setFullView] = React.useState(null);
@@ -210,7 +247,7 @@ const MindVaultPage = () => {
                 color: '#00000099',
                 backgroundColor: '#fff'
               }}>
-                Редактировать
+                Комментировать
               </div>
               <img src={sendIcon} alt="Send" className="vault-footer__send" />
             </div>
