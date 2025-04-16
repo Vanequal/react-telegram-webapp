@@ -4,6 +4,14 @@ import { Provider } from 'react-redux';
 import store from './store';
 import App from './App.jsx'
 
+if (window.Telegram?.WebApp) {
+  window.Telegram.WebApp.ready(); 
+  console.log('initData:', window.Telegram.WebApp.initData); 
+} else {
+  console.warn('Telegram WebApp не найден');
+}
+
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
