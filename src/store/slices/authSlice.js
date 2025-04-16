@@ -1,14 +1,23 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../api/axios';
+import qs from 'qs';
 
 export const authWithTelegram = createAsyncThunk(
   'auth/telegram',
   async (initData, { rejectWithValue }) => {
     try {
-      await axios.post('/auth/telegram', { initData });
+      const formData = qs.stringify({ init_data: initData });
+
+      await axios.post('/auth/telegram', formData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+
       const response = await axios.get('/me');
       return response.data;
     } catch (err) {
+      console.error('Auth error:', err);
       return rejectWithValue(err.response?.data?.detail || 'Auth error');
     }
   }
