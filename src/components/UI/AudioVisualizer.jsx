@@ -80,7 +80,6 @@ const AudioVisualizer = ({ audioRef, isPlaying, hasPlayed }) => {
 
         ctx.fillStyle = '#1E88D3';
         ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-
         x += barWidth + 1;
       }
     };
@@ -88,7 +87,24 @@ const AudioVisualizer = ({ audioRef, isPlaying, hasPlayed }) => {
     drawReal();
   }, [audioRef, isPlaying, hasPlayed]);
 
-  return <canvas className="audio-visualizer" ref={canvasRef} />;
+  const handleClick = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const percent = clickX / canvas.width;
+    const audio = audioRef.current;
+    if (audio && audio.duration) {
+      audio.currentTime = percent * audio.duration;
+    }
+  };
+
+  return (
+    <canvas
+      className="audio-visualizer"
+      ref={canvasRef}
+      onClick={handleClick}
+    />
+  );
 };
 
 export default AudioVisualizer;

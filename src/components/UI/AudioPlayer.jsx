@@ -8,33 +8,52 @@ import audioFile from '../../assets/img/audio-kopilka.mp3';
 const AudioPlayer = () => {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [duration, setDuration] = useState('0:00');
   const [hasPlayed, setHasPlayed] = useState(false);
+  const [duration, setDuration] = useState('0:00');
+  const [currentTime, setCurrentTime] = useState(0);
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (audio) {
-      const onLoadedMetadata = () => {
-        const mins = Math.floor(audio.duration / 60);
-        const secs = Math.floor(audio.duration % 60);
-        setDuration(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
-      };
-      audio.addEventListener('loadedmetadata', onLoadedMetadata);
-      return () => audio.removeEventListener('loadedmetadata', onLoadedMetadata);
-    }
+    if (!audio) return;
+
+    const onLoadedMetadata = () => {
+      const mins = Math.floor(audio.duration / 60);
+      const secs = Math.floor(audio.duration % 60);
+      setDuration(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
+    };
+
+    const onTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+    };
+
+    audio.addEventListener('loadedmetadata', onLoadedMetadata);
+    audio.addEventListener('timeupdate', onTimeUpdate);
+
+    return () => {
+      audio.removeEventListener('loadedmetadata', onLoadedMetadata);
+      audio.removeEventListener('timeupdate', onTimeUpdate);
+    };
   }, []);
 
   const togglePlay = () => {
-    if (!hasPlayed) setHasPlayed(true);
     const audio = audioRef.current;
     if (!audio) return;
+
+    if (!hasPlayed) setHasPlayed(true);
 
     if (isPlaying) {
       audio.pause();
     } else {
-      audio.play();
+      audio.play().catch((e) => console.error('playback error:', e));
     }
+
     setIsPlaying(!isPlaying);
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
   return (
@@ -46,10 +65,18 @@ const AudioPlayer = () => {
       </div>
 
       <div className="audio-player__waveform">
-        <AudioVisualizer audioRef={audioRef} isPlaying={isPlaying} hasPlayed={hasPlayed}/>
+        <AudioVisualizer
+          audioRef={audioRef}
+          isPlaying={isPlaying}
+          hasPlayed={hasPlayed}
+        />
         <div className="audio-player__meta">
-          <span className="audio-player__time">{duration}</span>
-          <span className="audio-player__title">{audioFile.split('/').pop()}</span>
+          <span className="audio-player__time">
+            {formatTime(currentTime)} / {duration}
+          </span>
+          <span className="audio-player__title">
+            {audioFile.split('/').pop()}
+          </span>
         </div>
       </div>
     </div>
