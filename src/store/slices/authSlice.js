@@ -8,11 +8,16 @@ export const authWithTelegram = createAsyncThunk(
     try {
       const formData = qs.stringify({ init_data: initData });
 
-      const response = await axios.post('https://6012-109-75-62-2.ngrok-free.app/api/v1/auth/telegram', formData, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+      const response = await axios.post(
+        '/api/v1/auth/telegram',
+        qs.stringify({ init_data: initData }),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
         }
-      });
+      );
+
 
       return response.data;
     } catch (err) {
