@@ -1,3 +1,5 @@
+// MindVaultPage.jsx
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import MindVaultHeader from '../components/UI/MindVaultHeader';
@@ -16,17 +18,21 @@ import { RiArrowRightSLine } from "react-icons/ri";
 
 import '../styles/MindVault.scss';
 
-const IdeaCard = ({ idea, onExpand }) => {
+function IdeaCard({ idea, onExpand }) {
   const [expanded, setExpanded] = React.useState(false);
   const [showReadMore, setShowReadMore] = React.useState(false);
-
   const textWrapperRef = React.useRef(null);
 
   React.useEffect(() => {
-    if (textWrapperRef.current && textWrapperRef.current.scrollHeight > 160) {
+    if (textWrapperRef.current?.scrollHeight > 160) {
       setShowReadMore(true);
     }
   }, []);
+
+  const scrollToDiscussion = () => {
+    const el = document.getElementById('discussion-start');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <div className="idea-card">
@@ -64,22 +70,31 @@ const IdeaCard = ({ idea, onExpand }) => {
 
       <div className="idea-card__divider"></div>
 
-      <div className="idea-card__footer">
-        <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
-        <span className="idea-card__comments">{idea.comments} Комментария</span>
-        <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
-        <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
-        <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
-        <RiArrowRightSLine
-          size={24}
-          color="#1E88D3"
-          onClick={() => onExpand(idea)}
+      {/* рендерим футер только если есть комментарии */}
+      {idea.comments > 0 && (
+        <div
+          className="idea-card__footer"
+          onClick={scrollToDiscussion}
           style={{ cursor: 'pointer' }}
-        />
-      </div>
+        >
+          <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
+          <span className="idea-card__comments">{idea.comments} Комментарий</span>
+          <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
+          <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
+          <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>
+            {idea.views}
+          </p>
+          <RiArrowRightSLine
+            size={24}
+            color="#1E88D3"
+            onClick={() => onExpand(idea)}
+            style={{ cursor: 'pointer' }}
+          />
+        </div>
+      )}
     </div>
   );
-};
+}
 
 const MindVaultPage = () => {
   const navigate = useNavigate();
@@ -101,7 +116,7 @@ const MindVaultPage = () => {
       preview: 'Разработать новый вид опылителей-насекомых для теплиц.',
       likes: 2,
       dislikes: 1,
-      comments: 1,
+      comments: 0,      // комментариев нет
       views: 12,
       pinned: false
     }
@@ -112,8 +127,8 @@ const MindVaultPage = () => {
       <MindVaultHeader onDescriptionClick={() => navigate('/aboutpage')} />
 
       <div className="mind-vault-page">
-        {ideas.map((idea) => (
-          <IdeaCard key={idea.id} idea={idea} onExpand={() => {}} />
+        {ideas.map(idea => (
+          <IdeaCard key={idea.id} idea={idea} onExpand={() => navigate(`/discussion/${idea.id}`)} />
         ))}
       </div>
 
