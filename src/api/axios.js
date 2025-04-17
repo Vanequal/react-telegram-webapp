@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: '/api/v1',
+  baseURL: 'https://6012-109-75-62-2.ngrok-free.app/api/v1/auth/telegram',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
