@@ -68,3 +68,14 @@
     flex-shrink: 0;
   }
   
+  .idea-card__edit-icon--bottom {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 16px;
+  }
+  .idea-card__edit-icon--bottom img {
+    width: 24px;
+    height: 24px;
+    opacity: 0.5;
+  }
+  
