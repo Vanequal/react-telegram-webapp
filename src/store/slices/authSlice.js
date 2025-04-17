@@ -8,13 +8,12 @@ export const authWithTelegram = createAsyncThunk(
     try {
       const formData = qs.stringify({ init_data: initData });
 
-      await axios.post('/auth/telegram', formData, {
+      const response = await axios.post('/auth/telegram', formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }
       });
 
-      const response = await axios.get('/me');
       return response.data;
     } catch (err) {
       console.error('Auth error:', err);
@@ -42,7 +41,7 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(authWithTelegram.fulfilled, (state, action) => {
-        state.user = action.payload;
+        state.user = action.payload; // здесь будет то, что пришло с бэка
         state.loading = false;
       })
       .addCase(authWithTelegram.rejected, (state, action) => {
