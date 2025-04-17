@@ -1,9 +1,7 @@
-import React, { useRef, useState, useEffect } from 'react';
-import waveGif from '../../assets/img/ecology.gif';
-import audioIcon from '../../assets/img/audio-waveform.png'; 
-import playIcon from '../../assets/img/play-button.png'; 
+import { useRef, useState, useEffect } from 'react';
+import AudioVisualizer from './AudioVisualizer';
 
-
+import playIcon from '../../assets/img/play-button.png';
 import '../../styles/AudioPlayer.scss';
 import audioFile from '../../assets/img/audio-kopilka.mp3';
 
@@ -11,6 +9,7 @@ const AudioPlayer = () => {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState('0:00');
+  const [hasPlayed, setHasPlayed] = useState(false);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -26,6 +25,7 @@ const AudioPlayer = () => {
   }, []);
 
   const togglePlay = () => {
+    if (!hasPlayed) setHasPlayed(true);
     const audio = audioRef.current;
     if (!audio) return;
 
@@ -46,7 +46,7 @@ const AudioPlayer = () => {
       </div>
 
       <div className="audio-player__waveform">
-        <img src={audioIcon} alt="Waveform" />
+        <AudioVisualizer audioRef={audioRef} isPlaying={isPlaying} hasPlayed={hasPlayed}/>
         <div className="audio-player__meta">
           <span className="audio-player__time">{duration}</span>
           <span className="audio-player__title">{audioFile.split('/').pop()}</span>
