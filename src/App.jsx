@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
+import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
 import { authWithTelegram } from './store/slices/authSlice';
 import { fetchCurrentUser } from './store/slices/meSlice';
