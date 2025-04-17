@@ -9,6 +9,9 @@ import dislikeIcon from '../assets/img/dislikeIcon.webp';
 import avatarStack from '../assets/img/avatarStack.webp';
 import donatIcon from '../assets/img/donatIcon.webp';
 import eyeIcon from '../assets/img/eyeIcon.webp';
+import avatar1 from '../assets/img/avatar1.png'
+import avatar2 from '../assets/img/avatar2.png'
+import avatar3 from '../assets/img/avatar3.png'
 
 import { RiArrowRightSLine } from "react-icons/ri";
 
@@ -174,7 +177,7 @@ function Comment({ comment, level = 0 }) {
     <div className="comment-thread">
       <div className="comment-item">
         <div className="comment-header">
-          <img src={comment.avatar} alt="Avatar" className="comment-avatar" />
+          <img src={avatar1} alt="Avatar" className="comment-avatar" />
           <div className="comment-user">{comment.user}</div>
           {comment.timestamp && <div className="comment-timestamp">{comment.timestamp}</div>}
         </div>
@@ -213,7 +216,7 @@ function Comment({ comment, level = 0 }) {
 
               
               <div className="comment-header">
-                <img src={reply.avatar} alt="Avatar" className="comment-avatar" />
+                <img src={avatar2} alt="Avatar" className="comment-avatar" />
                 <div className="comment-user">{reply.user}</div>
                 {reply.timestamp && <div className="comment-timestamp">{reply.timestamp}</div>}
               </div>
@@ -243,7 +246,7 @@ function Comment({ comment, level = 0 }) {
                     <div key={nestedReply.id} className="reply-thread">
                       {/* Nested Reply header outside blue wrapper */}
                       <div className="comment-header">
-                        <img src={nestedReply.avatar} alt="Avatar" className="comment-avatar" />
+                        <img src={avatar3} alt="Avatar" className="comment-avatar" />
                         <div className="comment-user">{nestedReply.user}</div>
                         {nestedReply.timestamp && <div className="comment-timestamp">{nestedReply.timestamp}</div>}
                       </div>
@@ -311,17 +314,6 @@ function DiscussionPage() {
             <Comment key={comment.id} comment={comment} />
           ))}
         </div>
-      </div>
-      
-      <div className="comment-input-container">
-        <input 
-          type="text" 
-          className="comment-input" 
-          placeholder="Написать комментарий..." 
-        />
-        <button className="send-button">
-          <span className="send-icon">➤</span>
-        </button>
       </div>
     </div>
   );

@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
 import { useDispatch } from 'react-redux';
 import { authWithTelegram } from './store/slices/authSlice';
+import { fetchCurrentUser } from './store/slices/meSlice';
 
 import Home from './pages/Home';
 import HomeSimplified from './pages/HomeSimplified';
@@ -13,6 +15,7 @@ import './styles/global.scss';
 
 function App() {
   const dispatch = useDispatch();
+  const user = useSelector(state => state.auth.user); 
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
@@ -24,6 +27,12 @@ function App() {
       console.warn('initData отсутствует');
     }
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchCurrentUser()); 
+    }
+  }, [user, dispatch]);
 
   return (
     <Router>

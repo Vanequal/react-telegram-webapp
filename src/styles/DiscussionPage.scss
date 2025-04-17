@@ -12,14 +12,13 @@
     padding: 16px;
   }
   
-  // Pill for "Начало обсуждения"
   .discussion-pill {
     display: flex;
     background-color: #9DABB6;
     color: white;
     font-size: 12px;
     width: 120px;
-    padding: 4px 12px;
+    padding: 0px 14px;
     border-radius: 12px;
     margin: 16px auto;
     text-align: center;
@@ -28,7 +27,6 @@
     align-items: center;
   }
   
-  // Main comment styles
   .comment-list {
     display: flex;
     flex-direction: column;
