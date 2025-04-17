@@ -74,7 +74,7 @@ function IdeaCard({ idea, onExpand }) {
       {idea.comments > 0 && (
         <div
           className="idea-card__footer"
-          onClick={scrollToDiscussion}
+          onClick={() => onExpand(idea)}
           style={{ cursor: 'pointer' }}
         >
           <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
@@ -87,7 +87,6 @@ function IdeaCard({ idea, onExpand }) {
           <RiArrowRightSLine
             size={24}
             color="#1E88D3"
-            onClick={() => onExpand(idea)}
             style={{ cursor: 'pointer' }}
           />
         </div>

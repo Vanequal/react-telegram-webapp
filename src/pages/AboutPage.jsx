@@ -23,23 +23,26 @@ const AboutPage = () => {
         <h1 className="mind-vault-header__title">О ресурсе</h1>
       </section>
 
-      <div className="idea-card idea-card--no-header">
-        <h2 className="idea-card__heading">Заголовок</h2>
-        <div className="idea-card__text">
-          Разработать информационный ресурс Project of Everything on Wiki — платформу моделирования будущего, объединяющую интерактивные преимущества успешных механизмов самоорганизации
-          <div className="idea-card__gif-wrapper">
-            <img src={ecologyGif} alt="ecology" className="idea-card__gif" />
+      <div className="about-page__card-wrapper">
+        <div className="idea-card idea-card--no-header">
+          <h2 className="idea-card__heading">Заголовок</h2>
+          <div className="idea-card__text">
+            Разработать информационный ресурс Project of Everything on Wiki — платформу моделирования будущего,
+            объединяющую интерактивные преимущества успешных механизмов самоорганизации
+            <div className="idea-card__gif-wrapper">
+              <img src={ecologyGif} alt="ecology" className="idea-card__gif" />
+            </div>
+            интернет-энциклопедии Wikipedia, элементы сервисов вопросов и ответов Quora, Stack Exchange, Genon и мессенджера Telegram.
+            Ресурс выступает инструментом для генерации достоверной информации, направленной на коллективное моделирование будущего и объединяет функциональные элементы различных платформ и методологий.
           </div>
-          интернет-энциклопедии Wikipedia, элементы сервисов вопросов и ответов Quora, Stack Exchange, Genon и мессенджера Telegram.
-          Ресурс выступает инструментом для генерации достоверной информации, направленной на коллективное моделирование будущего и объединяет функциональные элементы различных платформ и методологий.
-        </div>
 
-        <div className="idea-card__audio">
-          <AudioPlayer />
-        </div>
+          <div className="idea-card__audio">
+            <AudioPlayer />
+          </div>
 
-        <div className="idea-card__edit-icon idea-card__edit-icon--bottom">
-          <img src={pencilIcon} alt="Edit" />
+          <div className="idea-card__edit-icon idea-card__edit-icon--bottom">
+            <img src={pencilIcon} alt="Edit" />
+          </div>
         </div>
       </div>
 

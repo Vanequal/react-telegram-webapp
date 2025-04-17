@@ -1,3 +1,5 @@
+// DiscussionPage.tsx
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MindVaultHeader from '../components/UI/MindVaultHeader';
@@ -12,12 +14,13 @@ import eyeIcon from '../assets/img/eyeIcon.webp';
 import avatar1 from '../assets/img/avatar1.png'
 import avatar2 from '../assets/img/avatar2.png'
 import avatar3 from '../assets/img/avatar3.png'
+import skrepkaIcon from '../assets/img/skrepkaIcon.webp'
+import sendIcon from '../assets/img/sendIcon.webp';
 
 import { RiArrowRightSLine } from "react-icons/ri";
 
 import '../styles/DiscussionPage.scss';
 
-// Mock data for ideas and comments
 const mockIdeas = {
   project: {
     id: 'project',
@@ -39,8 +42,8 @@ const mockComments = {
       user: 'Имя пользователя',
       avatar: userIcon,
       text: 'Совмещение различных технологий и систем .',
-      likes: 1,
-      dislikes: 0,
+      likes: 5,
+      dislikes: 2,
       timestamp: '15:35',
       replies: [
         {
@@ -48,8 +51,8 @@ const mockComments = {
           user: 'Имя пользователя',
           avatar: userIcon,
           text: 'Легко',
-          likes: 5,
-          dislikes: 0,
+          likes: 0,
+          dislikes: 5,
           timestamp: '1 апреля',
           replyTo: {
             user: 'Имя пользователя',
@@ -61,8 +64,8 @@ const mockComments = {
               user: 'Имя пользователя',
               avatar: userIcon,
               text: 'Кому легко?',
-              likes: 2,
-              dislikes: 1,
+              likes: 5,
+              dislikes: 0,
               timestamp: '',
               replyTo: {
                 user: 'Имя пользователя',
@@ -90,6 +93,7 @@ function IdeaCard({ idea, onExpand, noHeader = false, forceExpanded = false }) {
   const [expanded, setExpanded] = useState(forceExpanded);
   const [showReadMore, setShowReadMore] = useState(false);
   const textWrapperRef = React.useRef(null);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (textWrapperRef.current?.scrollHeight > 160) setShowReadMore(true);
@@ -101,7 +105,7 @@ function IdeaCard({ idea, onExpand, noHeader = false, forceExpanded = false }) {
   };
 
   return (
-    <div className={`idea-card ${noHeader ? 'idea-card--no-header' : ''}`}>  
+    <div className={`idea-card ${noHeader ? 'idea-card--no-header' : ''}`}>
       {!noHeader && (
         <div className="idea-card__top">
           <div className="idea-card__user">
@@ -127,21 +131,21 @@ function IdeaCard({ idea, onExpand, noHeader = false, forceExpanded = false }) {
         </button>
       )}
 
-      {!noHeader && (
-        <>
-          <div className="idea-card__badges">
-            <div className="idea-card__badge">
-              <img src={likeIcon} alt="Like" />
-              <span>{idea.likes}</span>
-            </div>
-            <div className="idea-card__badge">
-              <img src={dislikeIcon} alt="Dislike" />
-              <span>{idea.dislikes}</span>
-            </div>
+      <div className="idea-card__actions-container">
+        <div className="idea-card__reaction-badges">
+          <div className="idea-card__reaction-badge">
+            <img src={likeIcon} alt="Like" />
+            <span>{idea.likes}</span>
           </div>
-          <div className="idea-card__divider"></div>
-        </>
-      )}
+          <div className="idea-card__reaction-badge">
+            <img src={dislikeIcon} alt="Dislike" />
+            <span>{idea.dislikes}</span>
+          </div>
+        </div>
+        <div className="idea-card__timestamp">{idea.timestamp}</div>
+      </div>
+
+      <div className="idea-card__divider"></div>
 
       {idea.comments > 0 && (
         <div
@@ -166,13 +170,14 @@ function IdeaCard({ idea, onExpand, noHeader = false, forceExpanded = false }) {
           )}
         </div>
       )}
+      <div className="idea-card__divider"></div>
     </div>
   );
 }
 
-function Comment({ comment, level = 0 }) {
+function Comment({ comment }) {
   const [showReplies, setShowReplies] = useState(true);
-  
+
   return (
     <div className="comment-thread">
       <div className="comment-item">
@@ -181,97 +186,89 @@ function Comment({ comment, level = 0 }) {
           <div className="comment-user">{comment.user}</div>
           {comment.timestamp && <div className="comment-timestamp">{comment.timestamp}</div>}
         </div>
-        <div className="comment-content">
-          {comment.text}
+        <div className="comment-content">{comment.text}</div>
+        <div className="comment-actions-right">
+          <div className="reaction-badge">
+            <img src={likeIcon} alt="Like" />
+            <span>{comment.likes}</span>
+          </div>
+          <div className="reaction-badge">
+            <img src={dislikeIcon} alt="Dislike" />
+            <span>{comment.dislikes}</span>
+          </div>
         </div>
         <div className="comment-actions">
           <div className="comment-actions-left">
             <button className="reply-button">Ответить</button>
-            
-            {comment.replies && comment.replies.length > 0 && level === 0 && (
-              <button 
-                className="toggle-replies-button"
-                onClick={() => setShowReplies(!showReplies)}
-              >
-                {showReplies 
-                  ? `Посмотреть ${comment.replies.length} ответ${comment.replies.length > 1 ? 'а' : ''}` 
-                  : `Посмотреть ${comment.replies.length} ответ${comment.replies.length > 1 ? 'а' : ''}`}
+            {comment.replies?.length > 0 && (
+              <button className="toggle-replies-button" onClick={() => setShowReplies(!showReplies)}>
+                {showReplies
+                  ? `Скрыть ответы (${comment.replies.length})`
+                  : `Показать ответы (${comment.replies.length})`}
               </button>
             )}
           </div>
-          
-          <div className="comment-actions-right">
-            <img src={likeIcon} alt="Like" className="action-icon" />
-            <img src={dislikeIcon} alt="Dislike" className="action-icon" />
-          </div>
         </div>
       </div>
-      
-      {showReplies && comment.replies && comment.replies.length > 0 && (
+
+      {showReplies && comment.replies?.length > 0 && (
         <div className="replies-container">
           {comment.replies.map(reply => (
             <div key={reply.id} className="reply-thread">
-              {/* Reply header outside blue wrapper */}
-              <br />
-
-              
               <div className="comment-header">
                 <img src={avatar2} alt="Avatar" className="comment-avatar" />
                 <div className="comment-user">{reply.user}</div>
                 {reply.timestamp && <div className="comment-timestamp">{reply.timestamp}</div>}
               </div>
-              
-              
-              
-              {/* Reply content */}
-              <div className="comment-content">
-                {reply.text}
-              </div>
-              
-              {/* Reply actions */}
+
+              <div className="comment-content">{reply.text}</div>
               <div className="comment-actions">
                 <div className="comment-actions-left">
                   <button className="reply-button">Ответить</button>
                 </div>
                 <div className="comment-actions-right">
-                  <img src={likeIcon} alt="Like" className="action-icon" />
-                  <img src={dislikeIcon} alt="Dislike" className="action-icon" />
+                  <div className="reaction-badge">
+                    <img src={likeIcon} alt="Like" />
+                    <span>{reply.likes}</span>
+                  </div>
+                  <div className="reaction-badge">
+                    <img src={dislikeIcon} alt="Dislike" />
+                    <span>{reply.dislikes}</span>
+                  </div>
                 </div>
               </div>
-              
-              {/* Nested replies */}
-              {reply.replies && reply.replies.length > 0 && (
+
+              {reply.replies?.length > 0 && (
                 <div className="nested-replies">
                   {reply.replies.map(nestedReply => (
                     <div key={nestedReply.id} className="reply-thread">
-                      {/* Nested Reply header outside blue wrapper */}
                       <div className="comment-header">
                         <img src={avatar3} alt="Avatar" className="comment-avatar" />
                         <div className="comment-user">{nestedReply.user}</div>
                         {nestedReply.timestamp && <div className="comment-timestamp">{nestedReply.timestamp}</div>}
                       </div>
-                      
-                      {/* Blue wrapper only for the content being replied to */}
+
                       {nestedReply.replyTo && (
                         <div className="reply-quote-wrapper">
                           <div className="replied-user-name">{nestedReply.replyTo.user}</div>
                           <div className="replied-content">{nestedReply.replyTo.text}</div>
                         </div>
                       )}
-                      
-                      {/* Nested Reply content */}
-                      <div className="comment-content">
-                        {nestedReply.text}
-                      </div>
-                      
-                      {/* Nested Reply actions */}
+
+                      <div className="comment-content">{nestedReply.text}</div>
                       <div className="comment-actions">
                         <div className="comment-actions-left">
                           <button className="reply-button">Ответить</button>
                         </div>
                         <div className="comment-actions-right">
-                          <img src={likeIcon} alt="Like" className="action-icon" />
-                          <img src={dislikeIcon} alt="Dislike" className="action-icon" />
+                          <div className="reaction-badge">
+                            <img src={likeIcon} alt="Like" />
+                            <span>{nestedReply.likes}</span>
+                          </div>
+                          <div className="reaction-badge">
+                            <img src={dislikeIcon} alt="Dislike" />
+                            <span>{nestedReply.dislikes}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -289,31 +286,47 @@ function Comment({ comment, level = 0 }) {
 function DiscussionPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const idea = id && mockIdeas[id] ? mockIdeas[id] : null;
   const comments = id && mockComments[id] ? mockComments[id] : [];
 
+  const handleBackClick = () => {
+    navigate('/mindvault');
+  };
+
+  const handleAboutClick = () => {
+    navigate('/aboutpage');
+  };
+
   return (
     <div className="discussion-page">
-      <MindVaultHeader onDescriptionClick={() => navigate(-1)} />
+      <MindVaultHeader 
+        onBackClick={handleBackClick} 
+        onDescriptionClick={handleAboutClick} 
+      />
       <div className="discussion-page__container">
-        {/* Idea card */}
         {idea && (
           <IdeaCard
             idea={idea}
-            onExpand={() => {}}
+            onExpand={() => { }}
             noHeader={true}
             forceExpanded={true}
           />
         )}
-
         <div id="discussion-start" className="discussion-pill">Начало обсуждения</div>
-        
         <div className="comment-list">
           {comments.map(comment => (
             <Comment key={comment.id} comment={comment} />
           ))}
         </div>
+      </div>
+      <div className="discussion-footer">
+        <img src={skrepkaIcon} alt="Attach" className="discussion-footer__icon" />
+        <input
+          type="text"
+          className="discussion-footer__input"
+          placeholder="Комментировать"
+        />
+        <img src={sendIcon} alt="Send" className="discussion-footer__send" />
       </div>
     </div>
   );
