@@ -185,18 +185,16 @@
 }
 
 .idea-fullscreen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: relative;
+  min-height: 100vh;  
   background: #FCFCFE;
   z-index: 200;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  padding-bottom: 40px;
+  padding-bottom: 80px; 
 }
+
 
 .idea-fullscreen__content {
   padding: 16px;

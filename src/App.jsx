@@ -5,6 +5,8 @@ import { authWithTelegram } from './store/slices/authSlice';
 import Home from './pages/Home';
 import HomeSimplified from './pages/HomeSimplified';
 import MindVault from './pages/MindVault';
+import AboutPage from './pages/AboutPage';
+
 import './styles/global.scss';
 
 function App() {
@@ -27,6 +29,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/homesimplified" element={<HomeSimplified />} />
         <Route path="/mindvault" element={<MindVault />} />
+        <Route path="/aboutpage" element={<AboutPage />} />
       </Routes>
     </Router>
   );

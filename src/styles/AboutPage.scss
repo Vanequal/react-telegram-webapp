@@ -1,0 +1,70 @@
+.about-page {
+    font-family: 'Space Grotesk', sans-serif;
+    background-color: #FCFCFE;
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding-bottom: 80px;
+  }
+  
+  .about-page h2 {
+    margin-top: 16px;
+    font-size: 22px;
+    font-weight: bold;
+  }
+  
+  .about-page__top-icons {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 4px;
+  }
+  
+  .about-page__pencil {
+    width: 24px;
+    height: 24px;
+    opacity: 0.5;
+  }
+  
+  .about-page__gif {
+    width: 100%;
+    border-radius: 12px;
+    margin: 12px 0;
+  }
+  
+  .about-page__footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #EEEFF1;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+    z-index: 100;
+  }
+  
+  .about-page__footer-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+  
+  .about-page__footer-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #E2E6E9;
+    border-radius: 20px;
+    box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    color: #00000099;
+    background-color: #fff;
+  }
+  
+  .about-page__footer-send {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+  
