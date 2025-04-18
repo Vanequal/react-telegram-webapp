@@ -16,7 +16,7 @@ import { RiArrowRightSLine, RiArrowLeftSLine } from "react-icons/ri";
 
 import '../styles/MindVault.scss';
 
-function IdeaCard({ idea, onExpand, isExpanded, onCollapse }) {
+function IdeaCard({ idea, onExpand, onArrowClick, isExpanded, onCollapse }) {
   const [showReadMore, setShowReadMore] = React.useState(false);
   const textWrapperRef = React.useRef(null);
 
@@ -32,7 +32,13 @@ function IdeaCard({ idea, onExpand, isExpanded, onCollapse }) {
         <div
           className="idea-card__back"
           onClick={onCollapse}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', marginBottom: 12 }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            cursor: 'pointer',
+            marginBottom: 12
+          }}
         >
           <RiArrowLeftSLine size={24} color="#1E88D3" />
           <span style={{ color: '#1E88D3', fontSize: 16 }}>Назад</span>
@@ -70,29 +76,41 @@ function IdeaCard({ idea, onExpand, isExpanded, onCollapse }) {
 
       <div className="idea-card__divider"></div>
 
-      <div
-        className="idea-card__footer"
-        onClick={() => onExpand(idea.id)}
-        style={{ cursor: 'pointer' }}
-      >
-        {idea.comments > 0 ? (
-          <>
-            <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
-            <span className="idea-card__comments">{idea.comments} Комментарий</span>
-          </>
-        ) : (
-          <span className="idea-card__comments">Комментировать</span>
-        )}
-        <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
-        <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
-        <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>
-          {idea.views}
-        </p>
-        <RiArrowRightSLine
-          size={24}
-          color="#1E88D3"
-          style={{ cursor: 'pointer' }}
-        />
+      <div className="idea-card__footer" style={{ cursor: 'pointer' }}>
+        <div
+          className="idea-card__footer-left"
+          onClick={() => onExpand(idea.id)}
+          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          {idea.comments > 0 ? (
+            <>
+              <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
+              <span className="idea-card__comments" style={{textWrap: 'nowrap'}}>{idea.comments} Комментарий</span>
+            </>
+          ) : (
+            <span className="idea-card__comments">Комментировать</span>
+          )}
+        </div>
+
+        <div
+          className="idea-card__footer-right"
+          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
+          <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
+          <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>
+            {idea.views}
+          </p>
+          <RiArrowRightSLine
+            size={24}
+            color="#1E88D3"
+            style={{ cursor: 'pointer' }}
+            onClick={(e) => {
+              e.stopPropagation(); // Не дать всплыть к onExpand
+              onArrowClick(idea.id);
+            }}
+          />
+        </div>
       </div>
     </div>
   );
@@ -128,6 +146,10 @@ const MindVaultPage = () => {
   ];
 
   const handleExpand = (id) => {
+    navigate(`/discussion/${id}`);
+  };
+
+  const handleArrowClick = (id) => {
     setExpandedIdeaId(id);
   };
 
@@ -147,6 +169,7 @@ const MindVaultPage = () => {
           <IdeaCard
             idea={ideas.find(i => i.id === expandedIdeaId)}
             onExpand={handleExpand}
+            onArrowClick={handleArrowClick}
             isExpanded={true}
             onCollapse={handleCollapse}
           />
@@ -156,6 +179,7 @@ const MindVaultPage = () => {
               key={idea.id}
               idea={idea}
               onExpand={handleExpand}
+              onArrowClick={handleArrowClick}
               isExpanded={false}
             />
           ))
