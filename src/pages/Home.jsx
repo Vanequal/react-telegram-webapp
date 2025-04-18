@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchTheme } from '../store/slices/themeSlice';
+
 import HomeIcons from '../components/UI/HomeIcons';
 import FooterIcons from '../components/UI/FooterIcons';
 import '../styles/Home.scss';
@@ -9,6 +12,8 @@ import bellIcon from '../assets/img/bell.webp';
 
 function Home() {
   const [animate, setAnimate] = useState(false);
+  const dispatch = useDispatch();
+  const { theme, loading, error } = useSelector((state) => state.theme);
 
   const handleClick = () => {
     setAnimate(true);
@@ -52,6 +57,11 @@ function Home() {
     }
   }, []);
 
+  useEffect(() => {
+    dispatch(fetchTheme(1)); 
+  }, [dispatch]);
+  
+
   return (
     <>
       <div className="home">
@@ -73,30 +83,38 @@ function Home() {
             </div>
           </section>
 
-          <h1 className="home__title">Название раздела</h1>
+          <h1 className="home__title">{theme?.title || 'Название раздела'}</h1>
 
           <HomeIcons />
 
           <div className="home__buttons">
-            <button
-              className={`home__button home__button--primary ${animate ? 'animate' : ''}`}
-              onClick={handleClick}>
-              Обмен&nbsp;опытом
-            </button>
-            <button className="home__button home__button--secondary">
-              Описание
-            </button>
-            <button className="home__button home__button--tertiary">
-              Идеальный результат
-            </button>
-            <button className="home__button home__button--quaternary">
-              Модули проекта
-            </button>
+            {theme?.locale_texts?.buttons?.experience_exchange && (
+              <button
+                className={`home__button home__button--primary ${animate ? 'animate' : ''}`}
+                onClick={handleClick}
+              >
+                {theme.locale_texts.buttons.experience_exchange}
+              </button>
+            )}
+            {theme?.locale_texts?.buttons?.description && (
+              <button className="home__button home__button--secondary">
+                {theme.locale_texts.buttons.description}
+              </button>
+            )}
+            {theme?.locale_texts?.buttons?.perfect_result && (
+              <button className="home__button home__button--tertiary">
+                {theme.locale_texts.buttons.perfect_result}
+              </button>
+            )}
+            {theme?.locale_texts?.buttons?.project_modules && (
+              <button className="home__button home__button--quaternary">
+                {theme.locale_texts.buttons.project_modules}
+              </button>
+            )}
           </div>
         </div>
         <FooterIcons />
       </div>
-
     </>
   );
 }
