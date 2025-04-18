@@ -11,6 +11,9 @@ import HomeSimplified from './pages/HomeSimplified';
 import MindVault from './pages/MindVault';
 import AboutPage from './pages/AboutPage';
 import DiscussionPage from './pages/DiscussionPage';
+import EditIdeaPage from './pages/EditIdeaPage';
+import EditIdeaPageGPT from './pages/EditIdeaPageGPT';
+import TextGPTEditor from './pages/TextGPTEditor';
 
 import './styles/global.scss';
 
@@ -42,6 +45,9 @@ function App() {
         <Route path="/homesimplified" element={<HomeSimplified />} />
         <Route path="/mindvault" element={<MindVault />} />
         <Route path="/aboutpage" element={<AboutPage />} />
+        <Route path="/editideapage" element={<EditIdeaPage />} />
+        <Route path="/editideapagegpt" element={<EditIdeaPageGPT />} />
+        <Route path="/textgpteditor" element={<TextGPTEditor />} />
         <Route path="/discussion/:id" element={<DiscussionPage />} />
       </Routes>
     </Router>
