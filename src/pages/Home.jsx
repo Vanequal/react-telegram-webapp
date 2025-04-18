@@ -58,9 +58,9 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    dispatch(fetchTheme(1)); 
+    dispatch(fetchTheme(1));
   }, [dispatch]);
-  
+
 
   return (
     <>
@@ -73,9 +73,10 @@ function Home() {
             <div className="section-head__center">
               <input
                 type="text"
-                placeholder="Поиск"
+                placeholder={theme?.locale_texts?.inputs?.search || 'Поиск'}
                 className="section-head__search"
               />
+
             </div>
             <div className="section-head__right">
               <img src={shareIcon} alt="Поделиться" className="section-head__icon" />
