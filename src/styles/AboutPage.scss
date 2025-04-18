@@ -80,8 +80,14 @@
   }
   
   .about-page__card-wrapper {
-    max-width: 600px;
-    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     padding: 16px;
+  }
+  
+  .idea-card.idea-card--no-header {
+    width: 100%;
+    max-width: 1000px; 
   }
   

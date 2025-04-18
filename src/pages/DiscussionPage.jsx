@@ -299,18 +299,20 @@ function DiscussionPage() {
 
   return (
     <div className="discussion-page">
-      <MindVaultHeader 
-        onBackClick={handleBackClick} 
-        onDescriptionClick={handleAboutClick} 
+      <MindVaultHeader
+        onBackClick={handleBackClick}
+        onDescriptionClick={handleAboutClick}
       />
       <div className="discussion-page__container">
         {idea && (
-          <IdeaCard
-            idea={idea}
-            onExpand={() => { }}
-            noHeader={true}
-            forceExpanded={true}
-          />
+          <div className="discussion-page__idea-wrapper">
+            <IdeaCard
+              idea={idea}
+              onExpand={() => { }}
+              noHeader={true}
+              forceExpanded={true}
+            />
+          </div>
         )}
         <div id="discussion-start" className="discussion-pill">Начало обсуждения</div>
         <div className="comment-list">

@@ -60,10 +60,17 @@
 }
 
 .discussion-page__container {
-  max-width: 600px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 16px;
 }
+
+.discussion-page__idea-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
 
 .discussion-pill {
   display: flex;
