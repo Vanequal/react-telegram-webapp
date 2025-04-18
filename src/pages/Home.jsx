@@ -26,7 +26,6 @@ function Home() {
       if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
         tg.ready();
-        tg.requestFullscreen();
         tg.expand();
         tg.disableVerticalSwipes();
 
@@ -55,8 +54,6 @@ function Home() {
 
   return (
     <>
-      <header className="app-header">
-      </header>
       <div className="home">
         <div className="home__scroll">
           <section className="section-head">
