@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MindVaultHeader from '../components/UI/MindVaultHeader';
 
@@ -29,17 +29,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded, onCollapse }) {
   return (
     <div className={`idea-card ${isExpanded ? 'idea-card--expanded' : ''}`}>
       {isExpanded && (
-        <div
-          className="idea-card__back"
-          onClick={onCollapse}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            cursor: 'pointer',
-            marginBottom: 12
-          }}
-        >
+        <div className="idea-card__back" onClick={onCollapse} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', marginBottom: 12 }}>
           <RiArrowLeftSLine size={24} color="#1E88D3" />
           <span style={{ color: '#1E88D3', fontSize: 16 }}>Назад</span>
         </div>
@@ -53,10 +43,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded, onCollapse }) {
         {idea.pinned && <img src={pinIcon} alt="Pin" className="idea-card__pin" />}
       </div>
 
-      <div
-        ref={textWrapperRef}
-        className={`idea-card__text-wrapper expanded`}
-      >
+      <div ref={textWrapperRef} className="idea-card__text-wrapper expanded">
         <div className="idea-card__text">{idea.preview}</div>
       </div>
 
@@ -85,31 +72,18 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded, onCollapse }) {
           {idea.comments > 0 ? (
             <>
               <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
-              <span className="idea-card__comments" style={{textWrap: 'nowrap'}}>{idea.comments} Комментарий</span>
+              <span className="idea-card__comments" style={{ textWrap: 'nowrap' }}>{idea.comments} Комментарий</span>
             </>
           ) : (
             <span className="idea-card__comments">Комментировать</span>
           )}
         </div>
 
-        <div
-          className="idea-card__footer-right"
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-        >
+        <div className="idea-card__footer-right" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
           <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
-          <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>
-            {idea.views}
-          </p>
-          <RiArrowRightSLine
-            size={24}
-            color="#1E88D3"
-            style={{ cursor: 'pointer' }}
-            onClick={(e) => {
-              e.stopPropagation(); // Не дать всплыть к onExpand
-              onArrowClick(idea.id);
-            }}
-          />
+          <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
+          <RiArrowRightSLine size={24} color="#1E88D3" style={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onArrowClick(idea.id); }} />
         </div>
       </div>
     </div>
@@ -118,7 +92,11 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded, onCollapse }) {
 
 const MindVaultPage = () => {
   const navigate = useNavigate();
-  const [expandedIdeaId, setExpandedIdeaId] = React.useState(null);
+  const [expandedIdeaId, setExpandedIdeaId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const fileInputMediaRef = useRef(null);
+  const fileInputFilesRef = useRef(null);
 
   const ideas = [
     {
@@ -157,6 +135,24 @@ const MindVaultPage = () => {
     setExpandedIdeaId(null);
   };
 
+  const handleAttachClick = () => {
+    setShowModal(true);
+  };
+
+  const handleMediaClick = () => {
+    fileInputMediaRef.current?.click();
+    setShowModal(false);
+  };
+
+  const handleFileClick = () => {
+    fileInputFilesRef.current?.click();
+    setShowModal(false);
+  };
+
+  const handleFileChange = (e) => {
+    console.log("Выбраны файлы:", e.target.files);
+  };
+
   return (
     <>
       <MindVaultHeader
@@ -187,15 +183,48 @@ const MindVaultPage = () => {
       </div>
 
       {!expandedIdeaId && (
-        <div className="vault-footer">
-          <img src={skrepkaIcon} alt="Attach" className="vault-footer__icon" />
-          <input
-            type="text"
-            className="vault-footer__input"
-            placeholder="Добавить идею"
-          />
-          <img src={sendIcon} alt="Send" className="vault-footer__send" />
-        </div>
+        <>
+          <div className="vault-footer">
+            <img
+              src={skrepkaIcon}
+              alt="Attach"
+              className="vault-footer__icon"
+              onClick={handleAttachClick}
+            />
+            <input
+              type="file"
+              ref={fileInputMediaRef}
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+              accept="image/*,video/*"
+              multiple
+            />
+            <input
+              type="file"
+              ref={fileInputFilesRef}
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar,.txt"
+              multiple
+            />
+            <input
+              type="text"
+              className="vault-footer__input"
+              placeholder="Добавить идею"
+            />
+            <img src={sendIcon} alt="Send" className="vault-footer__send" />
+          </div>
+
+          {showModal && (
+            <div className="modal-overlay" onClick={() => setShowModal(false)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <p>Что прикрепить?</p>
+                <button className="modal-btn" onClick={handleMediaClick}>📷 Медиа (фото/видео)</button>
+                <button className="modal-btn" onClick={handleFileClick}>📁 Файл (документы)</button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </>
   );
