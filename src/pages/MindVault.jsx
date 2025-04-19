@@ -12,19 +12,12 @@ import eyeIcon from '../assets/img/eyeIcon.webp';
 import skrepkaIcon from '../assets/img/skrepkaIcon.webp';
 import sendIcon from '../assets/img/sendIcon.webp';
 
-import { RiArrowRightSLine, RiArrowLeftSLine } from "react-icons/ri";
+import { RiArrowRightSLine, RiArrowLeftSLine } from 'react-icons/ri';
 
 import '../styles/MindVault.scss';
 
 function IdeaCard({ idea, onExpand, onArrowClick, isExpanded, onCollapse }) {
-  const [showReadMore, setShowReadMore] = React.useState(false);
-  const textWrapperRef = React.useRef(null);
-
-  React.useEffect(() => {
-    if (textWrapperRef.current?.scrollHeight > 160) {
-      setShowReadMore(true);
-    }
-  }, []);
+  const textWrapperRef = useRef(null);
 
   return (
     <div className={`idea-card ${isExpanded ? 'idea-card--expanded' : ''}`}>
@@ -93,8 +86,10 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded, onCollapse }) {
 const MindVaultPage = () => {
   const navigate = useNavigate();
   const [expandedIdeaId, setExpandedIdeaId] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showPopover, setShowPopover] = useState(false);
+  const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 });
 
+  const attachBtnRef = useRef(null);
   const fileInputMediaRef = useRef(null);
   const fileInputFilesRef = useRef(null);
 
@@ -123,30 +118,26 @@ const MindVaultPage = () => {
     }
   ];
 
-  const handleExpand = (id) => {
-    navigate(`/discussion/${id}`);
-  };
-
-  const handleArrowClick = (id) => {
-    setExpandedIdeaId(id);
-  };
-
-  const handleCollapse = () => {
-    setExpandedIdeaId(null);
-  };
+  const handleExpand = (id) => navigate(`/discussion/${id}`);
+  const handleArrowClick = (id) => setExpandedIdeaId(id);
+  const handleCollapse = () => setExpandedIdeaId(null);
 
   const handleAttachClick = () => {
-    setShowModal(true);
+    if (attachBtnRef.current) {
+      const rect = attachBtnRef.current.getBoundingClientRect();
+      setPopoverPos({ top: rect.bottom + window.scrollY + 6, left: rect.left + window.scrollX });
+      setShowPopover(true);
+    }
   };
 
   const handleMediaClick = () => {
     fileInputMediaRef.current?.click();
-    setShowModal(false);
+    setShowPopover(false);
   };
 
   const handleFileClick = () => {
     fileInputFilesRef.current?.click();
-    setShowModal(false);
+    setShowPopover(false);
   };
 
   const handleFileChange = (e) => {
@@ -190,6 +181,7 @@ const MindVaultPage = () => {
               alt="Attach"
               className="vault-footer__icon"
               onClick={handleAttachClick}
+              ref={attachBtnRef}
             />
             <input
               type="file"
@@ -215,13 +207,14 @@ const MindVaultPage = () => {
             <img src={sendIcon} alt="Send" className="vault-footer__send" />
           </div>
 
-          {showModal && (
-            <div className="modal-overlay" onClick={() => setShowModal(false)}>
-              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <p>Что прикрепить?</p>
-                <button className="modal-btn" onClick={handleMediaClick}>📷 Медиа (фото/видео)</button>
-                <button className="modal-btn" onClick={handleFileClick}>📁 Файл (документы)</button>
-              </div>
+          {showPopover && (
+            <div
+              className="popover-menu"
+              style={{ top: `${popoverPos.top}px`, left: `${popoverPos.left}px` }}
+              onMouseLeave={() => setShowPopover(false)}
+            >
+              <button className="popover-btn" onClick={handleMediaClick}>📷 Медиа</button>
+              <button className="popover-btn" onClick={handleFileClick}>📁 Файл</button>
             </div>
           )}
         </>
