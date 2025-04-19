@@ -131,14 +131,15 @@ const MindVaultPage = () => {
   };
 
   const handleMediaClick = () => {
-    fileInputMediaRef.current?.click();
+    window.Telegram?.WebApp?.showAttachMenu?.({ media: true });
     setShowPopover(false);
   };
-
+  
   const handleFileClick = () => {
-    fileInputFilesRef.current?.click();
+    window.Telegram?.WebApp?.showAttachMenu?.({ files: true });
     setShowPopover(false);
   };
+  
 
   const handleFileChange = (e) => {
     console.log("Выбраны файлы:", e.target.files);
