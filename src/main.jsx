@@ -11,6 +11,11 @@ if (window.Telegram?.WebApp) {
   console.warn('Telegram WebApp не найден');
 }
 
+useEffect(() => {
+  console.log('Telegram SDK:', window.Telegram?.WebApp);
+  console.log('version:', window.Telegram?.WebApp?.version); // должен быть 6.7+
+}, []);
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
