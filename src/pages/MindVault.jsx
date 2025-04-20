@@ -1,5 +1,8 @@
-import React, { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchSection, fetchPosts } from '../store/slices/sectionSlice';
+
 import MindVaultHeader from '../components/UI/MindVaultHeader';
 
 import userIcon from '../assets/img/userIcon.webp';
@@ -16,7 +19,7 @@ import { RiArrowRightSLine, RiArrowLeftSLine } from 'react-icons/ri';
 
 import '../styles/MindVault.scss';
 
-function IdeaCard({ idea, onExpand, onArrowClick, isExpanded, onCollapse }) {
+const IdeaCard = ({ idea, onExpand, onArrowClick, isExpanded, onCollapse }) => {
   const textWrapperRef = useRef(null);
 
   return (
@@ -57,15 +60,11 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded, onCollapse }) {
       <div className="idea-card__divider"></div>
 
       <div className="idea-card__footer" style={{ cursor: 'pointer' }}>
-        <div
-          className="idea-card__footer-left"
-          onClick={() => onExpand(idea.id)}
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-        >
+        <div className="idea-card__footer-left" onClick={() => onExpand(idea.id)} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {idea.comments > 0 ? (
             <>
               <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
-              <span className="idea-card__comments" style={{ textWrap: 'nowrap' }}>{idea.comments} Комментарий</span>
+              <span className="idea-card__comments">{idea.comments} Комментарий</span>
             </>
           ) : (
             <span className="idea-card__comments">Комментировать</span>
@@ -76,47 +75,47 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded, onCollapse }) {
           <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
           <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
           <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
-          <RiArrowRightSLine size={24} color="#1E88D3" style={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onArrowClick(idea.id); }} />
+          <RiArrowRightSLine size={24} color="#1E88D3" onClick={(e) => { e.stopPropagation(); onArrowClick(idea.id); }} />
         </div>
       </div>
     </div>
   );
-}
+};
 
 const MindVaultPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+
   const [expandedIdeaId, setExpandedIdeaId] = useState(null);
   const [showPopover, setShowPopover] = useState(false);
   const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 });
+
+  const { posts, loading } = useSelector(state => state.section);
+
+  const themeId = Number(searchParams.get('id')) || 1;
+  const sectionKey = 'chat_ideas';
 
   const attachBtnRef = useRef(null);
   const fileInputMediaRef = useRef(null);
   const fileInputFilesRef = useRef(null);
 
-  const ideas = [
-    {
-      id: 'project',
-      username: 'Имя пользователя',
-      preview: 'Разработать информационный ресурс  Рroject of Everything on Wiki.',
-      likes: 5,
-      dislikes: 2,
-      comments: 3,
-      views: 36,
-      pinned: true,
-      timestamp: '15:35'
-    },
-    {
-      id: 'bees',
-      username: 'Имя пользователя',
-      preview: 'Разработать новый вид опылителей-насекомых для теплиц.',
-      likes: 2,
-      dislikes: 1,
-      comments: 0,
-      views: 12,
-      pinned: false,
-      timestamp: '16:10'
-    }
-  ];
+  useEffect(() => {
+    dispatch(fetchSection({ section_key: sectionKey, theme_id: themeId }));
+    dispatch(fetchPosts({ section_key: sectionKey, theme_id: themeId }));
+  }, [dispatch, sectionKey, themeId]);
+
+  const ideas = posts.map(post => ({
+    id: post.id,
+    username: post.author?.first_name || 'Пользователь',
+    preview: post.message_text,
+    likes: post.likes ?? 0,
+    dislikes: post.dislikes ?? 0,
+    comments: post.comments_count ?? 0,
+    views: post.views ?? 0,
+    pinned: post.pinned ?? false,
+    timestamp: post.created_at?.split(' ')[1] ?? '',
+  }));
 
   const handleExpand = (id) => navigate(`/discussion/${id}`);
   const handleArrowClick = (id) => setExpandedIdeaId(id);
@@ -134,12 +133,11 @@ const MindVaultPage = () => {
     window.Telegram?.WebApp?.showAttachMenu?.({ media: true });
     setShowPopover(false);
   };
-  
+
   const handleFileClick = () => {
     window.Telegram?.WebApp?.showAttachMenu?.({ files: true });
     setShowPopover(false);
   };
-  
 
   const handleFileChange = (e) => {
     console.log("Выбраны файлы:", e.target.files);
