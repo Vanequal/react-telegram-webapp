@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../api/axios';
 
-export const fetchTheme = createAsyncThunk('theme/fetchTheme', async (themeId = 1) => {
-  const response = await axios.get(`/api/v1/themes/${themeId}`);
+export const fetchTheme = createAsyncThunk('theme/fetchTheme', async (theme_id = 1) => {
+  const response = await axios.get(`/api/v1/theme/${theme_id}`);
   return response.data;
 });
 
