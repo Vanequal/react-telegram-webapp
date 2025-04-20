@@ -9,7 +9,7 @@ export const authWithTelegram = createAsyncThunk(
       const formData = qs.stringify({ init_data: initData });
 
       const response = await axios.post(
-        '/api/v1/auth/telegram',
+        '/api/v1/auth/auth/telegram',
         qs.stringify({ init_data: initData }),
         {
           headers: {
