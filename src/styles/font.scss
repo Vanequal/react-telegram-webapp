@@ -1,22 +1,29 @@
 // src/styles/fonts.scss
 
 @font-face {
-    font-family: 'Telegram HPLHS';
-    src: url('../assets/fonts/TelegramHPLHS.ttf') format('ttf');
-    font-weight: normal;
-    font-style: normal;
-  }
-  
-  @font-face {
-    font-family: 'Inter';
-    src: url('../assets/fonts/inter.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
-  }
-  
-  @font-face {
-    font-family: 'Space Grotesk';
-    src: url('../assets/fonts/SpaceGrotesk.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
-  }
+  font-family: 'Telegram HPLHS';
+  src: url('../assets/fonts/TelegramHPLHS.ttf') format('ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../assets/fonts/inter.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('../assets/fonts/SpaceGrotesk.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('../assets/fonts/SFProText.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}

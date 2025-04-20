@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTheme } from '../store/slices/themeSlice';
 
@@ -13,6 +15,7 @@ import bellIcon from '../assets/img/bell.webp';
 function Home() {
   const [animate, setAnimate] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { theme, loading, error } = useSelector((state) => state.theme);
 
   const handleClick = () => {
@@ -67,7 +70,7 @@ function Home() {
       <div className="home">
         <div className="home__scroll">
           <section className="section-head">
-            <div className="section-head__left">
+            <div className="section-head__left" onClick={() => navigate('/menu')}>
               <img src={burgerIcon} alt="Меню" className="section-head__icon" />
             </div>
             <div className="section-head__center">

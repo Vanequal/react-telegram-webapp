@@ -1,0 +1,98 @@
+@import './font.scss';
+
+.menu {
+    font-family: 'SF Pro Text', sans-serif;
+
+    &__header {
+        display: flex;
+        align-items: flex-start;
+        padding: 12px 16px;
+        background-color: #fff;
+        width: 100%;
+        position: relative;
+    }
+
+    &__avatar-wrap {
+        flex-shrink: 0;
+    }
+
+    &__avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    &__info {
+        margin-left: 12px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .menu__name {
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.2;
+            color: #000;
+        }
+
+        .menu__top {
+            font-size: 14px;
+            line-height: 1.2;
+        }
+
+        .menu__username {
+            font-size: 13px;
+        }
+    }
+
+    &__status {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+        margin-left: auto;
+
+        .menu__star {
+            width: 18px;
+            height: 18px;
+            margin-bottom: 4px;
+        }
+
+        .menu__label {
+            font-size: 14px;
+            color: #77D572;
+            margin-bottom: 2px;
+        }
+
+        .menu__number {
+            font-size: 13px;
+            font-weight: 500;
+
+            &--main {
+                color: #5BA1D6;
+            }
+
+            &--top {
+                color: #77D572;
+                position: relative;
+                top: -12px;
+                right: -2px;
+            }
+
+            &--red {
+                color: #FF3B30;
+                position: relative;
+                bottom: -6px;
+                right: -2px;
+            }
+        }
+    }
+
+    &__divider {
+        height: 1px;
+        background-color: #3C3C434A;
+        width: 100%;
+    }
+}
