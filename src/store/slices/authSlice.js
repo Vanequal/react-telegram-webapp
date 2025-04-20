@@ -10,14 +10,15 @@ export const authWithTelegram = createAsyncThunk(
 
       const response = await axios.post(
         '/api/v1/auth/auth/telegram',
-        qs.stringify({ init_data: initData }),
+        qs.stringify({ init_data: initData }), 
         {
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Telegram-InitData': initData 
           }
         }
       );
-
+      
 
       return response.data;
     } catch (err) {
