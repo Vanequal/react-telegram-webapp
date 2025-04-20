@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSection, fetchPosts } from '../store/slices/sectionSlice';
+import { createPost } from '../store/slices/postSlice';
 
 import MindVaultHeader from '../components/UI/MindVaultHeader';
 
@@ -90,8 +91,10 @@ const MindVaultPage = () => {
   const [expandedIdeaId, setExpandedIdeaId] = useState(null);
   const [showPopover, setShowPopover] = useState(false);
   const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 });
+  const [ideaText, setIdeaText] = useState('');
 
   const { posts, loading } = useSelector(state => state.section);
+  const { currentUser } = useSelector(state => state.me);
 
   const themeId = Number(searchParams.get('id')) || 1;
   const sectionKey = 'chat_ideas';
@@ -141,6 +144,25 @@ const MindVaultPage = () => {
 
   const handleFileChange = (e) => {
     console.log("Выбраны файлы:", e.target.files);
+  };
+
+  const handleSend = () => {
+    if (!ideaText.trim() || !currentUser) return;
+
+    dispatch(createPost({
+      message_text: ideaText.trim(),
+      section: 'Копилка идей',
+      author: {
+        id: currentUser.id,
+        first_name: currentUser.first_name,
+        username: currentUser.username,
+        lang: currentUser.language_code || 'ru',
+      }
+    })).then(() => {
+      dispatch(fetchPosts({ section_key: sectionKey, theme_id: themeId }));
+    });
+
+    setIdeaText('');
   };
 
   return (
@@ -202,8 +224,11 @@ const MindVaultPage = () => {
               type="text"
               className="vault-footer__input"
               placeholder="Добавить идею"
+              value={ideaText}
+              onChange={(e) => setIdeaText(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             />
-            <img src={sendIcon} alt="Send" className="vault-footer__send" />
+            <img src={sendIcon} alt="Send" className="vault-footer__send" onClick={handleSend} />
           </div>
 
           {showPopover && (
