@@ -6,82 +6,12 @@ import { createPost } from '../store/slices/postSlice';
 
 import MindVaultHeader from '../components/UI/MindVaultHeader';
 
-import userIcon from '../assets/img/userIcon.webp';
-import pinIcon from '../assets/img/pinIcon.webp';
-import likeIcon from '../assets/img/likeIcon.webp';
-import dislikeIcon from '../assets/img/dislikeIcon.webp';
-import avatarStack from '../assets/img/avatarStack.webp';
-import donatIcon from '../assets/img/donatIcon.webp';
-import eyeIcon from '../assets/img/eyeIcon.webp';
 import skrepkaIcon from '../assets/img/skrepkaIcon.webp';
 import sendIcon from '../assets/img/sendIcon.webp';
 
-import { RiArrowRightSLine, RiArrowLeftSLine } from 'react-icons/ri';
+import IdeaCard from '../components/UI/IdeaCard'; // вынеси отдельно, если нужно
 
 import '../styles/MindVault.scss';
-
-const IdeaCard = ({ idea, onExpand, onArrowClick, isExpanded, onCollapse }) => {
-  const textWrapperRef = useRef(null);
-
-  return (
-    <div className={`idea-card ${isExpanded ? 'idea-card--expanded' : ''}`}>
-      {isExpanded && (
-        <div className="idea-card__back" onClick={onCollapse} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', marginBottom: 12 }}>
-          <RiArrowLeftSLine size={24} color="#1E88D3" />
-          <span style={{ color: '#1E88D3', fontSize: 16 }}>Назад</span>
-        </div>
-      )}
-
-      <div className="idea-card__top">
-        <div className="idea-card__user">
-          <img src={userIcon} alt="User" className="idea-card__user-icon" />
-          <span className="idea-card__username">{idea.username}</span>
-        </div>
-        {idea.pinned && <img src={pinIcon} alt="Pin" className="idea-card__pin" />}
-      </div>
-
-      <div ref={textWrapperRef} className="idea-card__text-wrapper expanded">
-        <div className="idea-card__text">{idea.preview}</div>
-      </div>
-
-      <div className="idea-card__actions-container">
-        <div className="idea-card__reaction-badges">
-          <div className="idea-card__reaction-badge">
-            <img src={likeIcon} alt="Like" />
-            <span>{idea.likes}</span>
-          </div>
-          <div className="idea-card__reaction-badge">
-            <img src={dislikeIcon} alt="Dislike" />
-            <span>{idea.dislikes}</span>
-          </div>
-        </div>
-        <div className="idea-card__timestamp">{idea.timestamp}</div>
-      </div>
-
-      <div className="idea-card__divider"></div>
-
-      <div className="idea-card__footer" style={{ cursor: 'pointer' }}>
-        <div className="idea-card__footer-left" onClick={() => onExpand(idea.id)} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {idea.comments > 0 ? (
-            <>
-              <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
-              <span className="idea-card__comments">{idea.comments} Комментарий</span>
-            </>
-          ) : (
-            <span className="idea-card__comments">Комментировать</span>
-          )}
-        </div>
-
-        <div className="idea-card__footer-right" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
-          <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
-          <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
-          <RiArrowRightSLine size={24} color="#1E88D3" onClick={(e) => { e.stopPropagation(); onArrowClick(idea.id); }} />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const MindVaultPage = () => {
   const navigate = useNavigate();
@@ -92,6 +22,7 @@ const MindVaultPage = () => {
   const [showPopover, setShowPopover] = useState(false);
   const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 });
   const [ideaText, setIdeaText] = useState('');
+  const [attachedFiles, setAttachedFiles] = useState([]); // отображение файлов
 
   const { posts, loading } = useSelector(state => state.section);
   const { currentUser } = useSelector(state => state.me);
@@ -104,6 +35,13 @@ const MindVaultPage = () => {
   const fileInputFilesRef = useRef(null);
 
   useEffect(() => {
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      tg.requestWriteAccess?.(); // <--- важно!
+    }
+
     dispatch(fetchSection({ section_key: sectionKey, theme_id: themeId }));
     dispatch(fetchPosts({ section_key: sectionKey, theme_id: themeId }));
   }, [dispatch, sectionKey, themeId]);
@@ -133,17 +71,21 @@ const MindVaultPage = () => {
   };
 
   const handleMediaClick = () => {
-    window.Telegram?.WebApp?.showAttachMenu?.({ media: true });
+    const used = window.Telegram?.WebApp?.showAttachMenu?.({ media: true });
+    if (!used) fileInputMediaRef.current?.click();
     setShowPopover(false);
   };
 
   const handleFileClick = () => {
-    window.Telegram?.WebApp?.showAttachMenu?.({ files: true });
+    const used = window.Telegram?.WebApp?.showAttachMenu?.({ files: true });
+    if (!used) fileInputFilesRef.current?.click();
     setShowPopover(false);
   };
 
   const handleFileChange = (e) => {
-    console.log("Выбраны файлы:", e.target.files);
+    const files = Array.from(e.target.files);
+    setAttachedFiles(files);
+    console.log("Выбраны файлы:", files);
   };
 
   const handleSend = () => {
@@ -163,6 +105,7 @@ const MindVaultPage = () => {
     });
 
     setIdeaText('');
+    setAttachedFiles([]);
   };
 
   return (
@@ -239,6 +182,18 @@ const MindVaultPage = () => {
             >
               <button className="popover-btn" onClick={handleMediaClick}>📷 Медиа</button>
               <button className="popover-btn" onClick={handleFileClick}>📁 Файл</button>
+            </div>
+          )}
+
+          {/* 👇 Debug-вывод для тестов (можно удалить позже) */}
+          {attachedFiles.length > 0 && (
+            <div style={{ padding: '10px', color: 'white' }}>
+              <strong>Вы прикрепили:</strong>
+              <ul>
+                {attachedFiles.map((file, i) => (
+                  <li key={i}>{file.name} ({Math.round(file.size / 1024)} KB)</li>
+                ))}
+              </ul>
             </div>
           )}
         </>
