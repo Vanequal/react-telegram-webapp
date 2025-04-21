@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchSection, fetchPosts } from '../store/slices/sectionSlice';
 
 import MindVaultHeader from '../components/UI/MindVaultHeader';
-import IdeaCard from '../components/UI/IdeaCard';
 
 import skrepkaIcon from '../assets/img/skrepkaIcon.webp';
 import sendIcon from '../assets/img/sendIcon.webp';
@@ -34,14 +33,21 @@ const MindVaultPage = () => {
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
     if (tg) {
-      tg.ready();
-      tg.expand();
-      tg.requestWriteAccess?.();
+      try {
+        tg.ready();
+        tg.expand();
+        if (typeof tg.requestWriteAccess === 'function') {
+          tg.requestWriteAccess();
+        }
+      } catch (err) {
+        console.warn('[Telegram WebApp] requestWriteAccess is not supported:', err.message);
+      }
     }
-
+  
     dispatch(fetchSection({ section_key: sectionKey, theme_id: themeId }));
     dispatch(fetchPosts({ section_key: sectionKey, theme_id: themeId }));
   }, [dispatch, sectionKey, themeId]);
+  
 
   const ideas = (Array.isArray(posts) ? posts : []).map(post => ({
     id: post.id,
@@ -152,7 +158,6 @@ const MindVaultPage = () => {
               placeholder={localeTexts?.inputs?.message || 'Добавить идею'}
               value={ideaText}
               onChange={(e) => setIdeaText(e.target.value)}
-              disabled
             />
             <img
               src={sendIcon}
