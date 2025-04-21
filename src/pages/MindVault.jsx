@@ -2,14 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSection, fetchPosts } from '../store/slices/sectionSlice';
-import { createPost } from '../store/slices/postSlice';
 
 import MindVaultHeader from '../components/UI/MindVaultHeader';
+import IdeaCard from '../components/UI/IdeaCard';
 
 import skrepkaIcon from '../assets/img/skrepkaIcon.webp';
 import sendIcon from '../assets/img/sendIcon.webp';
-
-import IdeaCard from '../components/UI/IdeaCard'; // вынеси отдельно, если нужно
 
 import '../styles/MindVault.scss';
 
@@ -22,31 +20,30 @@ const MindVaultPage = () => {
   const [showPopover, setShowPopover] = useState(false);
   const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 });
   const [ideaText, setIdeaText] = useState('');
-  const [attachedFiles, setAttachedFiles] = useState([]); // отображение файлов
-
-  const { posts, loading } = useSelector(state => state.section);
-  const { currentUser } = useSelector(state => state.me);
-
-  const themeId = Number(searchParams.get('id')) || 1;
-  const sectionKey = 'chat_ideas';
+  const [attachedFiles, setAttachedFiles] = useState([]);
 
   const attachBtnRef = useRef(null);
   const fileInputMediaRef = useRef(null);
   const fileInputFilesRef = useRef(null);
+
+  const { posts, loading, data: section } = useSelector(state => state.section);
+  const localeTexts = section?.locale_texts;
+  const themeId = Number(searchParams.get('id')) || 1;
+  const sectionKey = 'chat_ideas';
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
     if (tg) {
       tg.ready();
       tg.expand();
-      tg.requestWriteAccess?.(); // <--- важно!
+      tg.requestWriteAccess?.();
     }
 
     dispatch(fetchSection({ section_key: sectionKey, theme_id: themeId }));
     dispatch(fetchPosts({ section_key: sectionKey, theme_id: themeId }));
   }, [dispatch, sectionKey, themeId]);
 
-  const ideas = posts.map(post => ({
+  const ideas = (Array.isArray(posts) ? posts : []).map(post => ({
     id: post.id,
     username: post.author?.first_name || 'Пользователь',
     preview: post.message_text,
@@ -88,26 +85,6 @@ const MindVaultPage = () => {
     console.log("Выбраны файлы:", files);
   };
 
-  const handleSend = () => {
-    if (!ideaText.trim() || !currentUser) return;
-
-    dispatch(createPost({
-      message_text: ideaText.trim(),
-      section: 'Копилка идей',
-      author: {
-        id: currentUser.id,
-        first_name: currentUser.first_name,
-        username: currentUser.username,
-        lang: currentUser.language_code || 'ru',
-      }
-    })).then(() => {
-      dispatch(fetchPosts({ section_key: sectionKey, theme_id: themeId }));
-    });
-
-    setIdeaText('');
-    setAttachedFiles([]);
-  };
-
   return (
     <>
       <MindVaultHeader
@@ -134,6 +111,12 @@ const MindVaultPage = () => {
               isExpanded={false}
             />
           ))
+        )}
+
+        {!loading && ideas.length === 0 && (
+          <p className="mind-vault-header__description" style={{ textAlign: 'center', padding: '1rem', color: 'gray' }}>
+            {localeTexts?.messages?.empty_section || 'Идей пока нет'}
+          </p>
         )}
       </div>
 
@@ -166,12 +149,18 @@ const MindVaultPage = () => {
             <input
               type="text"
               className="vault-footer__input"
-              placeholder="Добавить идею"
+              placeholder={localeTexts?.inputs?.message || 'Добавить идею'}
               value={ideaText}
               onChange={(e) => setIdeaText(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              disabled
             />
-            <img src={sendIcon} alt="Send" className="vault-footer__send" onClick={handleSend} />
+            <img
+              src={sendIcon}
+              alt="Send"
+              className="vault-footer__send"
+              style={{ opacity: 0.5, cursor: 'not-allowed' }}
+              title="Создание постов временно отключено"
+            />
           </div>
 
           {showPopover && (
@@ -185,7 +174,6 @@ const MindVaultPage = () => {
             </div>
           )}
 
-          {/* 👇 Debug-вывод для тестов (можно удалить позже) */}
           {attachedFiles.length > 0 && (
             <div style={{ padding: '10px', color: 'white' }}>
               <strong>Вы прикрепили:</strong>

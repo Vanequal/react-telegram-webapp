@@ -54,7 +54,7 @@ const sectionSlice = createSlice({
         state.loading = false;
       })
       .addCase(fetchPosts.fulfilled, (state, action) => {
-        state.posts = action.payload.posts || []; 
+        state.posts = Array.isArray(action.payload) ? action.payload : [];
       });
   }
 });
