@@ -14,6 +14,7 @@ import EditIdeaPage from './pages/EditIdeaPage';
 import EditIdeaPageGPT from './pages/EditIdeaPageGPT';
 import TextGPTEditor from './pages/TextGPTEditor';
 import MenuPage from './pages/MenuPage';
+import MyProfile from './pages/MyProfile';
 
 import './styles/global.scss';
 
@@ -69,6 +70,7 @@ function App() {
         <Route path="/editideapagegpt" element={<EditIdeaPageGPT />} />
         <Route path="/textgpteditor" element={<TextGPTEditor />} />
         <Route path="/menu" element={<MenuPage />} />
+        <Route path="/myprofile" element={<MyProfile />} />
         <Route path="/discussion/:id" element={<DiscussionPage />} />
       </Routes>
     </Router>

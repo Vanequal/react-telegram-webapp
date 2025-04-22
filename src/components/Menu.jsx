@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import { RiArrowRightSLine } from "react-icons/ri";
 
 import '../styles/Menu.scss';
@@ -17,6 +19,7 @@ import exitIcon from '../assets/img/exitIcon.webp';
 
 const Menu = () => {
   const [isMobileVersion, setIsMobileVersion] = useState(true);
+  const navigate = useNavigate();
 
   return (
     <div className="menu">
@@ -49,7 +52,7 @@ const Menu = () => {
 
       {/* Список */}
       <div className="menu__list">
-        <MenuItem icon={personIcon} label="Мой профиль" />
+        <MenuItem icon={personIcon} label="Мой профиль" onClick={() => navigate('/myprofile')}/>
         <div className="menu__divider" />
         <MenuToggle icon={telegramLogo} label="Выкл уведомления в TG" />
         <div className="menu__divider" />
@@ -97,8 +100,8 @@ const Menu = () => {
   );
 };
 
-const MenuItem = ({ icon, label, value, isBlueValue, fontValue }) => (
-  <div className="menu__item">
+const MenuItem = ({ icon, label, value, isBlueValue, fontValue, onClick }) => (
+  <div className="menu__item" onClick={onClick}>
     <div className="menu__item-left">
       <img src={icon} alt={label} />
       <span className="menu__item-label">{label}</span>
