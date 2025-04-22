@@ -2,7 +2,6 @@ import axios from 'axios';
 
 const instance = axios.create({
   baseURL: 'https://7047-109-75-62-2.ngrok-free.app',
-  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true'
@@ -11,9 +10,14 @@ const instance = axios.create({
 
 instance.interceptors.request.use((config) => {
   const tg = window.Telegram?.WebApp;
+  const token = sessionStorage.getItem('token');
 
   if (tg?.initData) {
     config.headers['X-Telegram-InitData'] = tg.initData;
+  }
+
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
   }
 
   return config;

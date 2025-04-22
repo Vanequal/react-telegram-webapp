@@ -16,7 +16,13 @@ export const authWithTelegram = createAsyncThunk(
           }
         }
       );
-      return response.data;
+
+      const { user, token } = response.data;
+
+      // сохраняем токен на фронте
+      sessionStorage.setItem('token', token);
+
+      return { user };
     } catch (err) {
       console.error('Auth error:', err);
       return rejectWithValue(err.response?.data?.detail || 'Auth error');
@@ -34,6 +40,7 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
+      sessionStorage.removeItem('token');
     }
   },
   extraReducers: (builder) => {
