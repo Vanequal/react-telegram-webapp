@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { authWithTelegram } from './store/slices/authSlice';
 import { fetchCurrentUser } from './store/slices/meSlice';
 
@@ -20,8 +19,8 @@ import './styles/global.scss';
 
 function App() {
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.auth.user);
   const [authReady, setAuthReady] = useState(false);
+  const user = useSelector((state) => state.auth.user);
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
@@ -33,20 +32,9 @@ function App() {
       return;
     }
 
-    const storedInitHash = localStorage.getItem('authInitHash');
-    const initHash = btoa(initData).substring(0, 64);
-
-    if (storedInitHash !== initHash) {
-      dispatch(authWithTelegram(initData)).then((res) => {
-        if (!res.error) {
-          localStorage.setItem('authInitHash', initHash);
-        }
-        setAuthReady(true);
-      });
-    } else {
-      console.log('initData уже был отправлен');
+    dispatch(authWithTelegram(initData)).finally(() => {
       setAuthReady(true);
-    }
+    });
   }, [dispatch]);
 
   useEffect(() => {
@@ -55,9 +43,7 @@ function App() {
     }
   }, [user, dispatch]);
 
-  if (!authReady) {
-    return <div>Загрузка...</div>; 
-  }
+  if (!authReady) return <div>Загрузка...</div>;
 
   return (
     <Router>
