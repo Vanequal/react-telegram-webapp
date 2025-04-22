@@ -10,7 +10,7 @@ const MindVaultHeader = ({
   hideDescription,
   title,
   bgColor,
-  textColor = '#1E88D3' // ← новый пропс со значением по умолчанию
+  textColor = '#1E88D3'
 }) => {
   const section = useSelector(state => state.section.data);
   const localeTexts = section?.locale_texts;
