@@ -20,6 +20,7 @@ import './styles/global.scss';
 function App() {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
@@ -27,20 +28,23 @@ function App() {
 
     if (!initData) {
       console.warn('initData отсутствует');
+      setAuthReady(true);
       return;
     }
 
     const storedInitHash = localStorage.getItem('authInitHash');
-    const initHash = btoa(initData).substring(0, 64); 
+    const initHash = btoa(initData).substring(0, 64);
 
     if (storedInitHash !== initHash) {
       dispatch(authWithTelegram(initData)).then((res) => {
         if (!res.error) {
-          localStorage.setItem('authInitHash', initHash); 
+          localStorage.setItem('authInitHash', initHash);
         }
+        setAuthReady(true);
       });
     } else {
       console.log('initData уже был отправлен');
+      setAuthReady(true);
     }
   }, [dispatch]);
 
@@ -49,6 +53,10 @@ function App() {
       dispatch(fetchCurrentUser());
     }
   }, [user, dispatch]);
+
+  if (!authReady) {
+    return <div>Загрузка...</div>; 
+  }
 
   return (
     <Router>
