@@ -25,9 +25,9 @@ function App() {
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
     const initData = tg?.initData;
+    const token = sessionStorage.getItem('token');
 
-    if (!initData) {
-      console.warn('initData отсутствует');
+    if (!initData || token) {
       setAuthReady(true);
       return;
     }
@@ -36,6 +36,7 @@ function App() {
       setAuthReady(true);
     });
   }, [dispatch]);
+
 
   useEffect(() => {
     if (user) {
