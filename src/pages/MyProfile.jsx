@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCurrentUser } from '../store/slices/meSlice';
 
@@ -14,6 +16,8 @@ import myProfileQR from '../assets/img/myProfileQR.webp';
 
 const MyProfile = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const { currentUser, loading } = useSelector((state) => state.me);
 
   useEffect(() => {
@@ -96,7 +100,7 @@ const MyProfile = () => {
 
         <button className="my-profile__edit">
           <img src={myProfilePen} alt="Edit" />
-          <span>Редактировать профиль</span>
+          <span onClick={() => navigate('/editprofilepage')}>Редактировать профиль</span>
         </button>
       </div>
     </div>
