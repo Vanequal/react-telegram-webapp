@@ -14,6 +14,7 @@ import EditIdeaPageGPT from './pages/EditIdeaPageGPT';
 import TextGPTEditor from './pages/TextGPTEditor';
 import MenuPage from './pages/MenuPage';
 import MyProfile from './pages/MyProfile';
+import EditProfilePage from './pages/EditProfilePage';
 
 import './styles/global.scss';
 
@@ -26,16 +27,23 @@ function App() {
     const tg = window.Telegram?.WebApp;
     const initData = tg?.initData;
     const token = sessionStorage.getItem('token');
-
+  
+    if (window.location.hostname === 'localhost') {
+      sessionStorage.setItem('token', 'mock-token');
+      setAuthReady(true);
+      return;
+    }
+  
     if (!initData || token) {
       setAuthReady(true);
       return;
     }
-
+  
     dispatch(authWithTelegram(initData)).finally(() => {
       setAuthReady(true);
     });
   }, [dispatch]);
+  
 
 
   useEffect(() => {
@@ -58,6 +66,7 @@ function App() {
         <Route path="/textgpteditpage" element={<TextGPTEditor />} />
         <Route path="/menu" element={<MenuPage />} />
         <Route path="/myprofile" element={<MyProfile />} />
+        <Route path="/editprofilepage" element={<EditProfilePage />} />
         <Route path="/discussion/:id" element={<DiscussionPage />} />
       </Routes>
     </Router>

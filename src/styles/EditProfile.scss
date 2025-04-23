@@ -1,0 +1,112 @@
+.edit-profile {
+    background-color: #EAEFF6;
+    min-height: 100vh;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    padding-bottom: 40px;
+
+    &__form {
+        padding: 16px;
+    }
+
+    &__field-row {
+        background-color: #D2DDEB;
+        border-radius: 28px;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .edit-profile__row-label {
+            font-size: 18px;
+            color: #4D5B6A;
+            margin-right: 12px;
+            white-space: nowrap;
+        }
+
+        .edit-profile__row-input {
+            background-color: #FFFFFF;
+            border: none;
+            border-radius: 16px;
+            padding: 10px 14px;
+            font-size: 18px;
+            color: #4D5B6A;
+            max-width: 80%;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: right;
+
+            &::placeholder {
+                color: #EBEDF0;
+                text-align: right;
+            }
+        }
+    }
+
+    &__combined-block {
+        background-color: #D2DDEB;
+        border-radius: 28px;
+        margin-bottom: 12px;
+        overflow: hidden;
+
+        .section-header {
+            text-align: center;
+            font-size: 18px;
+            color: #4D5B6A;
+            padding: 16px;
+            background-color: #D2DDEB;
+        }
+
+        .section-textarea {
+            width: 100%;
+            background-color: #FFFFFF;
+            border: none;
+            padding: 12px;
+            font-size: 18px;
+            color: #4D5B6A;
+            min-height: 60px;
+            resize: vertical;
+            border-radius: 0;
+            box-sizing: border-box;
+
+            &::placeholder {
+                color: #EBEDF0;
+            }
+        }
+
+        .section-photo {
+            background-color: #D2DDEB;
+            padding: 12px;
+            text-align: center;
+        }
+    }
+
+    &__avatar {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+        margin: 0 auto;
+    }
+
+    &__wallet {
+        background-color: #D2DDEB;
+        text-align: center;
+        padding: 16px;
+        color: #4D5B6A;
+        font-size: 18px;
+        margin-bottom: 16px;
+    }
+
+    &__submit {
+        width: 100%;
+        background-color: #007AFF;
+        border: none;
+        padding: 14px;
+        font-size: 18px;
+        color: white;
+        cursor: pointer;
+    }
+}
