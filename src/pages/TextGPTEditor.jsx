@@ -11,6 +11,8 @@ const TextGPTEditor = () => {
         onBackClick={() => window.history.back()}
         hideSectionTitle={true}
         hideDescription={true}
+        bgColor={'#EEEFF1'}
+        textColor='black'
       />
 
       <div className="text-gpt-editor__content">

@@ -5,8 +5,16 @@ import { fetchSection, fetchPosts } from '../store/slices/sectionSlice';
 
 import MindVaultHeader from '../components/UI/MindVaultHeader';
 
+import userIcon from '../assets/img/userIcon.webp';
+import pinIcon from '../assets/img/pinIcon.webp';
+import likeIcon from '../assets/img/likeIcon.webp';
+import dislikeIcon from '../assets/img/dislikeIcon.webp';
+import avatarStack from '../assets/img/avatarStack.webp';
+import donatIcon from '../assets/img/donatIcon.webp';
+import eyeIcon from '../assets/img/eyeIcon.webp';
 import skrepkaIcon from '../assets/img/skrepkaIcon.webp';
 import sendIcon from '../assets/img/sendIcon.webp';
+import sendIconActive from '../assets/img/sendButtonActive.png';
 
 import '../styles/MindVault.scss';
 
@@ -36,18 +44,15 @@ const MindVaultPage = () => {
       try {
         tg.ready();
         tg.expand();
-        if (typeof tg.requestWriteAccess === 'function') {
-          tg.requestWriteAccess();
-        }
+        tg.requestWriteAccess?.();
       } catch (err) {
         console.warn('[Telegram WebApp] requestWriteAccess is not supported:', err.message);
       }
     }
-  
+
     dispatch(fetchSection({ section_key: sectionKey, theme_id: themeId }));
     dispatch(fetchPosts({ section_key: sectionKey, theme_id: themeId }));
   }, [dispatch, sectionKey, themeId]);
-  
 
   const ideas = (Array.isArray(posts) ? posts : []).map(post => ({
     id: post.id,
@@ -91,11 +96,19 @@ const MindVaultPage = () => {
     console.log("Выбраны файлы:", files);
   };
 
+  const handleSendClick = () => {
+    if (ideaText.trim()) {
+      navigate('/editideapagegpt');
+    }
+  };
+
   return (
     <>
       <MindVaultHeader
         onDescriptionClick={() => navigate('/aboutpage')}
         onBackClick={() => navigate('/')}
+        textColor={'black'}
+        bgColor={'#EEEFF1'}
       />
 
       <div className="mind-vault-page">
@@ -160,11 +173,15 @@ const MindVaultPage = () => {
               onChange={(e) => setIdeaText(e.target.value)}
             />
             <img
-              src={sendIcon}
+              src={ideaText.trim() ? sendIconActive : sendIcon}
               alt="Send"
               className="vault-footer__send"
-              style={{ opacity: 0.5, cursor: 'not-allowed' }}
-              title="Создание постов временно отключено"
+              style={{
+                opacity: ideaText.trim() ? 1 : 0.5,
+                cursor: ideaText.trim() ? 'pointer' : 'not-allowed'
+              }}
+              onClick={handleSendClick}
+              title={ideaText.trim() ? 'Отправить идею' : 'Создание постов временно отключено'}
             />
           </div>
 
@@ -194,5 +211,63 @@ const MindVaultPage = () => {
     </>
   );
 };
+
+function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse }) {
+  const [expanded, setExpanded] = useState(isExpanded);
+  const [showReadMore, setShowReadMore] = useState(false);
+  const textWrapperRef = useRef(null);
+
+  useEffect(() => {
+    if (textWrapperRef.current?.scrollHeight > 160) {
+      setShowReadMore(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    setExpanded(isExpanded);
+  }, [isExpanded]);
+
+  return (
+    <div className="idea-card">
+      <div className="idea-card__top">
+        <div className="idea-card__user">
+          <img src={userIcon} alt="User" className="idea-card__user-icon" />
+          <span className="idea-card__username">{idea.username}</span>
+        </div>
+        {idea.pinned && <img src={pinIcon} alt="Pin" className="idea-card__pin" />}
+      </div>
+
+      <div ref={textWrapperRef} className={`idea-card__text-wrapper ${expanded ? 'expanded' : ''}`}>
+        <div className="idea-card__text">{idea.preview}</div>
+      </div>
+
+      {!expanded && showReadMore && (
+        <button className="idea-card__read-more" onClick={() => setExpanded(true)}>Читать далее</button>
+      )}
+
+      <div className="idea-card__badges">
+        <div className="idea-card__badge"><img src={likeIcon} alt="Like" /><span>{idea.likes}</span></div>
+        <div className="idea-card__badge"><img src={dislikeIcon} alt="Dislike" /><span>{idea.dislikes}</span></div>
+      </div>
+
+      <div className="idea-card__divider" />
+
+      {idea.comments > 0 && (
+        <div className="idea-card__footer" onClick={() => onExpand(idea.id)} style={{ cursor: 'pointer' }}>
+          <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
+          <span className="idea-card__comments">{idea.comments} комментариев</span>
+          <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
+          <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
+          <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
+          <span className="idea-card__timestamp">{idea.timestamp}</span>
+        </div>
+      )}
+
+      {isExpanded && (
+        <button className="idea-card__collapse" onClick={onCollapse}>Свернуть</button>
+      )}
+    </div>
+  );
+}
 
 export default MindVaultPage;

@@ -54,7 +54,7 @@ function App() {
         <Route path="/aboutpage" element={<AboutPage />} />
         <Route path="/editideapage" element={<EditIdeaPage />} />
         <Route path="/editideapagegpt" element={<EditIdeaPageGPT />} />
-        <Route path="/textgpteditor" element={<TextGPTEditor />} />
+        <Route path="/textgpteditpage" element={<TextGPTEditor />} />
         <Route path="/menu" element={<MenuPage />} />
         <Route path="/myprofile" element={<MyProfile />} />
         <Route path="/discussion/:id" element={<DiscussionPage />} />

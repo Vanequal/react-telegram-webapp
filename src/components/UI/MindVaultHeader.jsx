@@ -30,7 +30,7 @@ const MindVaultHeader = ({
           {title || localeTexts?.messages?.title || 'Копилка идей'}
         </h1>
         {!hideSectionTitle && (
-          <p style={{ margin: 0, padding: 0, color: textColor }}>
+          <p style={{ margin: 0, padding: 0, color: '#1E88D3' }}>
             {section?.theme?.title || 'Заголовок раздела'}
           </p>
         )}
