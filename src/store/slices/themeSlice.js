@@ -6,6 +6,8 @@ export const fetchTheme = createAsyncThunk('theme/fetchTheme', async (theme_id =
   return response.data;
 });
 
+
+
 const themeSlice = createSlice({
   name: 'theme',
   initialState: {

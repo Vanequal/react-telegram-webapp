@@ -15,6 +15,7 @@ import TextGPTEditor from './pages/TextGPTEditor';
 import MenuPage from './pages/MenuPage';
 import MyProfile from './pages/MyProfile';
 import EditProfilePage from './pages/EditProfilePage';
+import HistoryPage from './pages/HistoryPage';
 
 import './styles/global.scss';
 
@@ -66,6 +67,7 @@ function App() {
         <Route path="/textgpteditpage" element={<TextGPTEditor />} />
         <Route path="/menu" element={<MenuPage />} />
         <Route path="/myprofile" element={<MyProfile />} />
+        <Route path="/historypage" element={<HistoryPage />} />
         <Route path="/editprofilepage" element={<EditProfilePage />} />
         <Route path="/discussion/:id" element={<DiscussionPage />} />
       </Routes>

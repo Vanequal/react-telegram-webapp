@@ -1,0 +1,148 @@
+.history-page {
+    font-family: Montserrat, sans-serif;
+    min-height: 100vh;
+
+    .header {
+        display: flex;
+        flex-direction: column;
+        padding: 10px 16px;
+        background-color: white;
+        border-bottom: 1px solid #e0e0e0;
+
+        &__back {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #2196f3;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        &__title {
+            font-size: 22px;
+            font-weight: 500;
+            margin: 0;
+        }
+    }
+
+    &__content {
+        padding: 10px 16px;
+    }
+
+    &__navigation {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 10px;
+
+        svg {
+            color: #333;
+        }
+    }
+
+    &__title {
+        font-size: 20px;
+        font-weight: 500;
+        margin: 0 0 16px 0;
+    }
+
+    &__section {
+        margin-bottom: 16px;
+
+        &-link {
+            color: #2196f3;
+            text-decoration: none;
+            font-size: 16px;
+        }
+    }
+}
+
+.history-block {
+    margin-bottom: 20px;
+
+    &__date {
+        background-color: #eaeaea;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+}
+
+.history-item {
+
+    &__time {
+        font-size: 14px;
+        color: #666;
+        min-width: 50px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        img {
+            width: 14px;
+            height: 14px;
+        }
+    }
+
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 16px;
+
+    &__time {
+        font-size: 14px;
+        color: #666;
+        min-width: 40px;
+        padding-top: 2px;
+    }
+
+    &__avatar {
+        width: 20px;
+        height: 20px;
+        background-color: #e0e0e0;
+        border-radius: 4px;
+        margin-top: 2px;
+    }
+
+    &__content {
+        flex: 1;
+    }
+
+    &__user {
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 2px;
+    }
+
+    &__text {
+        font-size: 14px;
+        margin-bottom: 2px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    &__diff {
+        font-weight: bold;
+
+        &--negative {
+            color: #f44336;
+        }
+
+        &--positive {
+            color: #4caf50;
+        }
+    }
+
+    &__link {
+        color: #2196f3;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    &__no-desc {
+        color: #999;
+        font-size: 13px;
+    }
+}

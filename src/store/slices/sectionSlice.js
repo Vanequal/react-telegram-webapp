@@ -30,6 +30,19 @@ export const fetchPosts = createAsyncThunk(
   }
 );
 
+export const fetchPostById = createAsyncThunk(
+  'section/fetchPostById',
+  async ({ section_key, post_id }, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(`/api/v1/section/${section_key}/post/${post_id}`);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.detail || 'Ошибка получения поста');
+    }
+  }
+);
+
+
 const sectionSlice = createSlice({
   name: 'section',
   initialState: {
