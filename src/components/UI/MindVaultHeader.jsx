@@ -44,7 +44,7 @@ const MindVaultHeader = ({
         <p
           className="mind-vault-header__description"
           onClick={onDescriptionClick}
-          style={{ color: textColor, cursor: 'pointer' }}
+          style={{ cursor: 'pointer' }}
         >
           {localeTexts?.buttons?.about_tab || 'Подробнее об этой вкладке'}
         </p>
