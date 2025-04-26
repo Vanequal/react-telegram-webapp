@@ -107,6 +107,7 @@
 
     &__content {
         flex: 1;
+        position: relative;
     }
 
     &__user {
@@ -118,31 +119,39 @@
     &__text {
         font-size: 14px;
         margin-bottom: 2px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
+      }
 
     &__diff {
         font-weight: bold;
-
+        margin-top: 2px;
+    
         &--negative {
-            color: #f44336;
+          color: #f44336;
         }
-
+    
         &--positive {
-            color: #4caf50;
+          color: #4caf50;
         }
-    }
+      }
 
-    &__link {
+      &__link {
+        position: absolute;
+        right: 0;
+        top: -16px;
+        font-size: 12px;
         color: #2196f3;
         text-decoration: none;
-        font-size: 14px;
-    }
+        white-space: nowrap;
+      }
 
     &__no-desc {
         color: #999;
         font-size: 13px;
     }
+    &__main {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        position: relative;
+      }
 }

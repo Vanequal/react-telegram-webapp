@@ -1,10 +1,19 @@
 import React from 'react';
+
 import '../styles/HistoryPage.scss';
+
 import MindVaultHeader from '../components/UI/MindVaultHeader';
+
+import { useNavigate } from 'react-router-dom';
+
 import { IoChevronBackOutline } from 'react-icons/io5';
 import { RiArrowLeftSLine, RiHistoryLine } from 'react-icons/ri';
 
+import historyUser from "../assets/img/historyUser.png"
+
 const HistoryPage = () => {
+    const navigate = useNavigate();
+    
     return (
         <div className="history-page">
             <MindVaultHeader
@@ -30,12 +39,15 @@ const HistoryPage = () => {
 
                     <div className="history-item">
                         <div className="history-item__time">14:57</div>
-                        <div className="history-item__avatar"></div>
+                        <div className="history-item__avatar"><img src={historyUser} alt="" /></div>
                         <div className="history-item__content">
                             <div className="history-item__user">WikiSvsod</div>
-                            <div className="history-item__text">Публикация альтернативной статьи</div>
-                            <a href="#" className="history-item__link">Функции</a>
+                            <div className="history-item__main">
+                                <div className="history-item__text">Публикация альтернативной статьи </div>
+                                <a href="#" className="history-item__link">Функции</a>
+                            </div>
                         </div>
+
                     </div>
                 </div>
 
@@ -44,16 +56,17 @@ const HistoryPage = () => {
 
                     <div className="history-item">
                         <div className="history-item__time">
-                            <img src={'../assets/img/time.webp'} alt="time" className="history-item__icon" />
                             14:57
                         </div>
-                        <img src={'../assets/img/historyUser.png'} alt="avatar" className="history-item__avatar" />
+                        <div className="history-item__avatar"><img src={historyUser} alt="" /></div>
                         <div className="history-item__content">
                             <div className="history-item__user">WikiSvsod</div>
-                            <span className="history-item__diff history-item__diff--negative">-6</span>
-                            <div className="history-item__text">Техническое моделирование</div>
+                            <div className="history-item__main">
+                                <span className="history-item__diff history-item__diff--negative">-6</span>
+                                <div className="history-item__text">Техническое моделирование</div>
+                                <a href="#" className="history-item__link">Конюшни</a>
+                            </div>
                             <div className="history-item__no-desc">Нет описания правки</div>
-                            <a href="#" className="history-item__link">Конюшни</a>
                         </div>
                     </div>
 
@@ -64,12 +77,13 @@ const HistoryPage = () => {
 
                     <div className="history-item">
                         <div className="history-item__time">14:57</div>
-                        <div className="history-item__avatar"></div>
+                        <div className="history-item__avatar"><img src={historyUser} alt="" /></div>
                         <div className="history-item__content">
                             <div className="history-item__user">WikiSvsod</div>
-                            <span className="history-item__diff history-item__diff--positive">-6</span>
-                            <div className="history-item__text">Публикация альтернативной статьи</div>
-                            <a href="#" className="history-item__link">Конюшни</a>
+                            <div className="history-item__main">
+                                <div className="history-item__text">Публикация альтернативной статьи</div>
+                                <a href="#" className="history-item__link">Конюшни</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -79,13 +93,14 @@ const HistoryPage = () => {
 
                     <div className="history-item">
                         <div className="history-item__time">14:57</div>
-                        <div className="history-item__avatar"></div>
+                        <div className="history-item__avatar"><img src={historyUser} alt="" /></div>
                         <div className="history-item__content">
                             <div className="history-item__user">WikiSvsod</div>
-                            <span className="history-item__diff history-item__diff--negative">-6</span>
-                            <div className="history-item__text">Публикация альтернативной статьи</div>
+                            <div className="history-item__main">
+                                <span className="history-item__diff history-item__diff--positive">+6</span>
+                                <div className="history-item__text">Техническое моделирование</div>
+                            </div>
                             <div className="history-item__no-desc">Нет описания правки</div>
-                            <a href="#" className="history-item__link">Конюшни</a>
                         </div>
                     </div>
                 </div>

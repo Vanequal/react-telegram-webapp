@@ -1,4 +1,6 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import '../../styles/HomeIcons.scss';
 
 // Импорт иконок по умолчанию
@@ -25,6 +27,8 @@ const HomeIcons = ({
   onMessengerClick,
   onResumeClick,
 }) => {
+  const navigate = useNavigate(); // <-- Перенёс внутрь компонента
+
   return (
     <div className="home-icons">
       {showBack && (
@@ -40,7 +44,7 @@ const HomeIcons = ({
           src={timeIcon}
           alt="Time"
           className="home-icons__icon"
-          onClick={onTimeClick}
+          onClick={onTimeClick || (() => navigate('/myprofile'))}
         />
       )}
       {showPautine && (
