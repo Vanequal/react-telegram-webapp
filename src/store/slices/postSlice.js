@@ -4,9 +4,9 @@ import axios from '../../api/axios';
 
 export const createPost = createAsyncThunk(
   'post/create',
-  async ({ message_text, section, publishing_method }, { rejectWithValue }) => {
+  async ({ message_text, section_key, theme_id, publishing_method }, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`/api/v1/post/create?section_key=${section}`, {
+      const res = await axios.post(`/api/v1/post/create?section_key=${section_key}&theme_id=${theme_id}`, {
         message_text,
         publishing_method,
       });
@@ -16,6 +16,7 @@ export const createPost = createAsyncThunk(
     }
   }
 );
+
 
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',

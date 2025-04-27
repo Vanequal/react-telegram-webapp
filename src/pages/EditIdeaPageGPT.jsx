@@ -37,7 +37,8 @@ const EditIdeaPageGPT = () => {
     try {
       await dispatch(createPost({
         message_text: text,
-        section: sectionKey,
+        section_key: sectionKey,
+        theme_id: themeId,
         publishing_method,
       })).unwrap();
   
@@ -46,6 +47,7 @@ const EditIdeaPageGPT = () => {
       console.error('Ошибка публикации:', error);
     }
   };
+  
   
 
   return (
