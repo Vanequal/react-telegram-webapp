@@ -20,8 +20,8 @@ export const fetchPosts = createAsyncThunk(
   'section/fetchPosts',
   async ({ section_key, theme_id }, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`/api/v1/section/${section_key}/posts`, {
-        params: { theme_id }
+      const res = await axios.get(`/api/v1/post/posts`, {
+        params: { section_key, theme_id }
       });
       return res.data;
     } catch (err) {
@@ -29,6 +29,7 @@ export const fetchPosts = createAsyncThunk(
     }
   }
 );
+
 
 export const fetchPostById = createAsyncThunk(
   'section/fetchPostById',
