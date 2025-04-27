@@ -96,11 +96,22 @@ const MindVaultPage = () => {
     console.log("Выбраны файлы:", files);
   };
 
-  const handleSendClick = () => {
-    if (ideaText.trim()) {
-      navigate('/editideapagegpt');
+  const handleSendClick = async () => {
+    if (!ideaText.trim()) return;
+  
+    try {
+      await dispatch(createPostPreview({
+        section_key: section.section_key,
+        theme_id: section.theme.id,
+        message_text: ideaText.trim()
+      })).unwrap();
+  
+      navigate('/textgpteditpage');
+    } catch (error) {
+      console.error('Ошибка предпросмотра:', error);
     }
   };
+  
 
   return (
     <>

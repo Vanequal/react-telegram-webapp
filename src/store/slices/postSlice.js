@@ -4,12 +4,11 @@ import axios from '../../api/axios';
 
 export const createPost = createAsyncThunk(
   'post/create',
-  async ({ message_text, section, author }, { rejectWithValue }) => {
+  async ({ message_text, section, publishing_method }, { rejectWithValue }) => {
     try {
-      const res = await axios.post('/api/v1/post/create', {
+      const res = await axios.post(`/api/v1/post/create?section_key=${section}`, {
         message_text,
-        section,
-        author
+        publishing_method,
       });
       return res.data;
     } catch (err) {

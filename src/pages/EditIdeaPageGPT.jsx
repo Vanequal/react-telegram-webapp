@@ -31,17 +31,22 @@ const EditIdeaPageGPT = () => {
     }
   };
 
-  const handlePublish = (text) => {
+  const handlePublish = async (text, publishing_method = 'original') => {
     if (!text) return;
-
-    dispatch(createPost({
-      message_text: text,
-      section: sectionKey,
-      author: { id: 1 } // тут можно взять из store/me если авторизация есть
-    }));
-
-    navigate('/mindvault'); // после отправки вернуться на главную
+  
+    try {
+      await dispatch(createPost({
+        message_text: text,
+        section: sectionKey,
+        publishing_method,
+      })).unwrap();
+  
+      navigate('/mindvault');
+    } catch (error) {
+      console.error('Ошибка публикации:', error);
+    }
   };
+  
 
   return (
     <div className="edit-idea-page-gpt">
@@ -71,14 +76,14 @@ const EditIdeaPageGPT = () => {
           <div className="idea-card-gpt__actions">
             <button
               className="idea-card-gpt__action-button"
-              onClick={() => handlePublish(preview.messages?.original_text)}
+              onClick={() => handlePublish(preview.messages?.original_text, 'original')}
             >
               Опубликовать оригинал
             </button>
 
             <button
               className="idea-card-gpt__action-button"
-              onClick={() => handlePublish(preview.messages?.gpt_text)}
+              onClick={() => handlePublish(preview.messages?.gpt_text, 'gpt')}
             >
               Опубликовать версию GPT
             </button>
