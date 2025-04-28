@@ -74,41 +74,41 @@ const EditIdeaPageGPT = () => {
           </div>
         )}
 
-        {preview && (
-          <div className="idea-card-gpt__actions">
-            <button
-              className="idea-card-gpt__action-button"
-              onClick={() => {
-                if (preview.messages?.original_text) {
-                  handlePublish(preview.messages.original_text, 'original');
-                } else {
-                  console.error('Оригинальный текст отсутствует');
-                }
-              }}
-            >
-              Опубликовать оригинал
-            </button>
+{preview && (
+  <>
+    {console.log('PREVIEW', preview)}
+    <div className="idea-card-gpt__actions">
+      <button
+        className="idea-card-gpt__action-button"
+        onClick={() => {
+          if (preview.messages?.original_text) {
+            console.log('Publishing original:', preview.messages.original_text);
+            handlePublish(preview.messages.original_text, 'original');
+          } else {
+            console.error('Оригинальный текст отсутствует');
+          }
+        }}
+      >
+        Опубликовать оригинал
+      </button>
 
-            <button
-              className="idea-card-gpt__action-button"
-              onClick={() => {
-                if (preview.messages?.gpt_text) {
-                  handlePublish(preview.messages.gpt_text, 'gpt');
-                } else {
-                  console.error('GPT текст отсутствует');
-                }
-              }}
-            >
-              Опубликовать версию GPT
-            </button>
-            <button
-              className="idea-card-gpt__action-button"
-              onClick={() => navigate('/textgpteditpage')}
-            >
-              Редактировать версию GPT
-            </button>
-          </div>
-        )}
+      <button
+        className="idea-card-gpt__action-button"
+        onClick={() => {
+          if (preview.messages?.gpt_text) {
+            console.log('Publishing GPT:', preview.messages.gpt_text);
+            handlePublish(preview.messages.gpt_text, 'gpt');
+          } else {
+            console.error('GPT текст отсутствует');
+          }
+        }}
+      >
+        Опубликовать версию GPT
+      </button>
+    </div>
+  </>
+)}
+
       </div>
 
       <div className="vault-footer">
