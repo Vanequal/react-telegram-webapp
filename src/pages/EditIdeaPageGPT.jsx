@@ -14,13 +14,13 @@ const EditIdeaPageGPT = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
-  
+
   const [ideaText, setIdeaText] = useState('');
   const { preview, loading } = useSelector(state => state.post);
 
   const sectionKey = searchParams.get('section_key') || 'chat_ideas'; // <-- динамический ключ секции
   const themeId = Number(searchParams.get('theme_id')) || 1; // <-- можно тоже динамически
-  
+
   const handleSend = () => {
     if (ideaText.trim()) {
       dispatch(createPostPreview({
@@ -33,7 +33,7 @@ const EditIdeaPageGPT = () => {
 
   const handlePublish = async (text, publishing_method = 'original') => {
     if (!text) return;
-  
+
     try {
       await dispatch(createPost({
         message_text: text,
@@ -41,20 +41,20 @@ const EditIdeaPageGPT = () => {
         theme_id: themeId,
         publishing_method,
       })).unwrap();
-  
+
       navigate('/mindvault');
     } catch (error) {
       console.error('Ошибка публикации:', error);
     }
   };
-  
-  
+
+
 
   return (
     <div className="edit-idea-page-gpt">
       <MindVaultHeader
         onBackClick={() => window.history.back()}
-        onDescriptionClick={() => {}}
+        onDescriptionClick={() => { }}
         hideSectionTitle={true}
         textColor="black"
         bgColor="#EEEFF1"
@@ -78,18 +78,29 @@ const EditIdeaPageGPT = () => {
           <div className="idea-card-gpt__actions">
             <button
               className="idea-card-gpt__action-button"
-              onClick={() => handlePublish(preview.messages?.original_text, 'original')}
+              onClick={() => {
+                if (preview.messages?.original_text) {
+                  handlePublish(preview.messages.original_text, 'original');
+                } else {
+                  console.error('Оригинальный текст отсутствует');
+                }
+              }}
             >
               Опубликовать оригинал
             </button>
 
             <button
               className="idea-card-gpt__action-button"
-              onClick={() => handlePublish(preview.messages?.gpt_text, 'gpt')}
+              onClick={() => {
+                if (preview.messages?.gpt_text) {
+                  handlePublish(preview.messages.gpt_text, 'gpt');
+                } else {
+                  console.error('GPT текст отсутствует');
+                }
+              }}
             >
               Опубликовать версию GPT
             </button>
-
             <button
               className="idea-card-gpt__action-button"
               onClick={() => navigate('/textgpteditpage')}
