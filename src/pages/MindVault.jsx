@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchSection, fetchPosts } from '../store/slices/sectionSlice';
 import { createPostPreview } from '../store/slices/postSlice';
 
-
 import MindVaultHeader from '../components/UI/MindVaultHeader';
 
 import userIcon from '../assets/img/userIcon.webp';
