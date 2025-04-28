@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSection, fetchPosts } from '../store/slices/sectionSlice';
 import { createPostPreview } from '../store/slices/postSlice';
-import { createPost } from '../store/slices/postSlice';
+
 
 import MindVaultHeader from '../components/UI/MindVaultHeader';
 
@@ -102,17 +102,15 @@ const MindVaultPage = () => {
     if (!ideaText.trim()) return;
   
     try {
-      await dispatch(createPost({
-        message_text: ideaText.trim(),
+      await dispatch(createPostPreview({
         section_key: section.section_key,
         theme_id: section.theme.id,
-        publishing_method: 'original', 
+        message_text: ideaText.trim()
       })).unwrap();
   
-      setIdeaText(''); 
-      dispatch(fetchPosts({ section_key: section.section_key, theme_id: section.theme.id })); 
+      navigate('/editideapagegpt');
     } catch (error) {
-      console.error('Ошибка создания поста:', error);
+      console.error('Ошибка предпросмотра:', error);
     }
   };
   
