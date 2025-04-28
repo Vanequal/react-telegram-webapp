@@ -14,13 +14,13 @@ const EditIdeaPageGPT = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
-  
+
   const [ideaText, setIdeaText] = useState('');
   const { preview, loading } = useSelector(state => state.post);
 
-  const sectionKey = searchParams.get('section_key') || 'chat_ideas'; // <-- динамический ключ секции
-  const themeId = Number(searchParams.get('theme_id')) || 1; // <-- можно тоже динамически
-  
+  const sectionKey = searchParams.get('section_key') || 'chat_ideas';
+  const themeId = Number(searchParams.get('theme_id')) || 1;
+
   const handleSend = () => {
     if (ideaText.trim()) {
       dispatch(createPostPreview({
@@ -33,7 +33,7 @@ const EditIdeaPageGPT = () => {
 
   const handlePublish = async (text, publishing_method = 'original') => {
     if (!text) return;
-  
+
     const payload = {
       message_text: text,
       section_key: sectionKey,
@@ -48,15 +48,15 @@ const EditIdeaPageGPT = () => {
       console.error('Ошибка публикации:', error);
     }
   };
-  
-  
-  
+
+
+
 
   return (
     <div className="edit-idea-page-gpt">
       <MindVaultHeader
         onBackClick={() => window.history.back()}
-        onDescriptionClick={() => {}}
+        onDescriptionClick={() => { }}
         hideSectionTitle={true}
         textColor="black"
         bgColor="#EEEFF1"
@@ -80,10 +80,11 @@ const EditIdeaPageGPT = () => {
           <div className="idea-card-gpt__actions">
             <button
               className="idea-card-gpt__action-button"
-              onClick={() => handlePublish(preview.messages?.original_text, 'original')}
+              onClick={() => navigate('/textgpteditpage', { state: { gptText: preview.messages?.gpt_text } })}
             >
-              Опубликовать оригинал
+              Редактировать версию GPT
             </button>
+
 
             <button
               className="idea-card-gpt__action-button"

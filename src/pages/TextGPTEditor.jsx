@@ -1,9 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import MindVaultHeader from '../components/UI/MindVaultHeader';
 
 import '../styles/TextGPTEditor.scss';
 
 const TextGPTEditor = () => {
+  const location = useLocation();
+  const initialText = location.state?.gptText || ''; // <-- получили текст из state роутера
+  const [text, setText] = useState(initialText);
+
   return (
     <div className="text-gpt-editor">
       <MindVaultHeader
@@ -12,13 +17,17 @@ const TextGPTEditor = () => {
         hideSectionTitle={true}
         hideDescription={true}
         bgColor={'#EEEFF1'}
-        textColor='black'
+        textColor="black"
       />
 
       <div className="text-gpt-editor__content">
-        <p className="text-gpt-editor__main-text">
-          Разработать новый вид <br /> опылителей-насекомых для теплиц.
-        </p>
+        <textarea
+          className="text-gpt-editor__textarea"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Введите текст..."
+          autoFocus
+        />
       </div>
     </div>
   );
