@@ -107,7 +107,7 @@ const MindVaultPage = () => {
         message_text: ideaText.trim()
       })).unwrap();
   
-      navigate('/textgpteditpage');
+      navigate('/editideapagegpt');
     } catch (error) {
       console.error('Ошибка предпросмотра:', error);
     }
