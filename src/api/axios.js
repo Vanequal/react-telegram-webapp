@@ -10,7 +10,7 @@ const instance = axios.create({
 
 instance.interceptors.request.use((config) => {
   const tg = window.Telegram?.WebApp;
-  const token = sessionStorage.getItem('token');
+  const token = sessionStorage.getItem('token'); 
 
   if (tg?.initData) {
     config.headers['X-Telegram-InitData'] = tg.initData;
