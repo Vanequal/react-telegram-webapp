@@ -36,7 +36,7 @@ const HomeIcons = ({
           src={backIcon}
           alt="Back"
           className="home-icons__icon"
-          onClick={onBackClick}
+          onClick={onBackClick || (() => window.Telegram?.WebApp?.close())}
         />
       )}
       {showTime && (
@@ -44,7 +44,7 @@ const HomeIcons = ({
           src={timeIcon}
           alt="Time"
           className="home-icons__icon"
-          onClick={onTimeClick || (() => navigate('/myprofile'))}
+          onClick={onTimeClick || (() => navigate('/historypage'))}
         />
       )}
       {showPautine && (
@@ -52,7 +52,7 @@ const HomeIcons = ({
           src={pautineIcon}
           alt="Pautine"
           className="home-icons__icon"
-          onClick={onPautineClick}
+          onClick={onPautineClick || (() => navigate('/graphpage'))}
         />
       )}
       {showMessenger && (
@@ -60,7 +60,7 @@ const HomeIcons = ({
           src={messengerIcon}
           alt="Messenger"
           className="home-icons__icon"
-          onClick={onMessengerClick}
+          onClick={onMessengerClick || (() => navigate('/debatepage'))}
         />
       )}
       {showResume && (
@@ -68,7 +68,7 @@ const HomeIcons = ({
           src={resumeIcon}
           alt="Resume"
           className="home-icons__icon"
-          onClick={onResumeClick}
+          onClick={onResumeClick || (() => navigate('/resumepage'))}
         />
       )}
     </div>

@@ -19,6 +19,7 @@ const HistoryPage = () => {
             <MindVaultHeader
                 hideDescription
                 hideSectionTitle
+                onBackClick={() => navigate('/')}
                 title='История'
                 textColor='black'
                 bgColor={"#EEEFF1"} />

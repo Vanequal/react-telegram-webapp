@@ -16,8 +16,11 @@ import MenuPage from './pages/MenuPage';
 import MyProfile from './pages/MyProfile';
 import EditProfilePage from './pages/EditProfilePage';
 import HistoryPage from './pages/HistoryPage';
+import DebatePage from './pages/DebatePage';
 
 import './styles/global.scss';
+import GraphPage from './pages/GraphPage';
+import ResumePage from './pages/ResumePage';
 
 function App() {
   const dispatch = useDispatch();
@@ -62,13 +65,16 @@ function App() {
         <Route path="/homesimplified" element={<HomeSimplified />} />
         <Route path="/mindvault" element={<MindVault />} />
         <Route path="/aboutpage" element={<AboutPage />} />
+        <Route path="/graphpage" element={<GraphPage />} />
         <Route path="/editideapage" element={<EditIdeaPage />} />
         <Route path="/editideapagegpt" element={<EditIdeaPageGPT />} />
         <Route path="/textgpteditpage" element={<TextGPTEditor />} />
         <Route path="/menu" element={<MenuPage />} />
         <Route path="/myprofile" element={<MyProfile />} />
+        <Route path="/resumepage" element={<ResumePage />} />
         <Route path="/historypage" element={<HistoryPage />} />
         <Route path="/editprofilepage" element={<EditProfilePage />} />
+        <Route path="/debatepage" element={<DebatePage />} />
         <Route path="/discussion/:id" element={<DiscussionPage />} />
       </Routes>
     </Router>
