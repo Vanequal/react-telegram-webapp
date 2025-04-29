@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSection, fetchPosts } from '../store/slices/sectionSlice';
-import { createPostPreview } from '../store/slices/postSlice';
+import { createPostPreview, fetchPostComments } from '../store/slices/postSlice';
 
 import MindVaultHeader from '../components/UI/MindVaultHeader';
 
@@ -226,6 +226,8 @@ const MindVaultPage = () => {
 };
 
 function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse }) {
+  const dispatch = useDispatch();
+  const comments = useSelector(state => state.post.comments[idea.id] || []); // <<< получаем комментарии
   const [expanded, setExpanded] = useState(isExpanded);
   const [showReadMore, setShowReadMore] = useState(false);
   const textWrapperRef = useRef(null);
@@ -238,7 +240,11 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
 
   useEffect(() => {
     setExpanded(isExpanded);
-  }, [isExpanded]);
+
+    if (isExpanded && comments.length === 0) { 
+      dispatch(fetchPostComments(idea.id)); // <<< грузим комменты при открытии
+    }
+  }, [isExpanded, dispatch, idea.id, comments.length]);
 
   return (
     <div className="idea-card">
@@ -273,6 +279,17 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
           <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
           <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
           <span className="idea-card__timestamp">{idea.timestamp}</span>
+        </div>
+      )}
+
+      {/* 👉 показываем комментарии если есть */}
+      {expanded && comments.length > 0 && (
+        <div className="idea-card__comments-list">
+          {comments.map(comment => (
+            <div key={comment.id} className="idea-card__comment">
+              <strong>{comment.author?.first_name || 'Аноним'}:</strong> {comment.message_text}
+            </div>
+          ))}
         </div>
       )}
 

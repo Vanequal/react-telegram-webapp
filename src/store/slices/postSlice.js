@@ -17,6 +17,18 @@ export const createPost = createAsyncThunk(
   }
 );
 
+export const fetchPostComments = createAsyncThunk(
+  'post/fetchComments',
+  async (postId, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(`/api/v1/post/comments?post_id=${postId}`);
+      return { postId, comments: res.data };
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки комментариев');
+    }
+  }
+);
+
 
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
@@ -39,6 +51,7 @@ const postSlice = createSlice({
     loading: false,
     error: null,
     preview: null,
+    comments: {},
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -65,6 +78,16 @@ const postSlice = createSlice({
       .addCase(createPostPreview.rejected, (state, action) => {
         state.error = action.payload;
         state.loading = false;
+      })
+      .addCase(fetchPostComments.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(fetchPostComments.fulfilled, (state, action) => {
+        const { postId, comments } = action.payload;
+        state.comments[postId] = comments; 
+      })
+      .addCase(fetchPostComments.rejected, (state, action) => {
+        state.error = action.payload;
       });
   }
 });
