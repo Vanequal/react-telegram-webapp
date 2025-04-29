@@ -104,7 +104,8 @@ const MindVaultPage = () => {
       await dispatch(createPostPreview({
         section_key: section.section_key,
         theme_id: section.theme.id,
-        message_text: ideaText.trim()
+        message_text: ideaText.trim(),
+        files: attachedFiles.length > 0 ? attachedFiles : []
       })).unwrap();
   
       navigate('/editideapagegpt');

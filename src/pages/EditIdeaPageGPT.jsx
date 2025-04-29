@@ -26,7 +26,7 @@ const EditIdeaPageGPT = () => {
       dispatch(createPostPreview({
         section_key: sectionKey,
         theme_id: themeId,
-        message_text: ideaText
+        message_text: ideaText,
       }));
     }
   };
@@ -38,6 +38,7 @@ const EditIdeaPageGPT = () => {
       message_text: text,
       section_key: sectionKey,
       theme_id: themeId,
+      files: attachedFiles.length > 0 ? attachedFiles : [],
       publishing_method,
     };
 
