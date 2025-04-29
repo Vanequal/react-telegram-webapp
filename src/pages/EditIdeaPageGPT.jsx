@@ -14,7 +14,8 @@ const EditIdeaPageGPT = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
-  
+  const [attachedFiles, setAttachedFiles] = useState([]);
+
   const [ideaText, setIdeaText] = useState('');
   const { preview, loading } = useSelector(state => state.post);
 
