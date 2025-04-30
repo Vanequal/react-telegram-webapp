@@ -284,16 +284,23 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
 
       <div className="idea-card__divider" />
 
-      {idea.comments > 0 && (
-        <div className="idea-card__footer" onClick={() => onExpand(idea.id)} style={{ cursor: 'pointer' }}>
-          <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
-          <span className="idea-card__comments">{idea.comments} комментариев</span>
-          <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
-          <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
-          <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
-          <span className="idea-card__timestamp">{idea.timestamp}</span>
-        </div>
-      )}
+      <div
+        className="idea-card__footer"
+        onClick={() => onExpand(idea.id)}
+        style={{ cursor: 'pointer' }}
+      >
+        <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
+        <span className="idea-card__comments">
+          {idea.comments > 0
+            ? `${idea.comments} комментариев`
+            : 'Прокомментировать'}
+        </span>
+        <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
+        <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
+        <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
+        <span className="idea-card__timestamp">{idea.timestamp}</span>
+      </div>
+
 
       {/* 👉 показываем комментарии если есть */}
       {expanded && comments.length > 0 && (
