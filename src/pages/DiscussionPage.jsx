@@ -2,6 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
+import { useDispatch, useSelector } from 'react-redux';
+import { createComment } from '../store/slices/postSlice';
+
+
 import MindVaultHeader from '../components/UI/MindVaultHeader';
 
 import userIcon from '../assets/img/userIcon.webp';
@@ -108,7 +112,13 @@ function DiscussionPage() {
   const { posts } = useSelector(state => state.section);
 
   const idea = useMemo(() => posts.find(p => String(p.id) === id), [posts, id]);
-  const comments = idea?.comments || [];
+  const comments = postComments;
+
+  const handleSendComment = () => {
+    if (!commentText.trim()) return;
+    dispatch(createComment({ post_id: idea.id, message_text: commentText.trim() }));
+    setCommentText('');
+  };
 
   return (
     <div className="discussion-page">
@@ -141,8 +151,20 @@ function DiscussionPage() {
 
       <div className="discussion-footer">
         <img src={skrepkaIcon} alt="Attach" className="discussion-footer__icon" />
-        <input type="text" className="discussion-footer__input" placeholder="Комментировать" />
-        <img src={sendIcon} alt="Send" className="discussion-footer__send" />
+        <input
+          type="text"
+          className="discussion-footer__input"
+          placeholder="Комментировать"
+          value={commentText}
+          onChange={(e) => setCommentText(e.target.value)}
+        />
+        <img
+          src={sendIcon}
+          alt="Send"
+          className="discussion-footer__send"
+          onClick={handleSendComment}
+          style={{ cursor: commentText.trim() ? 'pointer' : 'not-allowed', opacity: commentText.trim() ? 1 : 0.5 }}
+        />
       </div>
     </div>
   );

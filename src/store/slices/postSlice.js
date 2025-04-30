@@ -115,13 +115,16 @@ const postSlice = createSlice({
       })
       .addCase(fetchPostComments.fulfilled, (state, action) => {
         const { postId, comments } = action.payload;
-        state.comments[postId] = comments; 
+        state.comments[postId] = comments;
       })
       .addCase(createComment.fulfilled, (state, action) => {
-        const { post_id } = action.payload;
-        if (!state.comments[post_id]) state.comments[post_id] = [];
-        state.comments[post_id].push(action.payload);
-      })      
+        const comment = action.payload;
+        const post_id = comment.post_id;
+        if (!state.comments[post_id]) {
+          state.comments[post_id] = [];
+        }
+        state.comments[post_id].push(comment);
+      })
       .addCase(fetchPostComments.rejected, (state, action) => {
         state.error = action.payload;
       });
