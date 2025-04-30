@@ -1,8 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
-import { useDispatch, useSelector } from 'react-redux';
 import { createComment } from '../store/slices/postSlice';
 
 
@@ -109,7 +108,11 @@ function Comment({ comment }) {
 function DiscussionPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { posts } = useSelector(state => state.section);
+  const postComments = useSelector(state => state.post.comments[+id] || []);
+
+  const [commentText, setCommentText] = useState('');
 
   const idea = useMemo(() => posts.find(p => String(p.id) === id), [posts, id]);
   const comments = postComments;
@@ -163,11 +166,15 @@ function DiscussionPage() {
           alt="Send"
           className="discussion-footer__send"
           onClick={handleSendComment}
-          style={{ cursor: commentText.trim() ? 'pointer' : 'not-allowed', opacity: commentText.trim() ? 1 : 0.5 }}
+          style={{
+            cursor: commentText.trim() ? 'pointer' : 'not-allowed',
+            opacity: commentText.trim() ? 1 : 0.5
+          }}
         />
       </div>
     </div>
   );
 }
+
 
 export default DiscussionPage;
