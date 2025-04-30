@@ -76,7 +76,7 @@ function App() {
         <Route path="/historypage" element={<HistoryPage />} />
         <Route path="/editprofilepage" element={<EditProfilePage />} />
         <Route path="/debatepage" element={<DebatePage />} />
-        <Route path="/discussion" element={<DiscussionPage />} />
+        <Route path="/discussion/:id" element={<DiscussionPage />} />
         <Route path="/questionpage" element={<QuestionChatPage />} />
       </Routes>
     </Router>
