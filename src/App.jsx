@@ -21,6 +21,7 @@ import DebatePage from './pages/DebatePage';
 import './styles/global.scss';
 import GraphPage from './pages/GraphPage';
 import ResumePage from './pages/ResumePage';
+import QuestionChatPage from './pages/QuestionChatPage';
 
 function App() {
   const dispatch = useDispatch();
@@ -75,7 +76,8 @@ function App() {
         <Route path="/historypage" element={<HistoryPage />} />
         <Route path="/editprofilepage" element={<EditProfilePage />} />
         <Route path="/debatepage" element={<DebatePage />} />
-        <Route path="/discussion/:id" element={<DiscussionPage />} />
+        <Route path="/discussion" element={<DiscussionPage />} />
+        <Route path="/questionpage" element={<QuestionChatPage />} />
       </Routes>
     </Router>
   );

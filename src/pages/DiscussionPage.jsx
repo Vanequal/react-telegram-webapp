@@ -115,6 +115,8 @@ function DiscussionPage() {
       <MindVaultHeader
         onBackClick={() => navigate('/mindvault')}
         onDescriptionClick={() => navigate('/aboutpage')}
+        bgColor={"#EEEFF1"}
+        textColor="black"
       />
 
       <div className="discussion-page__container">

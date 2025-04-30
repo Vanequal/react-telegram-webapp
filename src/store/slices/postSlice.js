@@ -29,6 +29,22 @@ export const fetchPostComments = createAsyncThunk(
   }
 );
 
+export const createComment = createAsyncThunk(
+  'post/createComment',
+  async ({ post_id, message_text, parent_id = null }, { rejectWithValue }) => {
+    try {
+      const res = await axios.post('/api/v1/post/comment/create', {
+        post_id,
+        message_text,
+        parent_id,
+      });
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.detail || 'Ошибка добавления комментария');
+    }
+  }
+);
+
 
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
@@ -40,6 +56,21 @@ export const createPostPreview = createAsyncThunk(
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.detail || 'Ошибка предпросмотра поста');
+    }
+  }
+);
+
+export const reactToPost = createAsyncThunk(
+  'post/reactToPost',
+  async ({ post_id, reaction }, { rejectWithValue }) => {
+    try {
+      await axios.post(`/api/v1/post/react`, {
+        post_id,
+        reaction,
+      });
+      return { post_id, reaction };
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.detail || 'Ошибка при отправке реакции');
     }
   }
 );
@@ -86,6 +117,11 @@ const postSlice = createSlice({
         const { postId, comments } = action.payload;
         state.comments[postId] = comments; 
       })
+      .addCase(createComment.fulfilled, (state, action) => {
+        const { post_id } = action.payload;
+        if (!state.comments[post_id]) state.comments[post_id] = [];
+        state.comments[post_id].push(action.payload);
+      })      
       .addCase(fetchPostComments.rejected, (state, action) => {
         state.error = action.payload;
       });

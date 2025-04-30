@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSection, fetchPosts } from '../store/slices/sectionSlice';
 import { createPostPreview, fetchPostComments } from '../store/slices/postSlice';
+import { reactToPost } from '../store/slices/postSlice';
 
 import MindVaultHeader from '../components/UI/MindVaultHeader';
 
@@ -99,7 +100,7 @@ const MindVaultPage = () => {
 
   const handleSendClick = async () => {
     if (!ideaText.trim()) return;
-  
+
     try {
       await dispatch(createPostPreview({
         section_key: section.section_key,
@@ -107,13 +108,13 @@ const MindVaultPage = () => {
         message_text: ideaText.trim(),
         files: attachedFiles.length > 0 ? attachedFiles : []
       })).unwrap();
-  
+
       navigate('/editideapagegpt');
     } catch (error) {
       console.error('Ошибка предпросмотра:', error);
     }
   };
-  
+
 
   return (
     <>
@@ -241,7 +242,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
   useEffect(() => {
     setExpanded(isExpanded);
 
-    if (isExpanded && comments.length === 0) { 
+    if (isExpanded && comments.length === 0) {
       dispatch(fetchPostComments(idea.id)); // <<< грузим комменты при открытии
     }
   }, [isExpanded, dispatch, idea.id, comments.length]);
@@ -265,8 +266,20 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       )}
 
       <div className="idea-card__badges">
-        <div className="idea-card__badge"><img src={likeIcon} alt="Like" /><span>{idea.likes}</span></div>
-        <div className="idea-card__badge"><img src={dislikeIcon} alt="Dislike" /><span>{idea.dislikes}</span></div>
+        <div
+          className="idea-card__badge"
+          onClick={() => dispatch(reactToPost({ post_id: idea.id, reaction: 'like' }))}>
+          <img src={likeIcon} alt="Like" />
+          <span>{idea.likes}</span>
+        </div>
+
+        <div
+          className="idea-card__badge"
+          onClick={() => dispatch(reactToPost({ post_id: idea.id, reaction: 'dislike' }))}>
+          <img src={dislikeIcon} alt="Dislike" />
+          <span>{idea.dislikes}</span>
+        </div>
+
       </div>
 
       <div className="idea-card__divider" />
