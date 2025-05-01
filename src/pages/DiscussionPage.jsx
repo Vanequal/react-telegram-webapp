@@ -116,19 +116,21 @@ function DiscussionPage() {
   const idea = useMemo(() => posts.find(p => String(p.id) === id), [posts, id]);
   const comments = postComments;
 
-  const handleSendComment = () => {
+  const handleSendComment = async () => {
     if (!commentText.trim()) return;
   
-    dispatch(createComment({ post_id: idea.id, message_text: commentText.trim() }));
-    setCommentText('');
+    try {
+      await dispatch(createComment({
+        post_id: idea.id,
+        message_text: commentText.trim()
+      })).unwrap();
   
-    dispatch(fetchPostComments({
-      post_id: idea.id,
-      section_key: 'chat_ideas',
-      theme_id: 1
-    }));
+      setCommentText('');
+    } catch (err) {
+      console.error('Ошибка при добавлении комментария:', err);
+    }
   };
-  
+    
 
   useEffect(() => {
     if (idea?.id) {
