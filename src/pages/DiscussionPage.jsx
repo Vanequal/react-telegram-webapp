@@ -4,13 +4,6 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import { createComment, fetchPostComments } from '../store/slices/postSlice';
 
-useEffect(() => {
-  if (idea?.id) {
-    dispatch(fetchPostComments(idea.id));
-  }
-}, [idea?.id, dispatch]);
-
-
 import MindVaultHeader from '../components/UI/MindVaultHeader';
 
 import userIcon from '../assets/img/userIcon.webp';
@@ -128,7 +121,15 @@ function DiscussionPage() {
     dispatch(createComment({ post_id: idea.id, message_text: commentText.trim() }));
     setCommentText('');
   };
-
+  useEffect(() => {
+    if (idea?.id) {
+      dispatch(fetchPostComments({
+        post_id: idea.id,
+        section_key: 'chat_ideas',
+        theme_id: 1
+      }));
+    }
+  }, [idea?.id, dispatch]);
   return (
     <div className="discussion-page">
       <MindVaultHeader
