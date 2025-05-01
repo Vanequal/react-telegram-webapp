@@ -2,7 +2,13 @@ import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { createComment } from '../store/slices/postSlice';
+import { createComment, fetchPostComments } from '../store/slices/postSlice';
+
+useEffect(() => {
+  if (idea?.id) {
+    dispatch(fetchPostComments(idea.id));
+  }
+}, [idea?.id, dispatch]);
 
 
 import MindVaultHeader from '../components/UI/MindVaultHeader';
@@ -43,7 +49,7 @@ function IdeaCard({ idea }) {
 
       <div className="idea-card__footer">
         <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
-        <span className="idea-card__comments">{idea.comments?.length || 0} Комментарий</span>
+        <span className="idea-card__comments">{idea.comments || 0} Комментариев</span>
         <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
         <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
         <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
@@ -65,7 +71,7 @@ function Comment({ comment }) {
           <div className="comment-user">{comment.author?.first_name || 'Пользователь'}</div>
           <div className="comment-timestamp">{comment.created_at?.split(' ')[1]}</div>
         </div>
-        <div className="comment-content">{comment.text}</div>
+        <div className="comment-content">{comment.message_text}</div>
         <div className="comment-actions-right">
           <div className="reaction-badge">
             <img src={likeIcon} alt="Like" />

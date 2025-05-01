@@ -241,11 +241,15 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
 
   useEffect(() => {
     setExpanded(isExpanded);
-
+  
     if (isExpanded && comments.length === 0) {
-      dispatch(fetchPostComments(idea.id)); // <<< грузим комменты при открытии
+      dispatch(fetchPostComments({
+        post_id: idea.id,
+        section_key: 'chat_ideas',
+        theme_id: 1
+      }));
     }
-  }, [isExpanded, dispatch, idea.id, comments.length]);
+  }, [isExpanded, dispatch, idea.id, comments.length]);  
 
   return (
     <div className="idea-card">

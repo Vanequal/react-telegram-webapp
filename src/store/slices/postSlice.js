@@ -33,10 +33,10 @@ export const createComment = createAsyncThunk(
   'post/createComment',
   async ({ post_id, message_text, parent_id = null }, { rejectWithValue }) => {
     try {
-      const res = await axios.post('/api/v1/post/comment/create', {
-        post_id,
+      const res = await axios.post(`/api/v1/comment/create?post_id=${post_id}&section_key=chat_ideas&theme_id=1`, {
         message_text,
-        parent_id,
+        reply_to_message_id: parent_id ?? null,
+        files: []
       });
       return res.data;
     } catch (err) {

@@ -14,7 +14,7 @@ import '../styles/QuestionPage.scss';
 
 const mockQuestion = {
     id: 1,
-    text: "Как правильно настроить прокси в React-приложении?",
+    text: "Как правильно расположить инсектарий относительно сторон света? ",
     created_at: "2025-05-01 12:34:56",
     likes: 12,
     dislikes: 2,
@@ -50,16 +50,25 @@ const mockQuestion = {
 
 function Comment({ comment }) {
     const [showReplies, setShowReplies] = useState(true);
+    
+    // Проверяем, является ли это первым комментарием
+    const isFirstComment = comment.id === 1;
 
     return (
-        <div className="question-comment-thread">
+        <div className={`question-comment-thread ${isFirstComment ? 'first-comment' : ''}`}>
             <div className="question-comment-item">
                 <div className="question-comment-header">
                     <img src={userIcon} alt="Avatar" className="question-comment-avatar" />
                     <div className="question-comment-user">{comment.author?.first_name || 'Пользователь'}</div>
                     <div className="question-comment-timestamp">{comment.created_at.split(' ')[1]}</div>
                 </div>
-                <div className="question-comment-content">{comment.text}</div>
+                <div className="question-comment-content">
+                    {isFirstComment ? (
+                        <><strong>Ответ:</strong> Фронт на юг.</>
+                    ) : (
+                        comment.text
+                    )}
+                </div>
                 <div className="question-comment-actions-right">
                     <div className="question-reaction-badge">
                         <img src={likeIcon} alt="Like" />
@@ -70,14 +79,34 @@ function Comment({ comment }) {
                         <span>{comment.dislikes}</span>
                     </div>
                 </div>
-                {comment.replies?.length > 0 && (
-                    <div className="question-comment-actions-left">
-                        <button className="question-toggle-replies-button" onClick={() => setShowReplies(!showReplies)}>
+                
+                {isFirstComment ? (
+                    <div className="comment-actions-container">
+                        <button className="comment-action-button">
+                            Комментировать
+                        </button>
+                        <button 
+                            className="comment-action-button" 
+                            onClick={() => setShowReplies(!showReplies)}
+                        >
                             {showReplies
-                                ? `Скрыть ответы (${comment.replies.length})`
-                                : `Показать ответы (${comment.replies.length})`}
+                                ? `Скрыть комментарий (1)`
+                                : `Посмотреть 1 Комментарий`}
                         </button>
                     </div>
+                ) : (
+                    comment.replies?.length > 0 && (
+                        <div className="question-comment-actions-left">
+                            <button 
+                                className="question-toggle-replies-button" 
+                                onClick={() => setShowReplies(!showReplies)}
+                            >
+                                {showReplies
+                                    ? `Скрыть ответы (${comment.replies.length})`
+                                    : `Показать ответы (${comment.replies.length})`}
+                            </button>
+                        </div>
+                    )
                 )}
             </div>
 
@@ -122,7 +151,7 @@ const QuestionChatPage = () => {
 
                         {/* Текст вопроса */}
                         <div className="question-card__text-wrapper">
-                            <div className="question-card__text">{mockQuestion.text}</div>
+                            <div className="question-card__text"><strong>Вопрос:</strong> {mockQuestion.text}</div>
                         </div>
 
                         {/* Лайки и дизлайки */}
@@ -142,16 +171,22 @@ const QuestionChatPage = () => {
                             </div>
                         </div>
 
-                        <div className="question-card__divider" style={{marginTop: '20px'}}></div>
+                        <div className="question-card__divider" style={{ marginTop: '20px' }}></div>
 
                         {/* Футер карточки */}
-                        <div className="question-card__footer">
+                        <div
+                            className="question-card__footer"
+                            style={{ cursor: 'pointer' }}
+                        >
                             <img src={avatarStack} alt="Avatars" className="question-card__avatar-stack" />
-                            <span className="question-card__answers-count">3 ответа</span>
+                            <span className="question-card__comments">
+                                {mockQuestion.comments.length > 0
+                                    ? `${mockQuestion.comments.length} комментариев`
+                                    : 'Прокомментировать'}
+                            </span>
                             <img src={donatIcon} alt="Donate" className="question-card__icon-donat" />
                             <img src={eyeIcon} alt="Views" className="question-card__icon-eye" />
-                            <span className="question-card__views">36</span>
-                            <span className="question-card__arrow">→</span>
+                            <p className="question-card__views">{mockQuestion.views}</p>
                         </div>
                     </div>
                 </div>

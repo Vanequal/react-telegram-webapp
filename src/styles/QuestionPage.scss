@@ -91,6 +91,7 @@
   display: flex;
   gap: 8px;
   margin-left: 35px;
+  margin-top: 10px;
 }
 
 .question-comment-actions-left {
@@ -241,38 +242,207 @@
   }
   
   .question-card__footer {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto auto 1fr auto auto auto;
     align-items: center;
-    gap: 10px;
-    padding-top: 0;
-  
-    .question-card__avatar-stack {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-    }
-  
-    .question-card__answers-count {
-      font-size: 14px;
-      color: #007AFF;
-      font-family: Telegram HPLHS, sans-serif;
-    }
-  
-    .question-card__icon-donat,
-    .question-card__icon-eye {
-      width: 20px;
-      height: 20px;
-    }
-  
-    .question-card__views {
-      font-size: 14px;
-      color: #999;
-    }
-  
-    .question-card__arrow {
-      font-size: 18px;
-      margin-left: auto;
-      color: #ccc;
-    }
+    gap: 8px;
+    width: 100%;
+    margin-top: 12px;
   }
   
+  .question-card__avatar-stack {
+    width: 50px;
+    height: 28px;
+  }
+  
+  .question-card__comments {
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    color: rgba(30, 136, 211, 1);
+  }
+  
+  .question-card__icon-donat {
+    width: 56px;
+    height: 30px;
+  }
+  
+  .question-card__icon-eye {
+    width: 22px;
+    height: 16px;
+  }
+  
+  .question-card__views {
+    margin: 0;
+    color: rgba(193, 198, 201, 1);
+    font-size: 14px;
+  }
+  
+  .question-card__timestamp {
+    font-size: 14px;
+    color: rgba(193, 198, 201, 1);
+  }
+
+  // ====== ВОПРОС (вступление) ======
+.question-intro {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 16px 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  gap: 8px;
+
+  &__label {
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    color: #000;
+  }
+
+  &__text {
+    font-size: 16px;
+    font-family: 'Space Grotesk', sans-serif;
+    color: #000;
+  }
+}
+
+// ====== КАРТОЧКА ОТВЕТА ======
+.question-card__answer-label {
+  font-weight: 700;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  color: #000;
+  margin-bottom: 4px;
+}
+
+// ====== КНОПКИ ПОД ОТВЕТОМ ======
+.question-card__action-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 0 2px;
+}
+
+.question-action-button {
+  background: none;
+  border: none;
+  color: #1976D2;
+  font-size: 14px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  padding: 0;
+  cursor: pointer;
+}
+
+// ====== КОММЕНТЫ ПОД ОТВЕТОМ ======
+.question-subcomment {
+  margin-left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.question-subcomment-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.question-subcomment-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.question-subcomment-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.question-subcomment-user {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.question-subcomment-reply-to {
+  font-size: 14px;
+  font-weight: 600;
+  color: #D23219;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.question-subcomment-text {
+  font-size: 14px;
+  color: #000;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.question-subcomment-reactions {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+
+.question-subcomment-reaction {
+  display: flex;
+  align-items: center;
+  background-color: #E1EFFF;
+  padding: 4px 10px;
+  border-radius: 33px;
+
+  img {
+    width: 16px;
+    height: 16px;
+  }
+
+  span {
+    font-size: 13px;
+    margin-left: 4px;
+  }
+}
+
+// ====== КНОПКА "ОТВЕТИТЬ" ======
+.question-subcomment-reply-button {
+  align-self: flex-end;
+  color: #1976D2;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+.question-comment-thread.first-comment {
+  .question-comment-item {
+    background-color: white;
+    border: 1px solid #FCFCFE;
+    box-shadow: 0px 4px 4px 0px #00000040;
+    border-radius: 10px;
+    padding: 12px;
+    width: 95%;
+  }
+
+  .comment-actions-container {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 32px;
+    margin-top: 10px;
+  }
+
+  .comment-action-button {
+    background: none;
+    border: none;
+    color: #1976D2;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+  }
+}
