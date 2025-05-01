@@ -19,15 +19,18 @@ export const createPost = createAsyncThunk(
 
 export const fetchPostComments = createAsyncThunk(
   'post/fetchComments',
-  async (postId, { rejectWithValue }) => {
+  async ({ post_id, section_key, theme_id }, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`/api/v1/post/comments?post_id=${postId}`);
-      return { postId, comments: res.data };
+      const res = await axios.get(`/api/v1/comment/comments`, {
+        params: { post_id, section_key, theme_id }
+      });
+      return { postId: post_id, comments: res.data };
     } catch (err) {
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки комментариев');
     }
   }
 );
+
 
 export const createComment = createAsyncThunk(
   'post/createComment',

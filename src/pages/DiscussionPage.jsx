@@ -118,14 +118,25 @@ function DiscussionPage() {
 
   const handleSendComment = () => {
     if (!commentText.trim()) return;
+  
     dispatch(createComment({ post_id: idea.id, message_text: commentText.trim() }));
     setCommentText('');
-    dispatch(fetchPostComments(idea.id));
+  
+    dispatch(fetchPostComments({
+      post_id: idea.id,
+      section_key: 'chat_ideas',
+      theme_id: 1
+    }));
   };
+  
 
   useEffect(() => {
     if (idea?.id) {
-      dispatch(fetchPostComments(idea.id)); 
+      dispatch(fetchPostComments({
+        post_id: idea.id,
+        section_key: 'chat_ideas',
+        theme_id: 1
+      }));
     }
   }, [idea?.id, dispatch]);
   
