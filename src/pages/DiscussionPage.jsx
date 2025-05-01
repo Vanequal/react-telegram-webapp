@@ -120,16 +120,15 @@ function DiscussionPage() {
     if (!commentText.trim()) return;
     dispatch(createComment({ post_id: idea.id, message_text: commentText.trim() }));
     setCommentText('');
+    dispatch(fetchPostComments(idea.id));
   };
+
   useEffect(() => {
     if (idea?.id) {
-      dispatch(fetchPostComments({
-        post_id: idea.id,
-        section_key: 'chat_ideas',
-        theme_id: 1
-      }));
+      dispatch(fetchPostComments(idea.id)); 
     }
   }, [idea?.id, dispatch]);
+  
   return (
     <div className="discussion-page">
       <MindVaultHeader
