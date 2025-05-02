@@ -119,7 +119,15 @@ function DiscussionPage() {
   const handleSendComment = () => {
     if (!commentText.trim()) return;
   
-    dispatch(createComment({ post_id: idea.id, message_text: commentText.trim() }));
+    dispatch(createComment({
+      post_id: idea.id,
+      message_text: commentText.trim(),
+      parent_id: null,
+      section_key: 'chat_ideas',
+      theme_id: 1,
+      content_type: 'post'
+    }));
+  
     setCommentText('');
   
     dispatch(fetchPostComments({
@@ -129,6 +137,7 @@ function DiscussionPage() {
       content_type: 'post'
     }));
   };
+  
   
 
   useEffect(() => {
