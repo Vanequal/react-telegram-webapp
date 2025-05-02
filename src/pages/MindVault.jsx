@@ -241,16 +241,18 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
 
   useEffect(() => {
     setExpanded(isExpanded);
-  
+
     if (isExpanded && comments.length === 0) {
       dispatch(fetchPostComments({
         post_id: idea.id,
         section_key: 'chat_ideas',
-        theme_id: 1
+        theme_id: 1,
+        content_type: 'post'
       }));
     }
-  }, [isExpanded, dispatch, idea.id, comments.length]);  
-
+  }, [isExpanded, dispatch, idea.id, comments.length]);
+  const allComments = useSelector(state => state.post.comments[idea.id] || []);
+  const commentCount = allComments.length;
   return (
     <div className="idea-card">
       <div className="idea-card__top">
@@ -295,8 +297,8 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       >
         <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
         <span className="idea-card__comments">
-          {idea.comments > 0
-            ? `${idea.comments} комментариев`
+          {commentCount > 0
+            ? `${commentCount} комментариев`
             : 'Прокомментировать'}
         </span>
         <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />

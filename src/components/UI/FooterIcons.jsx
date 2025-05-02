@@ -37,12 +37,14 @@ const FooterIcons = ({
         </a>
       )}
       {showHead && (
-        <img
-          src={headIcon}
-          alt="Head"
-          className="footer-icons__icon"
-          onClick={onHeadClick}
-        />
+        <a href='/questionchatpage'>
+          <img
+            src={headIcon}
+            alt="Head"
+            className="footer-icons__icon"
+            onClick={onHeadClick}
+          />
+        </a>
       )}
       {showTypewriter && (
         <img

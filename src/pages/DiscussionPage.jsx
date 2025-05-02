@@ -125,7 +125,8 @@ function DiscussionPage() {
     dispatch(fetchPostComments({
       post_id: idea.id,
       section_key: 'chat_ideas',
-      theme_id: 1
+      theme_id: 1,
+      content_type: 'post'
     }));
   };
   
@@ -135,7 +136,8 @@ function DiscussionPage() {
       dispatch(fetchPostComments({
         post_id: idea.id,
         section_key: 'chat_ideas',
-        theme_id: 1
+        theme_id: 1,
+        content_type: 'post'
       }));
     }
   }, [idea?.id, dispatch]);

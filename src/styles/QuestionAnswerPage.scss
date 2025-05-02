@@ -70,7 +70,6 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 15px;
   font-weight: 500;
-  color: #1976D2;
   flex-grow: 1;
 }
 
@@ -148,7 +147,8 @@
   border-radius: 10px;
   padding: 16px;
   width: 100%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0px 4px 4px 0px #00000040;
+  box-sizing: border-box;
 
   &__text-wrapper {
     margin-bottom: 12px;
@@ -222,67 +222,68 @@
     height: 28px;
   }
 }
-.question-card__header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-  
-  .question-card__avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-  }
-  
-  .question-card__username {
-    font-size: 15px;
-    font-weight: 600;
-    color: #333;
-  }
-  
-  .question-card__footer {
-    display: grid;
-    grid-template-columns: auto auto 1fr auto auto auto;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    margin-top: 12px;
-  }
-  
-  .question-card__avatar-stack {
-    width: 50px;
-    height: 28px;
-  }
-  
-  .question-card__comments {
-    font-family: 'Roboto', sans-serif;
-    font-size: 14px;
-    color: rgba(30, 136, 211, 1);
-  }
-  
-  .question-card__icon-donat {
-    width: 56px;
-    height: 30px;
-  }
-  
-  .question-card__icon-eye {
-    width: 22px;
-    height: 16px;
-  }
-  
-  .question-card__views {
-    margin: 0;
-    color: rgba(193, 198, 201, 1);
-    font-size: 14px;
-  }
-  
-  .question-card__timestamp {
-    font-size: 14px;
-    color: rgba(193, 198, 201, 1);
-  }
 
-  // ====== ВОПРОС (вступление) ======
+.question-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.question-card__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.question-card__username {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.question-card__footer {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto auto auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.question-card__avatar-stack {
+  width: 50px;
+  height: 28px;
+}
+
+.question-card__comments {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  color: rgba(30, 136, 211, 1);
+}
+
+.question-card__icon-donat {
+  width: 56px;
+  height: 30px;
+}
+
+.question-card__icon-eye {
+  width: 22px;
+  height: 16px;
+}
+
+.question-card__views {
+  margin: 0;
+  color: rgba(193, 198, 201, 1);
+  font-size: 14px;
+}
+
+.question-card__timestamp {
+  font-size: 14px;
+  color: rgba(193, 198, 201, 1);
+}
+
+// ====== ВОПРОС (вступление) ======
 .question-intro {
   display: flex;
   flex-direction: column;
@@ -353,6 +354,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  width: 100%;
 }
 
 .question-subcomment-header {
@@ -378,7 +380,7 @@
 .question-subcomment-text {
   font-size: 14px;
   color: #000;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .question-subcomment-reactions {
@@ -405,19 +407,6 @@
   }
 }
 
-// ====== КНОПКА "ОТВЕТИТЬ" ======
-.question-subcomment-reply-button {
-  align-self: flex-end;
-  color: #1976D2;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: 'Montserrat', sans-serif;
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-top: 2px;
-}
-
 .question-comment-thread.first-comment {
   .question-comment-item {
     background-color: white;
@@ -425,13 +414,12 @@
     box-shadow: 0px 4px 4px 0px #00000040;
     border-radius: 10px;
     padding: 12px;
-    width: 95%;
+    box-sizing: border-box;
   }
 
   .comment-actions-container {
     display: flex;
     justify-content: space-between;
-    margin-left: 32px;
     margin-top: 10px;
   }
 
@@ -445,4 +433,32 @@
     cursor: pointer;
     padding: 0;
   }
+}
+
+.reply-quote-wrapper {
+  background-color: #EAF4FA;
+  padding: 0 8px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  width: 200px;
+  margin-left: 0 !important;
+}
+
+.replied-user-name {
+  color: #FC4C53;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.replied-content {
+  font-size: 14px;
+  color: #333;
+}
+
+.nested-replies {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }

@@ -6,7 +6,6 @@ import MindVaultHeader from '../components/UI/MindVaultHeader';
 
 import { useNavigate } from 'react-router-dom';
 
-import { IoChevronBackOutline } from 'react-icons/io5';
 import { RiArrowLeftSLine, RiHistoryLine } from 'react-icons/ri';
 
 import historyUser from "../assets/img/historyUser.png"
@@ -24,11 +23,6 @@ const HistoryPage = () => {
                 textColor='black'
                 bgColor={"#EEEFF1"} />
             <div className="history-page__content">
-                <div className="history-page__navigation">
-                    <RiArrowLeftSLine size={24} />
-                    <RiHistoryLine size={24} />
-                </div>
-
                 <h2 className="history-page__title">История</h2>
 
                 <div className="history-page__section">

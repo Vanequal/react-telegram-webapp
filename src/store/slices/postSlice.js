@@ -19,10 +19,10 @@ export const createPost = createAsyncThunk(
 
 export const fetchPostComments = createAsyncThunk(
   'post/fetchComments',
-  async ({ post_id, section_key, theme_id }, { rejectWithValue }) => {
+  async ({ post_id, section_key, theme_id, content_type }, { rejectWithValue }) => {
     try {
       const res = await axios.get(`/api/v1/comment/comments`, {
-        params: { post_id, section_key, theme_id }
+        params: { post_id, section_key, theme_id, content_type }
       });
       return { postId: post_id, comments: res.data };
     } catch (err) {
@@ -34,12 +34,14 @@ export const fetchPostComments = createAsyncThunk(
 
 export const createComment = createAsyncThunk(
   'post/createComment',
-  async ({ post_id, message_text, parent_id = null }, { rejectWithValue }) => {
+  async ({ post_id, message_text, parent_id = null, section_key, theme_id, content_type }, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`/api/v1/comment/create?post_id=${post_id}&section_key=chat_ideas&theme_id=1`, {
+      const res = await axios.post(`/api/v1/comment/create`, {
         message_text,
         reply_to_message_id: parent_id ?? null,
         files: []
+      }, {
+        params: { post_id, section_key, theme_id, content_type }
       });
       return res.data;
     } catch (err) {
@@ -47,6 +49,7 @@ export const createComment = createAsyncThunk(
     }
   }
 );
+
 
 
 export const createPostPreview = createAsyncThunk(
