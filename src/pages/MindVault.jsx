@@ -52,8 +52,8 @@ const MindVaultPage = () => {
       }
     }
 
-    dispatch(fetchSection({ section_key: sectionKey, theme_id: themeId }));
-    dispatch(fetchPosts({ section_key: sectionKey, theme_id: themeId }));
+    dispatch(fetchSection({ section_key: sectionKey, theme_id: themeId, content_type: 'post' }));
+    dispatch(fetchPosts({ section_key: sectionKey, theme_id: themeId, content_type: 'post' }));
   }, [dispatch, sectionKey, themeId]);
 
   const ideas = (Array.isArray(posts) ? posts : []).map(post => ({
