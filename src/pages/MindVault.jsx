@@ -81,14 +81,20 @@ const MindVaultPage = () => {
   };
 
   const handleMediaClick = () => {
-    const used = window.Telegram?.WebApp?.showAttachMenu?.({ media: true });
-    if (!used) fileInputMediaRef.current?.click();
+    const tg = window.Telegram?.WebApp;
+    const used = tg?.showAttachMenu?.({ media: true });
+    if (!used) {
+      fileInputMediaRef.current?.click();
+    }
     setShowPopover(false);
   };
 
   const handleFileClick = () => {
-    const used = window.Telegram?.WebApp?.showAttachMenu?.({ files: true });
-    if (!used) fileInputFilesRef.current?.click();
+    const tg = window.Telegram?.WebApp;
+    const used = tg?.showAttachMenu?.({ files: true });
+    if (!used) {
+      fileInputFilesRef.current?.click();
+    }
     setShowPopover(false);
   };
 
