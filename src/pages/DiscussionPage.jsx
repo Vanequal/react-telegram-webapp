@@ -18,8 +18,6 @@ import sendIcon from '../assets/img/sendIcon.webp';
 import '../styles/DiscussionPage.scss';
 
 function IdeaCard({ idea }) {
-  const location = useLocation();
-  const idea = location.state?.idea ?? posts.find(p => String(p.id) === id);
   return (
     <div className="idea-card idea-card--no-header">
       <div className="idea-card__text-wrapper expanded">
@@ -109,18 +107,19 @@ function Comment({ comment }) {
 function DiscussionPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const { posts } = useSelector(state => state.section);
   const postComments = useSelector(state => state.post.comments[+id] || []);
 
   const [commentText, setCommentText] = useState('');
-
-  const idea = useMemo(() => posts.find(p => String(p.id) === id), [posts, id]);
+  const ideaFromState = location.state?.idea;
+  const idea = useMemo(() => ideaFromState || posts.find(p => String(p.id) === id), [ideaFromState, posts, id]);
   const comments = postComments;
 
   const handleSendComment = () => {
     if (!commentText.trim()) return;
-
+  
     dispatch(createComment({
       post_id: idea.id,
       message_text: commentText.trim(),
@@ -129,9 +128,9 @@ function DiscussionPage() {
       theme_id: 1,
       content_type: 'post'
     }));
-
+  
     setCommentText('');
-
+  
     dispatch(fetchPostComments({
       post_id: idea.id,
       section_key: 'chat_ideas',
@@ -139,8 +138,8 @@ function DiscussionPage() {
       content_type: 'post'
     }));
   };
-
-
+  
+  
 
   useEffect(() => {
     if (idea?.id) {
@@ -152,7 +151,7 @@ function DiscussionPage() {
       }));
     }
   }, [idea?.id, dispatch]);
-
+  
   return (
     <div className="discussion-page">
       <MindVaultHeader
