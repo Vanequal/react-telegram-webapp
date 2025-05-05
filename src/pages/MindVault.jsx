@@ -74,8 +74,13 @@ const MindVaultPage = () => {
   });
 
   const handleExpand = (id) => {
-    const originalPost = posts.find(p => p.id === id);
-    navigate(`/discussion/${id}`, { state: { idea: originalPost } });
+    const selected = ideas.find(i => i.id === id);
+    const post = posts.find(p => p.id === id);
+    const ideaWithText = {
+      ...selected,
+      message_text: post?.message_text || selected.preview
+    };
+    navigate(`/discussion/${id}`, { state: { idea: ideaWithText } });
   };
   
   
