@@ -77,6 +77,28 @@ export const createPostPreview = createAsyncThunk(
   }
 );
 
+function nestComments(comments) {
+  const map = {};
+  const roots = [];
+
+  comments.forEach(comment => {
+    map[comment.id] = { ...comment, replies: [] };
+  });
+
+  comments.forEach(comment => {
+    if (comment.reply_to_message_id) {
+      const parent = map[comment.reply_to_message_id];
+      if (parent) {
+        parent.replies.push(map[comment.id]);
+      }
+    } else {
+      roots.push(map[comment.id]);
+    }
+  });
+
+  return roots;
+}
+
 
 export const reactToPost = createAsyncThunk(
   'post/reactToPost',
@@ -145,7 +167,11 @@ const postSlice = createSlice({
       })
       .addCase(fetchPostComments.rejected, (state, action) => {
         state.error = action.payload;
-      });
+      })
+      .addCase(fetchPostComments.fulfilled, (state, action) => {
+        const { postId, comments } = action.payload;
+        state.comments[postId] = nestComments(comments);
+      });      
   }
 });
 
