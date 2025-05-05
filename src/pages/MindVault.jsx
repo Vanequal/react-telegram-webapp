@@ -74,6 +74,11 @@ const MindVaultPage = () => {
   });
 
   const handleExpand = (id) => {
+    const viewed = getViewedIdeas();
+    if (!viewed[id]) {
+      markIdeaAsViewed(id);
+      const updated = ideas.map(i => i.id === id ? { ...i, views: i.views + 1 } : i);
+    }
     const selected = ideas.find(i => i.id === id);
     const post = posts.find(p => p.id === id);
     const ideaWithText = {
@@ -268,6 +273,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
   const [expanded, setExpanded] = useState(isExpanded);
   const [showReadMore, setShowReadMore] = useState(false);
   const textWrapperRef = useRef(null);
+  const cardRef = useRef(null);
 
   useEffect(() => {
     if (textWrapperRef.current?.scrollHeight > 160) {
@@ -275,8 +281,38 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
     }
   }, []);
 
+  useEffect(() => {
+    const viewed = getViewedIdeas();
+    if (viewed[idea.id]) return; // Уже засчитан
+  
+    let timer = null;
+  
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        timer = setTimeout(() => {
+          markIdeaAsViewed(idea.id);
+          idea.views += 1; 
+        }, 30000); 
+      } else {
+        clearTimeout(timer);
+      }
+    }, {
+      threshold: 0.75, 
+    });
+  
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+  
+    return () => {
+      clearTimeout(timer);
+      if (cardRef.current) observer.unobserve(cardRef.current);
+    };
+  }, [idea]);
+  
+
   return (
-    <div className="idea-card">
+    <div className="idea-card" ref={cardRef}>
       <div className="idea-card__top">
         <div className="idea-card__user">
           <img src={userIcon} alt="User" className="idea-card__user-icon" />
