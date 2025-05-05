@@ -304,8 +304,8 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       >
         <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
         <span className="idea-card__comments">
-          {commentCount > 0
-            ? `${commentCount} комментариев`
+          {(comments.length || idea.comments) > 0
+            ? `${comments.length || idea.comments} комментариев`
             : 'Прокомментировать'}
         </span>
         <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
