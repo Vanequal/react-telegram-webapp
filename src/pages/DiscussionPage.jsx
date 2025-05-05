@@ -14,6 +14,7 @@ import donatIcon from '../assets/img/donatIcon.webp';
 import eyeIcon from '../assets/img/eyeIcon.webp';
 import skrepkaIcon from '../assets/img/skrepkaIcon.webp';
 import sendIcon from '../assets/img/sendIcon.webp';
+import sendIconActive from '../assets/img/sendButtonActive.png'
 
 import '../styles/DiscussionPage.scss';
 
@@ -119,19 +120,19 @@ function DiscussionPage() {
 
   const handleSendComment = () => {
     if (!commentText.trim()) return;
-  
+
     const scrollToNew = () => {
       setTimeout(() => {
         const el = document.getElementById('new-comment');
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 200); 
+      }, 200);
     };
-  
+
     sessionStorage.setItem('return_to_discussion', JSON.stringify({
       id: idea.id,
       scrollTo: 'new-comment'
     }));
-  
+
     dispatch(createComment({
       post_id: idea.id,
       message_text: commentText.trim(),
@@ -140,9 +141,9 @@ function DiscussionPage() {
       theme_id: 1,
       content_type: 'post'
     })).then(() => {
-      navigate('/reload'); 
+      navigate('/reload');
     });
-  };  
+  };
 
   useEffect(() => {
     if (idea?.id) {
@@ -165,8 +166,8 @@ function DiscussionPage() {
       }, 300);
     }
   }, [location.state]);
-  
-  
+
+
   return (
     <div className="discussion-page">
       <MindVaultHeader
@@ -188,7 +189,7 @@ function DiscussionPage() {
         <div className="comment-list">
           {comments.length > 0 ? (
             comments.map((comment) => (
-              <Comment key={comment.id} comment={comment}  isNew={location.state?.scrollTo === 'new-comment' && comment === comments[comments.length - 1]}/>
+              <Comment key={comment.id} comment={comment} isNew={location.state?.scrollTo === 'new-comment' && comment === comments[comments.length - 1]} />
             ))
           ) : (
             <p className="empty-comments">Комментариев пока нет</p>
@@ -206,7 +207,7 @@ function DiscussionPage() {
           onChange={(e) => setCommentText(e.target.value)}
         />
         <img
-          src={sendIcon}
+          src={commentText.trim() ? sendIconActive : sendIcon}
           alt="Send"
           className="discussion-footer__send"
           onClick={handleSendComment}
