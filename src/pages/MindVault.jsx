@@ -69,7 +69,7 @@ const MindVaultPage = () => {
       comments: actualComments ?? post.comments_count ?? 0,
       views: post.views ?? 0,
       pinned: post.pinned ?? false,
-      timestamp: post.created_at?.split(' ')[1] ?? '',
+      timestamp: post.created_at ?? '',
     };
   });
 
@@ -287,6 +287,14 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
 
       <div ref={textWrapperRef} className={`idea-card__text-wrapper ${expanded ? 'expanded' : ''}`}>
         <div className="idea-card__text">{idea.preview}</div>
+        <span className="idea-card__timestamp">
+          {new Date(idea.timestamp).toLocaleString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          })}
+        </span>
       </div>
 
       {!expanded && showReadMore && (
@@ -326,14 +334,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
         <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
         <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
         <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
-        <span className="idea-card__timestamp">
-          {new Date(idea.timestamp).toLocaleString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-          })}
-        </span>
       </div>
 
 
