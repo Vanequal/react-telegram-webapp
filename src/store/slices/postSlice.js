@@ -153,10 +153,6 @@ const postSlice = createSlice({
       .addCase(fetchPostComments.pending, (state) => {
         state.error = null;
       })
-      .addCase(fetchPostComments.fulfilled, (state, action) => {
-        const { postId, comments } = action.payload;
-        state.comments[postId] = comments;
-      })
       .addCase(createComment.fulfilled, (state, action) => {
         const comment = action.payload;
         const post_id = comment.post_id;
