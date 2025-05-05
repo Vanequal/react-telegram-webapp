@@ -42,7 +42,7 @@ function IdeaCard({ idea }) {
 
       <div className="idea-card__footer">
         <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
-        <span className="idea-card__comments">{idea.comments || 0} Комментариев</span>
+        <span className="idea-card__comments">{idea.comments?.length || 0} Комментариев</span>
         <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
         <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
         <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
