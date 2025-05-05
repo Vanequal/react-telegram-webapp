@@ -53,7 +53,7 @@ function IdeaCard({ idea }) {
   );
 }
 
-function Comment({ comment }) {
+function Comment({ comment, isNew }) {
   const [showReplies, setShowReplies] = useState(true);
 
   return (
@@ -188,7 +188,7 @@ function DiscussionPage() {
         <div className="comment-list">
           {comments.length > 0 ? (
             comments.map((comment) => (
-              <Comment key={comment.id} comment={comment} />
+              <Comment key={comment.id} comment={comment}  isNew={location.state?.scrollTo === 'new-comment' && comment === comments[comments.length - 1]}/>
             ))
           ) : (
             <p className="empty-comments">Комментариев пока нет</p>
