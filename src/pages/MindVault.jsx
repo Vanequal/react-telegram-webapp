@@ -127,6 +127,18 @@ const MindVaultPage = () => {
     }
   };
 
+  useEffect(() => {
+    if (!posts || posts.length === 0) return;
+  
+    posts.forEach(post => {
+      dispatch(fetchPostComments({
+        post_id: post.id,
+        section_key: sectionKey,
+        theme_id: themeId,
+        content_type: 'post',
+      }));
+    });
+  }, [posts, dispatch, sectionKey, themeId]);
 
   return (
     <>
@@ -252,19 +264,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       setShowReadMore(true);
     }
   }, []);
-
-  useEffect(() => {
-    setExpanded(isExpanded);
-
-    if (isExpanded && comments.length === 0) {
-      dispatch(fetchPostComments({
-        post_id: idea.id,
-        section_key: 'chat_ideas',
-        theme_id: 1,
-        content_type: 'post'
-      }));
-    }
-  }, [isExpanded, dispatch, idea.id, comments.length]);
  
   return (
     <div className="idea-card">
