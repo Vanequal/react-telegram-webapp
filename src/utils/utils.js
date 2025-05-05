@@ -1,11 +1,15 @@
 const VIEWED_STORAGE_KEY = 'idea_views';
 
-const getViewedIdeas = () => {
-  return JSON.parse(localStorage.getItem(VIEWED_STORAGE_KEY) || '{}');
-};
+export function getViewedIdeas() {
+  try {
+    return JSON.parse(localStorage.getItem(VIEWED_STORAGE_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
 
-const markIdeaAsViewed = (id) => {
+export function markIdeaAsViewed(id) {
   const viewed = getViewedIdeas();
   viewed[id] = true;
   localStorage.setItem(VIEWED_STORAGE_KEY, JSON.stringify(viewed));
-};
+}
