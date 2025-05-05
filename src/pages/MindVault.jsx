@@ -56,17 +56,22 @@ const MindVaultPage = () => {
     dispatch(fetchPosts({ section_key: sectionKey, theme_id: themeId, content_type: 'post' }));
   }, [dispatch, sectionKey, themeId]);
 
-  const ideas = (Array.isArray(posts) ? posts : []).map(post => ({
+  const postComments = useSelector(state => state.post.comments);
+
+const ideas = (Array.isArray(posts) ? posts : []).map(post => {
+  const actualComments = postComments[post.id]?.length;
+  return {
     id: post.id,
     username: post.author?.first_name || 'Пользователь',
     preview: post.message_text,
     likes: post.likes ?? 0,
     dislikes: post.dislikes ?? 0,
-    comments: post.comments_count ?? 0,
+    comments: actualComments ?? post.comments_count ?? 0,
     views: post.views ?? 0,
     pinned: post.pinned ?? false,
     timestamp: post.created_at?.split(' ')[1] ?? '',
-  }));
+  };
+});
 
   const handleExpand = (id) => navigate(`/discussion/${id}`);
   const handleArrowClick = (id) => setExpandedIdeaId(id);
@@ -304,8 +309,8 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       >
         <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
         <span className="idea-card__comments">
-          {(comments.length || idea.comments) > 0
-            ? `${comments.length || idea.comments} комментариев`
+          {commentCount > 0
+            ? `${commentCount} комментариев`
             : 'Прокомментировать'}
         </span>
         <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
