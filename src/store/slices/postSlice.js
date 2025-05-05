@@ -54,17 +54,29 @@ export const createComment = createAsyncThunk(
 
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
-  async ({ section_key, theme_id, message_text }, { rejectWithValue }) => {
+  async ({ section_key, theme_id, message_text, files, content_type }, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`/api/v1/post/create_preview?section_key=${section_key}&theme_id=${theme_id}`, {
-        message_text
-      });
+      const res = await axios.post(
+        `/api/v1/post/create_preview`,
+        {
+          message_text,
+          files: files || []
+        },
+        {
+          params: {
+            section_key,
+            theme_id,
+            content_type
+          }
+        }
+      );
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.detail || 'Ошибка предпросмотра поста');
     }
   }
 );
+
 
 export const reactToPost = createAsyncThunk(
   'post/reactToPost',
