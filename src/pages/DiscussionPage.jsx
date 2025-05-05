@@ -95,7 +95,7 @@ function Comment({ comment }) {
                 <div className="comment-user">{reply.author?.first_name || 'Пользователь'}</div>
                 <div className="comment-timestamp">{reply.created_at?.split(' ')[1]}</div>
               </div>
-              <div className="comment-content">{reply.text}</div>
+              <div className="comment-content">{reply.message_text}</div>
             </div>
           ))}
         </div>
