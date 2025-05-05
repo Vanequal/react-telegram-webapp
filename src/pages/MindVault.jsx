@@ -58,20 +58,20 @@ const MindVaultPage = () => {
 
   const postComments = useSelector(state => state.post.comments);
 
-const ideas = (Array.isArray(posts) ? posts : []).map(post => {
-  const actualComments = postComments[post.id]?.length;
-  return {
-    id: post.id,
-    username: post.author?.first_name || 'Пользователь',
-    preview: post.message_text,
-    likes: post.likes ?? 0,
-    dislikes: post.dislikes ?? 0,
-    comments: actualComments ?? post.comments_count ?? 0,
-    views: post.views ?? 0,
-    pinned: post.pinned ?? false,
-    timestamp: post.created_at?.split(' ')[1] ?? '',
-  };
-});
+  const ideas = (Array.isArray(posts) ? posts : []).map(post => {
+    const actualComments = postComments[post.id]?.length;
+    return {
+      id: post.id,
+      username: post.author?.first_name || 'Пользователь',
+      preview: post.message_text,
+      likes: post.likes ?? 0,
+      dislikes: post.dislikes ?? 0,
+      comments: actualComments ?? post.comments_count ?? 0,
+      views: post.views ?? 0,
+      pinned: post.pinned ?? false,
+      timestamp: post.created_at?.split(' ')[1] ?? '',
+    };
+  });
 
   const handleExpand = (id) => navigate(`/discussion/${id}`);
   const handleArrowClick = (id) => setExpandedIdeaId(id);
@@ -142,6 +142,7 @@ const ideas = (Array.isArray(posts) ? posts : []).map(post => {
           <IdeaCard
             idea={ideas.find(i => i.id === expandedIdeaId)}
             onExpand={handleExpand}
+            commentCount={idea.comments}
             onArrowClick={handleArrowClick}
             isExpanded={true}
             onCollapse={handleCollapse}
@@ -151,6 +152,7 @@ const ideas = (Array.isArray(posts) ? posts : []).map(post => {
             <IdeaCard
               key={idea.id}
               idea={idea}
+              commentCount={idea.comments}
               onExpand={handleExpand}
               onArrowClick={handleArrowClick}
               isExpanded={false}
@@ -238,7 +240,7 @@ const ideas = (Array.isArray(posts) ? posts : []).map(post => {
   );
 };
 
-function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse }) {
+function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse, commentCount = 0 }) {
   const dispatch = useDispatch();
   const comments = useSelector(state => state.post.comments[idea.id] || []); // <<< получаем комментарии
   const [expanded, setExpanded] = useState(isExpanded);
@@ -263,8 +265,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       }));
     }
   }, [isExpanded, dispatch, idea.id, comments.length]);
-  const allComments = useSelector(state => state.post.comments[idea.id] || []);
-  const commentCount = allComments.length;
+ 
   return (
     <div className="idea-card">
       <div className="idea-card__top">
