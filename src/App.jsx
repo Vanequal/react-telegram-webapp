@@ -23,6 +23,7 @@ import GraphPage from './pages/GraphPage';
 import ResumePage from './pages/ResumePage';
 import QuestionAnswerPage from './pages/QuestionAnswerPage';
 import QuestionChatPage from './pages/QuestionChatPage';
+import ReloadPage from './pages/ReloadPage';
 
 function App() {
   const dispatch = useDispatch();
@@ -80,6 +81,7 @@ function App() {
         <Route path="/discussion/:id" element={<DiscussionPage />} />
         <Route path="/questionanswerpage" element={<QuestionAnswerPage />} />
         <Route path="/questionchatpage" element={<QuestionChatPage />} />
+        <Route path="/reload" element={<ReloadPage />} />
       </Routes>
     </Router>
   );

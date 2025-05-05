@@ -57,7 +57,7 @@ function Comment({ comment }) {
   const [showReplies, setShowReplies] = useState(true);
 
   return (
-    <div className="comment-thread">
+    <div className="comment-thread" id={isNew ? "new-comment" : undefined}>
       <div className="comment-item">
         <div className="comment-header">
           <img src={userIcon} alt="Avatar" className="comment-avatar" />
@@ -120,6 +120,18 @@ function DiscussionPage() {
   const handleSendComment = () => {
     if (!commentText.trim()) return;
   
+    const scrollToNew = () => {
+      setTimeout(() => {
+        const el = document.getElementById('new-comment');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 200); 
+    };
+  
+    sessionStorage.setItem('return_to_discussion', JSON.stringify({
+      id: idea.id,
+      scrollTo: 'new-comment'
+    }));
+  
     dispatch(createComment({
       post_id: idea.id,
       message_text: commentText.trim(),
@@ -127,19 +139,10 @@ function DiscussionPage() {
       section_key: 'chat_ideas',
       theme_id: 1,
       content_type: 'post'
-    }));
-  
-    setCommentText('');
-  
-    dispatch(fetchPostComments({
-      post_id: idea.id,
-      section_key: 'chat_ideas',
-      theme_id: 1,
-      content_type: 'post'
-    }));
-  };
-  
-  
+    })).then(() => {
+      navigate('/reload'); 
+    });
+  };  
 
   useEffect(() => {
     if (idea?.id) {
@@ -151,6 +154,18 @@ function DiscussionPage() {
       }));
     }
   }, [idea?.id, dispatch]);
+
+  useEffect(() => {
+    const scrollTo = location.state?.scrollTo;
+    if (scrollTo) {
+      setTimeout(() => {
+        const el = document.getElementById(scrollTo);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        sessionStorage.removeItem('return_to_discussion');
+      }, 300);
+    }
+  }, [location.state]);
+  
   
   return (
     <div className="discussion-page">
