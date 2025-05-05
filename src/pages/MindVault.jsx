@@ -73,7 +73,11 @@ const MindVaultPage = () => {
     };
   });
 
-  const handleExpand = (id) => navigate(`/discussion/${id}`);
+  const handleExpand = (id) => {
+    const selectedIdea = ideas.find(i => i.id === id);
+    navigate(`/discussion/${id}`, { state: { idea: selectedIdea } });
+  };
+  
   const handleArrowClick = (id) => setExpandedIdeaId(id);
   const handleCollapse = () => setExpandedIdeaId(null);
 

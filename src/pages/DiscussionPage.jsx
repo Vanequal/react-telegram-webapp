@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { createComment, fetchPostComments } from '../store/slices/postSlice';
@@ -18,6 +18,8 @@ import sendIcon from '../assets/img/sendIcon.webp';
 import '../styles/DiscussionPage.scss';
 
 function IdeaCard({ idea }) {
+  const location = useLocation();
+  const idea = location.state?.idea ?? posts.find(p => String(p.id) === id);
   return (
     <div className="idea-card idea-card--no-header">
       <div className="idea-card__text-wrapper expanded">
@@ -118,7 +120,7 @@ function DiscussionPage() {
 
   const handleSendComment = () => {
     if (!commentText.trim()) return;
-  
+
     dispatch(createComment({
       post_id: idea.id,
       message_text: commentText.trim(),
@@ -127,9 +129,9 @@ function DiscussionPage() {
       theme_id: 1,
       content_type: 'post'
     }));
-  
+
     setCommentText('');
-  
+
     dispatch(fetchPostComments({
       post_id: idea.id,
       section_key: 'chat_ideas',
@@ -137,8 +139,8 @@ function DiscussionPage() {
       content_type: 'post'
     }));
   };
-  
-  
+
+
 
   useEffect(() => {
     if (idea?.id) {
@@ -150,7 +152,7 @@ function DiscussionPage() {
       }));
     }
   }, [idea?.id, dispatch]);
-  
+
   return (
     <div className="discussion-page">
       <MindVaultHeader
