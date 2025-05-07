@@ -47,28 +47,34 @@ const FooterIcons = ({
         </a>
       )}
       {showTypewriter && (
-        <img
-          src={typewriterIcon}
-          alt="Typewriter"
-          className="footer-icons__icon"
-          onClick={onTypewriterClick}
-        />
+        <a href='/publicationchatpage'>
+          <img
+            src={typewriterIcon}
+            alt="Typewriter"
+            className="footer-icons__icon"
+            onClick={onTypewriterClick}
+          />
+        </a>
       )}
       {showGear && (
-        <img
-          src={gearIcon}
-          alt="Gear"
-          className="footer-icons__icon"
-          onClick={onGearClick}
-        />
+        <a href='/taskchatpage'>
+          <img
+            src={gearIcon}
+            alt="Gear"
+            className="footer-icons__icon"
+            onClick={onGearClick}
+          />
+        </a>
       )}
       {showMicroscope && (
-        <img
-          src={microscopeIcon}
-          alt="Microscope"
-          className="footer-icons__icon"
-          onClick={onMicroscopeClick}
-        />
+        <a href='/laboratorypage'>
+          <img
+            src={microscopeIcon}
+            alt="Microscope"
+            className="footer-icons__icon"
+            onClick={onMicroscopeClick}
+          />
+        </a>
       )}
     </div>
   );

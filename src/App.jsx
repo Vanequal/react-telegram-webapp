@@ -24,6 +24,10 @@ import ResumePage from './pages/ResumePage';
 import QuestionAnswerPage from './pages/QuestionAnswerPage';
 import QuestionChatPage from './pages/QuestionChatPage';
 import ReloadPage from './pages/ReloadPage';
+import PublicationChatPage from './pages/PublicationChatPage';
+import PublicationPage from './pages/PublicationPage';
+import TaskChatPage from './pages/TaskChatPage';
+import LaboratoryPage from './pages/LaboratoryPage';
 
 function App() {
   const dispatch = useDispatch();
@@ -82,6 +86,10 @@ function App() {
         <Route path="/questionanswerpage" element={<QuestionAnswerPage />} />
         <Route path="/questionchatpage" element={<QuestionChatPage />} />
         <Route path="/reload" element={<ReloadPage />} />
+        <Route path="/publicationchatpage" element={<PublicationChatPage />} />
+        <Route path="/publicationpage" element={<PublicationPage />} />
+        <Route path="/taskchatpage" element={<TaskChatPage />} />
+        <Route path="/laboratorypage" element={<LaboratoryPage />} />
       </Routes>
     </Router>
   );
