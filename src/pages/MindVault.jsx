@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchSection, fetchPosts } from '../store/slices/sectionSlice';
 import { createPostPreview, fetchPostComments } from '../store/slices/postSlice';
 import { reactToPost } from '../store/slices/postSlice';
-import { getViewedIdeas, markIdeaAsViewed } from '../utils/utils';
+import { getViewedIdeas, markIdeaAsViewed } from '../utils/utils.js';
 
 import MindVaultHeader from '../components/UI/MindVaultHeader';
 
