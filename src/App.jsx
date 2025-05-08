@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { authWithTelegram } from './store/slices/authSlice';
 import { fetchCurrentUser } from './store/slices/meSlice';
+import axios from './api/axios';
 
 import Home from './pages/Home';
 import HomeSimplified from './pages/HomeSimplified';
@@ -17,8 +18,6 @@ import MyProfile from './pages/MyProfile';
 import EditProfilePage from './pages/EditProfilePage';
 import HistoryPage from './pages/HistoryPage';
 import DebatePage from './pages/DebatePage';
-
-import './styles/global.scss';
 import GraphPage from './pages/GraphPage';
 import ResumePage from './pages/ResumePage';
 import QuestionAnswerPage from './pages/QuestionAnswerPage';
@@ -29,6 +28,8 @@ import PublicationPage from './pages/PublicationPage';
 import TaskChatPage from './pages/TaskChatPage';
 import LaboratoryPage from './pages/LaboratoryPage';
 
+import './styles/global.scss';
+
 function App() {
   const dispatch = useDispatch();
   const [authReady, setAuthReady] = useState(false);
@@ -38,30 +39,35 @@ function App() {
     const tg = window.Telegram?.WebApp;
     const initData = tg?.initData;
     const token = sessionStorage.getItem('token');
-  
-    if (window.location.hostname === 'localhost') {
-      sessionStorage.setItem('token', 'mock-token');
-      setAuthReady(true);
-      return;
-    }
-  
-    if (!initData || token) {
-      setAuthReady(true);
-      return;
-    }
-  
-    dispatch(authWithTelegram(initData)).finally(() => {
-      setAuthReady(true);
-    });
-  }, [dispatch]);
-  
 
+    if (window.location.hostname === 'localhost') {
+      const mockToken = 'mock-token';
+      sessionStorage.setItem('token', mockToken);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${mockToken}`;
+      setAuthReady(true);
+      return;
+    }
+
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setAuthReady(true);
+      return;
+    }
+
+    if (initData && tg?.initDataUnsafe?.user) {
+      dispatch(authWithTelegram(initData)).finally(() => {
+        setAuthReady(true);
+      });
+    } else {
+      setAuthReady(true);
+    }
+  }, [dispatch]);
 
   useEffect(() => {
-    if (user) {
+    if (sessionStorage.getItem('token')) {
       dispatch(fetchCurrentUser());
     }
-  }, [user, dispatch]);
+  }, [dispatch]);
 
   if (!authReady) return <div>Загрузка...</div>;
 

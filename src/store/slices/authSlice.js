@@ -17,12 +17,12 @@ export const authWithTelegram = createAsyncThunk(
         }
       );
 
-      const { user, token } = response.data;
-
-      // сохраняем токен на фронте
+      const { token, ...userData } = response.data;
+      
       sessionStorage.setItem('token', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      return { user };
+      return { user: userData, token };
     } catch (err) {
       console.error('Auth error:', err);
       return rejectWithValue(err.response?.data?.detail || 'Auth error');
@@ -34,13 +34,16 @@ const authSlice = createSlice({
   name: 'auth',
   initialState: {
     user: null,
+    token: null,
     loading: false,
     error: null
   },
   reducers: {
     logout: (state) => {
       state.user = null;
+      state.token = null;
       sessionStorage.removeItem('token');
+      delete axios.defaults.headers.common['Authorization'];
     }
   },
   extraReducers: (builder) => {
@@ -51,6 +54,7 @@ const authSlice = createSlice({
       })
       .addCase(authWithTelegram.fulfilled, (state, action) => {
         state.user = action.payload.user;
+        state.token = action.payload.token;
         state.loading = false;
       })
       .addCase(authWithTelegram.rejected, (state, action) => {
@@ -62,5 +66,7 @@ const authSlice = createSlice({
 
 export const { logout } = authSlice.actions;
 export const selectUser = (state) => state.auth.user;
+export const selectAuthLoading = (state) => state.auth.loading;
+export const selectAuthError = (state) => state.auth.error;
 
 export default authSlice.reducer;
