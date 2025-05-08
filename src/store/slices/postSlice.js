@@ -4,18 +4,33 @@ import axios from '../../api/axios';
 
 export const createPost = createAsyncThunk(
   'post/create',
-  async ({ message_text, section_key, theme_id, publishing_method }, { rejectWithValue }) => {
+  async ({ message_text, section_key, theme_id, publishing_method, files, content_type }, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`/api/v1/post/create?section_key=${section_key}&theme_id=${theme_id}`, {
-        message_text,
-        publishing_method,
-      });
+      const formData = new FormData();
+      formData.append('message_text', message_text);
+      formData.append('publishing_method', publishing_method);
+
+      for (const file of files || []) {
+        formData.append('files', file);
+      }
+
+      const res = await axios.post(
+        `/api/v1/post?section_key=${section_key}&theme_id=${theme_id}&content_type=${content_type}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.detail || 'Ошибка создания поста');
     }
   }
 );
+
 
 export const fetchPostComments = createAsyncThunk(
   'post/fetchComments',

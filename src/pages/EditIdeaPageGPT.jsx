@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { createPostPreview, createPost } from '../store/slices/postSlice';
 
@@ -11,17 +11,17 @@ import sendIconActive from '../assets/img/sendButtonActive.png';
 import '../styles/EditIdeaPageGPT.scss';
 
 const EditIdeaPageGPT = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
-  const [attachedFiles, setAttachedFiles] = useState([]);
-
+  const [attachedFiles, setAttachedFiles] = useState(location.state?.attachedFiles || []);
   const [ideaText, setIdeaText] = useState('');
   const { preview, loading } = useSelector(state => state.post);
 
   const sectionKey = searchParams.get('section_key') || 'chat_ideas';
   const themeId = Number(searchParams.get('theme_id')) || 1;
-  
+
   const handleSend = () => {
     if (ideaText.trim()) {
       dispatch(createPostPreview({
@@ -34,14 +34,16 @@ const EditIdeaPageGPT = () => {
 
   const handlePublish = async (text, publishing_method = 'original') => {
     if (!text) return;
-  
+
     const payload = {
       message_text: text,
       section_key: sectionKey,
       theme_id: themeId,
-      files: attachedFiles.length > 0 ? attachedFiles : [],
+      files: attachedFiles,
       publishing_method,
+      content_type: 'post',
     };
+
 
     try {
       await dispatch(createPost(payload)).unwrap();
@@ -50,15 +52,15 @@ const EditIdeaPageGPT = () => {
       console.error('Ошибка публикации:', error);
     }
   };
-  
-  
-  
+
+
+
 
   return (
     <div className="edit-idea-page-gpt">
       <MindVaultHeader
         onBackClick={() => window.history.back()}
-        onDescriptionClick={() => {}}
+        onDescriptionClick={() => { }}
         hideSectionTitle={true}
         textColor="black"
         bgColor="#EEEFF1"
@@ -73,8 +75,32 @@ const EditIdeaPageGPT = () => {
           <div className="idea-card-gpt">
             <p className="idea-card-gpt__label">Оригинал текста:</p>
             <p className="idea-card-gpt__text">{preview.messages?.original_text}</p>
+            {attachedFiles.length > 0 && (
+              <div className="edit-idea-page-gpt__attached">
+                <strong>Прикреплённые файлы:</strong>
+                <ul>
+                  {attachedFiles.map((file, i) => (
+                    <li key={i}>
+                      {file.name} ({Math.round(file.size / 1024)} KB)
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <p className="idea-card-gpt__label">Улучшенная версия от ИИ:</p>
             <p className="idea-card-gpt__text">{preview.messages?.gpt_text}</p>
+            {attachedFiles.length > 0 && (
+              <div className="edit-idea-page-gpt__attached">
+                <strong>Прикреплённые файлы:</strong>
+                <ul>
+                  {attachedFiles.map((file, i) => (
+                    <li key={i}>
+                      {file.name} ({Math.round(file.size / 1024)} KB)
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 

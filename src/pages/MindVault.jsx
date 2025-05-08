@@ -137,7 +137,11 @@ const MindVaultPage = () => {
         content_type: 'post'
       })).unwrap();
 
-      navigate('/editideapagegpt');
+      navigate('/editideapagegpt', {
+        state: {
+          attachedFiles,
+        },
+      });
     } catch (error) {
       console.error('Ошибка предпросмотра:', error);
     }
@@ -285,32 +289,32 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
   useEffect(() => {
     const viewed = getViewedIdeas();
     if (viewed[idea.id]) return; // Уже засчитан
-  
+
     let timer = null;
-  
+
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         timer = setTimeout(() => {
           markIdeaAsViewed(idea.id);
-          idea.views += 1; 
-        }, 30000); 
+          idea.views += 1;
+        }, 30000);
       } else {
         clearTimeout(timer);
       }
     }, {
-      threshold: 0.75, 
+      threshold: 0.75,
     });
-  
+
     if (cardRef.current) {
       observer.observe(cardRef.current);
     }
-  
+
     return () => {
       clearTimeout(timer);
       if (cardRef.current) observer.unobserve(cardRef.current);
     };
   }, [idea]);
-  
+
 
   return (
     <div className="idea-card" ref={cardRef}>
