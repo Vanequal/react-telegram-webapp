@@ -71,6 +71,7 @@ const MindVaultPage = () => {
       views: post.views ?? 0,
       pinned: post.pinned ?? false,
       timestamp: post.created_at ?? '',
+      files: post.files || []
     };
   });
 
@@ -329,6 +330,20 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       <div ref={textWrapperRef} className={`idea-card__text-wrapper ${expanded ? 'expanded' : ''}`}>
         <div className="idea-card__text-row">
           <div className="idea-card__text">{idea.preview}</div>
+          {idea.files && idea.files.length > 0 && (
+            <div className="idea-card__files">
+              <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
+              <ul style={{ paddingLeft: '1rem', fontSize: '13px' }}>
+                {idea.files.map((file, i) => (
+                  <li key={i}>
+                    <a href={file.url} target="_blank" rel="noopener noreferrer">
+                      {file.stored_name || `Файл ${i + 1}`}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <span className="idea-card__timestamp">
             {new Date(idea.timestamp).toLocaleString('ru-RU', {
               day: '2-digit',
