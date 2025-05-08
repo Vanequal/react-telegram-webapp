@@ -75,18 +75,32 @@ const EditIdeaPageGPT = () => {
           <div className="idea-card-gpt">
             <p className="idea-card-gpt__label">Оригинал текста:</p>
             <p className="idea-card-gpt__text">{preview.messages?.original_text}</p>
-            {attachedFiles.length > 0 && (
-              <div className="edit-idea-page-gpt__attached">
-                <strong>Прикреплённые файлы:</strong>
-                <ul>
-                  {attachedFiles.map((file, i) => (
-                    <li key={i}>
-                      {file.name} ({Math.round(file.size / 1024)} KB)
-                    </li>
-                  ))}
-                </ul>
+            {attachedFiles.map((file, i) => (
+              <div key={i} style={{ marginBottom: '10px' }}>
+                {file.type.startsWith('image/') ? (
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={`image-${i}`}
+                    style={{ maxWidth: '100%', borderRadius: '12px' }}
+                  />
+                ) : file.type.startsWith('video/') ? (
+                  <video
+                    controls
+                    style={{ maxWidth: '100%', borderRadius: '12px' }}
+                    src={URL.createObjectURL(file)}
+                  />
+                ) : (
+                  <a
+                    href={URL.createObjectURL(file)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#1976D2', wordBreak: 'break-word' }}
+                  >
+                    {file.name}
+                  </a>
+                )}
               </div>
-            )}
+            ))}
             <p className="idea-card-gpt__label">Улучшенная версия от ИИ:</p>
             <p className="idea-card-gpt__text">{preview.messages?.gpt_text}</p>
             {attachedFiles.map((file, i) => (
