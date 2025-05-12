@@ -34,7 +34,7 @@ const EditIdeaPageGPT = () => {
 
   const handlePublish = async (text, publishing_method = 'original') => {
     if (!text) return;
-
+  
     const payload = {
       message_text: text,
       section_key: sectionKey,
@@ -43,19 +43,22 @@ const EditIdeaPageGPT = () => {
       publishing_method,
       content_type: 'post',
     };
-
-
+  
     try {
-      await dispatch(createPost(payload)).unwrap();
-      navigate('/mindvault');
+      const actionResult = await dispatch(createPost(payload));
+  
+      if (actionResult.meta.requestStatus === 'fulfilled') {
+        navigate('/mindvault');
+      } else {
+        console.warn('Пост создаля но бек сломалсся', actionResult.payload);
+        navigate('/mindvault');
+      }
     } catch (error) {
       console.error('Ошибка публикации:', error);
+      navigate('/mindvault');
     }
   };
-
-
-
-
+  
   return (
     <div className="edit-idea-page-gpt">
       <MindVaultHeader
