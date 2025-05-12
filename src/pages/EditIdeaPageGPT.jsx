@@ -35,6 +35,27 @@ const EditIdeaPageGPT = () => {
     return Promise.all(promises);
   };
 
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = reader.result.split(',')[1]; 
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+  
+  const convertFilesToBase64List = async (files) => {
+    const base64List = [];
+    for (const file of files) {
+      const base64 = await fileToBase64(file);
+      base64List.push(base64);
+    }
+    return base64List;
+  };
+  
 
   const handleSend = () => {
     if (ideaText.trim()) {
@@ -50,30 +71,30 @@ const EditIdeaPageGPT = () => {
     if (!text) return;
   
     try {
-      const base64Files = await convertFilesToBase64(attachedFiles);
+      const base64Files = await convertFilesToBase64List(attachedFiles);
   
       const payload = {
         message_text: text,
         section_key: sectionKey,
         theme_id: themeId,
-        files: base64Files, // base64 строки
+        files: base64Files,
         publishing_method,
         content_type: 'post',
       };
   
       const actionResult = await dispatch(createPost(payload));
-  
       if (actionResult.meta.requestStatus === 'fulfilled') {
         navigate('/mindvault');
       } else {
-        console.warn('Пост создался но бек отдал ошибку', actionResult.payload);
+        console.warn('Пост создался, но бек вернул ошибку', actionResult.payload);
         navigate('/mindvault');
       }
     } catch (error) {
-      console.error('Ошибка при публикации:', error);
+      console.error('Ошибка публикации:', error);
       navigate('/mindvault');
     }
-  };  
+  };
+  
 
   return (
     <div className="edit-idea-page-gpt">
