@@ -22,8 +22,8 @@ export const createPost = createAsyncThunk(
 
       return res.data;
     } catch (err) {
-      console.error('Ошибка запроса:', err.response);
-      return rejectWithValue(err.response?.data?.detail || 'Ошибка создания поста');
+      console.error('Ошибка запроса:', err?.response || err);
+      return rejectWithValue(err?.response?.data?.detail || 'Ошибка создания поста');
     }
   }
 );
