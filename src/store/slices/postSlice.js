@@ -5,35 +5,20 @@ export const createPost = createAsyncThunk(
   'post/create',
   async ({ message_text, section_key, theme_id, publishing_method, files = [], content_type }, { rejectWithValue }) => {
     try {
-      const filesBase64 = await Promise.all(
-        files.map(file => {
-          return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result); // full base64 string with prefix
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-        })
-      );
+      const formData = new FormData();
+      formData.append('message_text', message_text);
+      formData.append('publishing_method', publishing_method);
 
-      const res = await axios.post(
-        '/api/v1/post/',
-        {
-          message_text,
-          publishing_method,
-          files: filesBase64, // здесь base64 строки
-        },
-        {
-          params: {
-            section_key,
-            theme_id,
-            content_type
-          },
-          headers: {
-            'Content-Type': 'application/json'
-          }
+      for (const file of files) {
+        formData.append('files', file);
+      }
+
+      const res = await axios.post('/api/v1/post/', formData, {
+        params: { section_key, theme_id, content_type },
+        headers: {
+          'Content-Type': 'multipart/form-data'
         }
-      );
+      });
 
       return res.data;
     } catch (err) {
@@ -42,6 +27,8 @@ export const createPost = createAsyncThunk(
     }
   }
 );
+
+
 
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
