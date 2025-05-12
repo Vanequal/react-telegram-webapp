@@ -22,6 +22,20 @@ const EditIdeaPageGPT = () => {
   const sectionKey = searchParams.get('section_key') || 'chat_ideas';
   const themeId = Number(searchParams.get('theme_id')) || 1;
 
+  const convertFilesToBase64 = async (files) => {
+    const promises = files.map(file => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    });
+
+    return Promise.all(promises);
+  };
+
+
   const handleSend = () => {
     if (ideaText.trim()) {
       dispatch(createPostPreview({
@@ -35,30 +49,32 @@ const EditIdeaPageGPT = () => {
   const handlePublish = async (text, publishing_method = 'original') => {
     if (!text) return;
   
-    const payload = {
-      message_text: text,
-      section_key: sectionKey,
-      theme_id: themeId,
-      files: attachedFiles,
-      publishing_method,
-      content_type: 'post',
-    };
-  
     try {
+      const base64Files = await convertFilesToBase64(attachedFiles);
+  
+      const payload = {
+        message_text: text,
+        section_key: sectionKey,
+        theme_id: themeId,
+        files: base64Files, // base64 строки
+        publishing_method,
+        content_type: 'post',
+      };
+  
       const actionResult = await dispatch(createPost(payload));
   
       if (actionResult.meta.requestStatus === 'fulfilled') {
         navigate('/mindvault');
       } else {
-        console.warn('Пост создаля но бек сломалсся', actionResult.payload);
+        console.warn('Пост создался но бек отдал ошибку', actionResult.payload);
         navigate('/mindvault');
       }
     } catch (error) {
-      console.error('Ошибка публикации:', error);
+      console.error('Ошибка при публикации:', error);
       navigate('/mindvault');
     }
-  };
-  
+  };  
+
   return (
     <div className="edit-idea-page-gpt">
       <MindVaultHeader
