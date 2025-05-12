@@ -6,13 +6,18 @@ export const createPost = createAsyncThunk(
   async ({ message_text, section_key, theme_id, publishing_method, files = [], content_type }, { rejectWithValue }) => {
     try {
       const res = await axios.post(
-        `/api/v1/post/?section_key=${section_key}&theme_id=${theme_id}&content_type=${content_type}`,
+        '/api/v1/post/',
         {
           message_text,
           publishing_method,
           files
         },
         {
+          params: {
+            section_key,
+            theme_id,
+            content_type
+          },
           headers: {
             'Content-Type': 'application/json'
           }
