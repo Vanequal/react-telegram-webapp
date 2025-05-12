@@ -5,32 +5,29 @@ export const createPost = createAsyncThunk(
   'post/create',
   async ({ message_text, section_key, theme_id, publishing_method, files = [], content_type }, { rejectWithValue }) => {
     try {
-      const res = await axios.post(
-        '/api/v1/post/',
-        {
-          message_text,
-          publishing_method,
-          files
-        },
-        {
-          params: {
-            section_key,
-            theme_id,
-            content_type
-          },
-          headers: {
-            'Content-Type': 'application/json'
-          }
+      const formData = new FormData();
+      formData.append('message_text', message_text);
+      formData.append('publishing_method', publishing_method);
+
+      for (const file of files) {
+        formData.append('files', file);
+      }
+
+      const res = await axios.post('/api/v1/post/', formData, {
+        params: { section_key, theme_id, content_type },
+        headers: {
+          'Content-Type': 'multipart/form-data'
         }
-      );
+      });
 
       return res.data;
     } catch (err) {
-      console.error('Ошибка запроса:', err.response); // на случай дебага
+      console.error('Ошибка запроса:', err.response);
       return rejectWithValue(err.response?.data?.detail || 'Ошибка создания поста');
     }
   }
 );
+
 
 
 export const createPostPreview = createAsyncThunk(
@@ -71,15 +68,18 @@ export const fetchPostsInSection = createAsyncThunk(
 
 export const fetchPostById = createAsyncThunk(
   'post/fetchPostById',
-  async (post_id, { rejectWithValue }) => {
+  async ({ post_id, section_key, theme_id, content_type }, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`/api/v1/post/${post_id}`);
+      const res = await axios.get(`/api/v1/post/${post_id}`, {
+        params: { section_key, theme_id, content_type }
+      });
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки поста');
     }
   }
 );
+
 
 export const fetchPostComments = createAsyncThunk(
   'post/fetchComments',
