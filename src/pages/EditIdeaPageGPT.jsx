@@ -136,21 +136,21 @@ const EditIdeaPageGPT = () => {
           <div className="idea-card-gpt__actions">
             <button
               className="idea-card-gpt__action-button"
-              onClick={() => handlePublish(preview.messages?.original_text, 'original')}
+              onClick={() => handlePublish(preview.message_text, 'original')}
             >
               Опубликовать оригинал
             </button>
 
             <button
               className="idea-card-gpt__action-button"
-              onClick={() => handlePublish(preview.messages?.gpt_text, 'gpt')}
+              onClick={() => handlePublish(preview.gpt_text, 'gpt')}
             >
               Опубликовать версию GPT
             </button>
 
             <button
               className="idea-card-gpt__action-button"
-              onClick={() => navigate('/textgpteditpage', { state: { gptText: preview.messages?.gpt_text } })}
+              onClick={() => navigate('/textgpteditpage', { state: { gptText: preview.gpt_text } })}
             >
               Редактировать версию GPT
             </button>
