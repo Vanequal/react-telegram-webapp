@@ -50,7 +50,12 @@ const EditIdeaPageGPT = () => {
   const convertFilesToBase64List = async (files) => {
     const base64List = [];
     for (const file of files) {
-      const base64 = await fileToBase64(file);
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result); 
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
       base64List.push(base64);
     }
     return base64List;
