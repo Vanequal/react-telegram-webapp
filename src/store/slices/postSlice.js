@@ -31,10 +31,7 @@ export const createPostPreview = createAsyncThunk(
     try {
       const res = await axios.post(
         `/api/v1/post/preview`,
-        {
-          message_text,
-          files: files || []
-        },
+        { message_text },
         {
           params: {
             section_key,

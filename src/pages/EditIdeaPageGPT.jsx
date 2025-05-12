@@ -74,7 +74,7 @@ const EditIdeaPageGPT = () => {
         ) : (
           <div className="idea-card-gpt">
             <p className="idea-card-gpt__label">Оригинал текста:</p>
-            <p className="idea-card-gpt__text">{preview.messages?.original_text}</p>
+            <p className="idea-card-gpt__text">{preview.message_text}</p>
             {attachedFiles.map((file, i) => (
               <div key={i} style={{ marginBottom: '10px' }}>
                 {file.type.startsWith('image/') ? (
@@ -102,7 +102,7 @@ const EditIdeaPageGPT = () => {
               </div>
             ))}
             <p className="idea-card-gpt__label">Улучшенная версия от ИИ:</p>
-            <p className="idea-card-gpt__text">{preview.messages?.gpt_text}</p>
+            <p className="idea-card-gpt__text">{preview.gpt_text}</p>
             {attachedFiles.map((file, i) => (
               <div key={i} style={{ marginBottom: '10px' }}>
                 {file.type.startsWith('image/') ? (

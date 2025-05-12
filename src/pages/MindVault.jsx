@@ -134,7 +134,6 @@ const MindVaultPage = () => {
         section_key: section.section_key,
         theme_id: section.theme.id,
         message_text: ideaText.trim(),
-        files: attachedFiles.length > 0 ? attachedFiles : [],
         content_type: 'post'
       })).unwrap();
 
