@@ -7,27 +7,26 @@ export const createPost = createAsyncThunk(
     try {
       const formData = new FormData();
 
-      formData.append('data', JSON.stringify({
-        message_text,
-        publishing_method
-      }));
+      formData.append('message_text', message_text);
+      formData.append('publishing_method', publishing_method);
 
       for (const file of files) {
-        formData.append('files', file);
+        formData.append('files', file); // ключ может повторяться — это норм
       }
 
       const res = await axios.post('/api/v1/post/', formData, {
-        params: { section_key, theme_id, content_type }
-        // НЕ ставь 'Content-Type': axios сам выставит с boundary
+        params: { section_key, theme_id, content_type },
+        // Content-Type не указываем, axios сам выставит с boundary
       });
 
       return res.data;
     } catch (err) {
-      console.error('Ошибка запроса:', err?.response?.data?.detail || err);
+      console.error('Ошибка запроса:', JSON.stringify(err?.response?.data?.detail, null, 2));
       return rejectWithValue(err?.response?.data?.detail || 'Ошибка создания поста');
     }
   }
 );
+
 
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
