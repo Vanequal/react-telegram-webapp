@@ -10,16 +10,20 @@ export const createPost = createAsyncThunk(
     try {
       const formData = new FormData();
 
-      // 👇 отдельные поля, а не data {}
-      formData.append('message_text', message_text);
-      formData.append('publishing_method', publishing_method);
-
       for (const file of files) {
         formData.append('files', file);
       }
 
       const res = await axios.post('/api/v1/post/', formData, {
-        params: { section_key, theme_id, content_type },
+        params: {
+          section_key,
+          theme_id,
+          content_type,
+          data: JSON.stringify({
+            message_text,
+            publishing_method
+          })
+        },
       });
 
       return res.data;
@@ -32,6 +36,7 @@ export const createPost = createAsyncThunk(
     }
   }
 );
+
 
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
