@@ -1,13 +1,16 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../api/axios';
+
 export const createPost = createAsyncThunk(
   'post/create',
   async ({ message_text, section_key, theme_id, publishing_method, files = [], content_type }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
 
-      formData.append('message_text', message_text);
-      formData.append('publishing_method', publishing_method);
+      formData.append('data', JSON.stringify({
+        message_text,
+        publishing_method
+      }));
 
       for (const file of files) {
         formData.append('files', file);
@@ -15,6 +18,7 @@ export const createPost = createAsyncThunk(
 
       const res = await axios.post('/api/v1/post/', formData, {
         params: { section_key, theme_id, content_type }
+        // НЕ ставь 'Content-Type': axios сам выставит с boundary
       });
 
       return res.data;
