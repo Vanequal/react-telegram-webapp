@@ -3,31 +3,30 @@ import axios from '../../api/axios';
 
 export const createPost = createAsyncThunk(
   'post/create',
-  async ({ message_text, section_key, theme_id, publishing_method, content_type, files = [] }, { rejectWithValue }) => {
+  async ({ message_text, section_key, theme_id, publishing_method, files = [], content_type }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
 
-      // ❗ Всё в поле data — как JSON строка
-      formData.append(
-        'data',
-        JSON.stringify({
-          message_text,
-          publishing_method
-        })
-      );
+      // ВАЖНО: data должен быть именно СТРОКОЙ, а не объектом
+      const jsonPayload = {
+        message_text,
+        publishing_method
+      };
+      formData.append('data', JSON.stringify(jsonPayload));
 
-      // ❗ Файлы идут отдельно
+      // Если есть файлы
       for (const file of files) {
         formData.append('files', file);
       }
 
+      // Параметры идут в query
       const res = await axios.post('/api/v1/post/', formData, {
         params: {
           section_key,
           theme_id,
           content_type
-        },
-        // Content-Type НЕ указываем, axios сам поставит с boundary
+        }
+        // Content-Type НЕ УКАЗЫВАЕМ — Axios сам всё сделает правильно
       });
 
       return res.data;
@@ -37,6 +36,7 @@ export const createPost = createAsyncThunk(
     }
   }
 );
+
 
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
