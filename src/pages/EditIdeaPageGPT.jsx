@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { createPostPreview, createPost } from '../store/slices/postSlice';
@@ -17,7 +17,7 @@ const EditIdeaPageGPT = () => {
   const [searchParams] = useSearchParams();
   const [attachedFiles, setAttachedFiles] = useState(location.state?.attachedFiles || []);
   const [ideaText, setIdeaText] = useState('');
-  const { preview, loading } = useSelector(state => state.post);
+  const { preview } = useSelector(state => state.post);
 
   const sectionKey = searchParams.get('section_key') || 'chat_ideas';
   const themeId = Number(searchParams.get('theme_id')) || 1;
@@ -34,7 +34,7 @@ const EditIdeaPageGPT = () => {
 
   const handlePublish = async (text, publishing_method = 'original') => {
     if (!text) return;
-  
+
     const payload = {
       message_text: text,
       section_key: sectionKey,
@@ -43,14 +43,13 @@ const EditIdeaPageGPT = () => {
       publishing_method,
       content_type: 'post',
     };
-  
+
     try {
       const actionResult = await dispatch(createPost(payload));
-  
       if (actionResult.meta.requestStatus === 'fulfilled') {
         navigate('/mindvault');
       } else {
-        console.warn('Пост создаля но бек сломалсся', actionResult.payload);
+        console.warn('Пост создался, но бек вернул ошибку', actionResult.payload);
         navigate('/mindvault');
       }
     } catch (error) {
@@ -58,12 +57,12 @@ const EditIdeaPageGPT = () => {
       navigate('/mindvault');
     }
   };
-  
+
   return (
     <div className="edit-idea-page-gpt">
       <MindVaultHeader
         onBackClick={() => window.history.back()}
-        onDescriptionClick={() => { }}
+        onDescriptionClick={() => {}}
         hideSectionTitle={true}
         textColor="black"
         bgColor="#EEEFF1"
@@ -78,55 +77,32 @@ const EditIdeaPageGPT = () => {
           <div className="idea-card-gpt">
             <p className="idea-card-gpt__label">Оригинал текста:</p>
             <p className="idea-card-gpt__text">{preview.message_text}</p>
+
             {attachedFiles.map((file, i) => (
               <div key={i} style={{ marginBottom: '10px' }}>
                 {file.type.startsWith('image/') ? (
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt={`image-${i}`}
-                    style={{ maxWidth: '100%', borderRadius: '12px' }}
-                  />
+                  <img src={URL.createObjectURL(file)} alt={`image-${i}`} style={{ maxWidth: '100%', borderRadius: '12px' }} />
                 ) : file.type.startsWith('video/') ? (
-                  <video
-                    controls
-                    style={{ maxWidth: '100%', borderRadius: '12px' }}
-                    src={URL.createObjectURL(file)}
-                  />
+                  <video controls style={{ maxWidth: '100%', borderRadius: '12px' }} src={URL.createObjectURL(file)} />
                 ) : (
-                  <a
-                    href={URL.createObjectURL(file)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: '#1976D2', wordBreak: 'break-word' }}
-                  >
+                  <a href={URL.createObjectURL(file)} target="_blank" rel="noopener noreferrer" style={{ color: '#1976D2', wordBreak: 'break-word' }}>
                     {file.name}
                   </a>
                 )}
               </div>
             ))}
+
             <p className="idea-card-gpt__label">Улучшенная версия от ИИ:</p>
             <p className="idea-card-gpt__text">{preview.gpt_text}</p>
+
             {attachedFiles.map((file, i) => (
               <div key={i} style={{ marginBottom: '10px' }}>
                 {file.type.startsWith('image/') ? (
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt={`image-${i}`}
-                    style={{ maxWidth: '100%', borderRadius: '12px' }}
-                  />
+                  <img src={URL.createObjectURL(file)} alt={`image-${i}`} style={{ maxWidth: '100%', borderRadius: '12px' }} />
                 ) : file.type.startsWith('video/') ? (
-                  <video
-                    controls
-                    style={{ maxWidth: '100%', borderRadius: '12px' }}
-                    src={URL.createObjectURL(file)}
-                  />
+                  <video controls style={{ maxWidth: '100%', borderRadius: '12px' }} src={URL.createObjectURL(file)} />
                 ) : (
-                  <a
-                    href={URL.createObjectURL(file)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: '#1976D2', wordBreak: 'break-word' }}
-                  >
+                  <a href={URL.createObjectURL(file)} target="_blank" rel="noopener noreferrer" style={{ color: '#1976D2', wordBreak: 'break-word' }}>
                     {file.name}
                   </a>
                 )}
@@ -137,24 +113,13 @@ const EditIdeaPageGPT = () => {
 
         {preview && (
           <div className="idea-card-gpt__actions">
-            <button
-              className="idea-card-gpt__action-button"
-              onClick={() => handlePublish(preview.message_text, 'original')}
-            >
+            <button className="idea-card-gpt__action-button" onClick={() => handlePublish(preview.message_text, 'original')}>
               Опубликовать оригинал
             </button>
-
-            <button
-              className="idea-card-gpt__action-button"
-              onClick={() => handlePublish(preview.gpt_text, 'gpt')}
-            >
+            <button className="idea-card-gpt__action-button" onClick={() => handlePublish(preview.gpt_text, 'gpt')}>
               Опубликовать версию GPT
             </button>
-
-            <button
-              className="idea-card-gpt__action-button"
-              onClick={() => navigate('/textgpteditpage', { state: { gptText: preview.gpt_text } })}
-            >
+            <button className="idea-card-gpt__action-button" onClick={() => navigate('/textgpteditpage', { state: { gptText: preview.gpt_text } })}>
               Редактировать версию GPT
             </button>
           </div>
@@ -163,7 +128,6 @@ const EditIdeaPageGPT = () => {
 
       <div className="vault-footer">
         <img src={skrepkaIcon} alt="Attach" className="vault-footer__icon" />
-
         <input
           type="text"
           className="vault-footer__input"
@@ -171,15 +135,11 @@ const EditIdeaPageGPT = () => {
           value={ideaText}
           onChange={(e) => setIdeaText(e.target.value)}
         />
-
         <img
           src={ideaText.trim() ? sendIconActive : sendIcon}
           alt="Send"
           className="vault-footer__send"
-          style={{
-            opacity: ideaText.trim() ? 1 : 0.5,
-            cursor: ideaText.trim() ? 'pointer' : 'not-allowed'
-          }}
+          style={{ opacity: ideaText.trim() ? 1 : 0.5, cursor: ideaText.trim() ? 'pointer' : 'not-allowed' }}
           title={ideaText.trim() ? 'Готово к отправке' : 'Введите текст'}
           onClick={handleSend}
         />
