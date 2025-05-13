@@ -7,11 +7,16 @@ export const createPost = createAsyncThunk(
     try {
       const formData = new FormData();
 
-      // Добавляем текстовые поля напрямую
-      formData.append('message_text', message_text);
-      formData.append('publishing_method', publishing_method);
+      // ❗ Всё в поле data — как JSON строка
+      formData.append(
+        'data',
+        JSON.stringify({
+          message_text,
+          publishing_method
+        })
+      );
 
-      // Файлы
+      // ❗ Файлы идут отдельно
       for (const file of files) {
         formData.append('files', file);
       }
@@ -20,9 +25,9 @@ export const createPost = createAsyncThunk(
         params: {
           section_key,
           theme_id,
-          content_type,
+          content_type
         },
-        // не ставим Content-Type!
+        // Content-Type НЕ указываем, axios сам поставит с boundary
       });
 
       return res.data;
@@ -32,7 +37,6 @@ export const createPost = createAsyncThunk(
     }
   }
 );
-
 
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
