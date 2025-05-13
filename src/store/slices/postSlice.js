@@ -10,14 +10,11 @@ export const createPost = createAsyncThunk(
       formData.append('publishing_method', publishing_method);
 
       for (const file of files) {
-        formData.append('files', file); 
+        formData.append('files', file);
       }
 
       const res = await axios.post('/api/v1/post/', formData, {
-        params: { section_key, theme_id, content_type },
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        params: { section_key, theme_id, content_type }
       });
 
       return res.data;
