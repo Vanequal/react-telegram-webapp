@@ -2,33 +2,35 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../api/axios';
 
 export const createPost = createAsyncThunk(
-  'post/',
-  async ({ message_text, section_key, theme_id, publishing_method, files = [] }, { rejectWithValue }) => {
+  'post/create',
+  async ({ message_text, section_key, theme_id, publishing_method, content_type, files = [] }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
 
+      // тело запроса в data
       formData.append('data', JSON.stringify({
         message_text,
         publishing_method
       }));
 
-      // Добавляем файлы
+      // файлы
       files.forEach(file => {
         formData.append('files', file);
       });
 
-      // Добавляем остальные параметры в форму
-      formData.append('section_key', section_key);
-      formData.append('theme_id', theme_id.toString());
-
       const res = await axios.post('/api/v1/post/', formData, {
-        // Не передаём params, всё в formData
+        params: {
+          section_key,
+          theme_id,
+          content_type,
+        },
+        // headers НЕ ставим вручную
       });
 
       return res.data;
     } catch (err) {
-      console.error('Ошибка запроса:', err.response?.data);
-      return rejectWithValue(err.response?.data || 'Ошибка создания поста');
+      console.error('Ошибка запроса:', JSON.stringify(err?.response?.data?.detail, null, 2));
+      return rejectWithValue(err?.response?.data?.detail || 'Ошибка создания поста');
     }
   }
 );
