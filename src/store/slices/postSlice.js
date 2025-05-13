@@ -7,18 +7,16 @@ export const createPost = createAsyncThunk(
     try {
       const formData = new FormData();
 
-      formData.append('data', JSON.stringify({
-        message_text,
-        publishing_method
-      }));
-
+      formData.append('message_text', message_text);
+      formData.append('publishing_method', publishing_method);
+      
       files.forEach(file => {
         formData.append('files', file);
       });
-
+      
       const res = await axios.post('/api/v1/post/', formData, {
         params: { section_key, theme_id, content_type }
-      });
+      });      
 
       return res.data;
     } catch (err) {
