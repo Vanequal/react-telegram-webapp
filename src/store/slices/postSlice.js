@@ -12,12 +12,14 @@ export const createPost = createAsyncThunk(
         publishing_method
       }));
 
-      files.forEach((file, index) => {
-        formData.append(`files[${index}]`, file);
+      // вот ТАК правильно
+      files.forEach(file => {
+        formData.append('files', file);
       });
 
       const res = await axios.post('/api/v1/post/', formData, {
-        params: { section_key, theme_id, content_type }
+        params: { section_key, theme_id, content_type },
+        // НЕ ставь Content-Type — axios сам добавит boundary
       });
 
       return res.data;
@@ -27,6 +29,7 @@ export const createPost = createAsyncThunk(
     }
   }
 );
+
 
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
