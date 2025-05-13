@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../api/axios';
 
 export const createPost = createAsyncThunk(
-  'post/create',
+  'post/',
   async ({ message_text, section_key, theme_id, publishing_method, files = [] }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
