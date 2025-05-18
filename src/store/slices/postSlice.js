@@ -6,27 +6,24 @@ export const createPost = createAsyncThunk(
   async ({ message_text, section_key, theme_id, publishing_method, files = [], content_type }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
-
-      // ВАЖНО: data должен быть именно СТРОКОЙ, а не объектом
-      const jsonPayload = {
+      formData.append('data', JSON.stringify({
         message_text,
         publishing_method
-      };
-      formData.append('data', JSON.stringify(jsonPayload));
+      }));
 
-      // Если есть файлы
       for (const file of files) {
         formData.append('files', file);
       }
 
-      // Параметры идут в query
       const res = await axios.post('/api/v1/post/', formData, {
         params: {
           section_key,
           theme_id,
           content_type
+        },
+        headers: {
+          'Content-Type': 'multipart/form-data'
         }
-        // Content-Type НЕ УКАЗЫВАЕМ — Axios сам всё сделает правильно
       });
 
       return res.data;
