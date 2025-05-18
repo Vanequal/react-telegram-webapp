@@ -330,17 +330,46 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
         <div className="idea-card__text-row">
           <div className="idea-card__text">{idea.preview}</div>
           {idea.files && idea.files.length > 0 && (
-            <div className="idea-card__files">
+            <div className="idea-card__files" style={{ marginTop: '8px' }}>
               <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
-              <ul style={{ paddingLeft: '1rem', fontSize: '13px' }}>
-                {idea.files.map((file, i) => (
-                  <li key={i}>
-                    <a href={file.url} target="_blank" rel="noopener noreferrer">
-                      {file.stored_name || `Файл ${i + 1}`}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+                {idea.files.map((file, i) => {
+                  const isImage = file.url?.match(/\.(jpeg|jpg|png|gif|webp)$/i);
+                  const isVideo = file.url?.match(/\.(mp4|webm|ogg)$/i);
+
+                  if (isImage) {
+                    return (
+                      <img
+                        key={i}
+                        src={file.url}
+                        alt={`attached-${i}`}
+                        style={{ maxWidth: '100%', borderRadius: '12px' }}
+                      />
+                    );
+                  } else if (isVideo) {
+                    return (
+                      <video
+                        key={i}
+                        controls
+                        style={{ maxWidth: '100%', borderRadius: '12px' }}
+                        src={file.url}
+                      />
+                    );
+                  } else {
+                    return (
+                      <a
+                        key={i}
+                        href={file.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#1976D2', wordBreak: 'break-word' }}
+                      >
+                        {file.stored_name || `Файл ${i + 1}`}
+                      </a>
+                    );
+                  }
+                })}
+              </div>
             </div>
           )}
           <span className="idea-card__timestamp">
