@@ -334,9 +334,9 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
               <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
                 {idea.files.map((file, i) => {
-                  console.log(file)
                   const BASE_URL = 'https://oleg-forum-site.matthew-0203.ru/';
-                  const url = BASE_URL + file.relative_path;
+                  const cleanedPath = file.relative_path.replace(/^backend\//, '');
+                  const url = BASE_URL + cleanedPath;
 
                   const ext = file.extension?.toLowerCase() || '';
                   const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
@@ -349,6 +349,10 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                         src={url}
                         alt={file.original_name || `image-${i}`}
                         style={{ maxWidth: '100%', borderRadius: '12px' }}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          console.warn('❌ Не загрузилось изображение:', url);
+                        }}
                       />
                     );
                   } else if (isVideo) {
