@@ -28,7 +28,7 @@ export const createPost = createAsyncThunk(
 
       return res.data;
     } catch (err) {
-      console.error('Ошибка запроса:', JSON.stringify(err?.response?.data?.detail, null, 2));
+      console.error('🔥 Полный ответ с ошибкой:', err?.response?.data || err.message || err);
       return rejectWithValue(err?.response?.data?.detail || 'Ошибка создания поста');
     }
   }
