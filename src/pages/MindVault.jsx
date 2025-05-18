@@ -329,54 +329,59 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       <div ref={textWrapperRef} className={`idea-card__text-wrapper ${expanded ? 'expanded' : ''}`}>
         <div className="idea-card__text-row">
           <div className="idea-card__text">{idea.preview}</div>
-          {idea.files && idea.files.length > 0 && (
-            <div className="idea-card__files" style={{ marginTop: '8px' }}>
-              <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
-                {idea.files.map((file, i) => {
-                  console.log(file)
-                  const BASE_URL = 'https://oleg-forum-site.matthew-0203.ru/';
-                  const url = BASE_URL + file.relative_path;
+{idea.files && idea.files.length > 0 && (
+  <div className="idea-card__files" style={{ marginTop: '8px' }}>
+    <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+      {idea.files.map((file, i) => {
+        const BASE_URL = 'https://oleg-forum-site.matthew-0203.ru/';
+        const cleanedPath = file.relative_path.replace(/^backend\//, '');
+        const url = BASE_URL + cleanedPath;
 
-                  const ext = file.extension?.toLowerCase() || '';
-                  const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
-                  const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
+        const ext = file.extension?.toLowerCase() || '';
+        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+        const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
 
-                  if (isImage) {
-                    return (
-                      <img
-                        key={i}
-                        src={url}
-                        alt={file.original_name || `image-${i}`}
-                        style={{ maxWidth: '100%', borderRadius: '12px' }}
-                      />
-                    );
-                  } else if (isVideo) {
-                    return (
-                      <video
-                        key={i}
-                        controls
-                        src={url}
-                        style={{ maxWidth: '100%', borderRadius: '12px' }}
-                      />
-                    );
-                  } else {
-                    return (
-                      <a
-                        key={i}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: '#1976D2', wordBreak: 'break-word' }}
-                      >
-                        {file.original_name || `Файл ${i + 1}`}
-                      </a>
-                    );
-                  }
-                })}
-              </div>
-            </div>
-          )}
+        if (isImage) {
+          return (
+            <img
+              key={i}
+              src={url}
+              alt={file.original_name || `image-${i}`}
+              style={{ maxWidth: '100%', borderRadius: '12px' }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                console.warn('❌ Не загрузилось изображение:', url);
+              }}
+            />
+          );
+        } else if (isVideo) {
+          return (
+            <video
+              key={i}
+              controls
+              src={url}
+              style={{ maxWidth: '100%', borderRadius: '12px' }}
+            />
+          );
+        } else {
+          return (
+            <a
+              key={i}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#1976D2', wordBreak: 'break-word' }}
+            >
+              {file.original_name || `Файл ${i + 1}`}
+            </a>
+          );
+        }
+      })}
+    </div>
+  </div>
+)}
+
           <span className="idea-card__timestamp">
             {new Date(idea.timestamp).toLocaleString('ru-RU', {
               day: '2-digit',
