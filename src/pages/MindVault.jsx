@@ -334,16 +334,18 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
               <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
                 {idea.files.map((file, i) => {
-                  console.log('file:', file);
-                  const isImage = file.url?.match(/\.(jpeg|jpg|png|gif|webp)$/i);
-                  const isVideo = file.url?.match(/\.(mp4|webm|ogg)$/i);
+                  const BASE_URL = 'https://oleg-forum-site.matthew-0203.ru/';
+                  const url = BASE_URL + file.relative_path;
+
+                  const isImage = file.mime_type?.startsWith('image/');
+                  const isVideo = file.mime_type?.startsWith('video/');
 
                   if (isImage) {
                     return (
                       <img
                         key={i}
-                        src={file.url}
-                        alt={`attached-${i}`}
+                        src={url}
+                        alt={file.original_name || `image-${i}`}
                         style={{ maxWidth: '100%', borderRadius: '12px' }}
                       />
                     );
@@ -352,20 +354,20 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                       <video
                         key={i}
                         controls
+                        src={url}
                         style={{ maxWidth: '100%', borderRadius: '12px' }}
-                        src={file.url}
                       />
                     );
                   } else {
                     return (
                       <a
                         key={i}
-                        href={file.url}
+                        href={url}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{ color: '#1976D2', wordBreak: 'break-word' }}
                       >
-                        {file.stored_name || `Файл ${i + 1}`}
+                        {file.original_name || `Файл ${i + 1}`}
                       </a>
                     );
                   }
