@@ -337,8 +337,9 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                   const BASE_URL = 'https://oleg-forum-site.matthew-0203.ru/';
                   const url = BASE_URL + file.relative_path;
 
-                  const isImage = file.mime_type?.startsWith('image/');
-                  const isVideo = file.mime_type?.startsWith('video/');
+                  const ext = file.extension?.toLowerCase() || '';
+                  const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+                  const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
 
                   if (isImage) {
                     return (
