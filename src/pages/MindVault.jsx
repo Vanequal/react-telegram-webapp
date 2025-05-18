@@ -334,6 +334,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
               <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
                 {idea.files.map((file, i) => {
+                  console.log('file:', file);
                   const isImage = file.url?.match(/\.(jpeg|jpg|png|gif|webp)$/i);
                   const isVideo = file.url?.match(/\.(mp4|webm|ogg)$/i);
 
