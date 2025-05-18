@@ -334,6 +334,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
               <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
                 {idea.files.map((file, i) => {
+                  console.log(file)
                   const BASE_URL = 'https://oleg-forum-site.matthew-0203.ru/';
                   const url = BASE_URL + file.relative_path;
 
