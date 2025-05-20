@@ -337,11 +337,13 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                 {idea.files.map((file, i) => {
                   // Исправление путей к файлам
                   const rawPath = file.relative_path.replace(/\\/g, '/');
-                  
-                  // Исправленный URL - убираем дублирование "files/files/"
-                  const url = `https://b538-109-75-62-2.ngrok-free.app/api/v1/files/files/${rawPath}` +
-                    `?post_id=${idea.id}&section_key=chat_ideas&theme_id=1&content_type=post`;
 
+                  const cleanPath = rawPath.replace(/^backend\/files\//, '')
+                                          .replace(/^backend\//, '')
+                                          .replace(/^files\//, '');
+
+                  const url = `https://b538-109-75-62-2.ngrok-free.app/api/v1/files/files/${cleanPath}` +
+                    `?post_id=${idea.id}&section_key=chat_ideas&theme_id=1&content_type=post`;
                   const ext = file.extension?.toLowerCase() || '';
                   const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
                   const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
