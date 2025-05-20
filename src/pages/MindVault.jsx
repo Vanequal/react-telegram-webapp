@@ -334,10 +334,13 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
               <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
                 {idea.files.map((file, i) => {
-                const rawPath = file.relative_path.replace(/\\/g, '/');
-                const url = `https://b538-109-75-62-2.ngrok-free.app/api/v1/files/files/${rawPath}` +
-                  `?post_id=${idea.id}&section_key=chat_ideas&theme_id=1&content_type=post`;
-              
+                  const rawPath = file.relative_path.replace(/\\/g, '/');
+                  const cleanedPath = rawPath.replace(/^backend\//, '');  
+
+                  const url = `https://b538-109-75-62-2.ngrok-free.app/api/v1/files/files/${cleanedPath}` +
+                    `?post_id=${idea.id}&section_key=chat_ideas&theme_id=1&content_type=post`;
+
+
                   const ext = file.extension?.toLowerCase() || '';
                   const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
                   const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
