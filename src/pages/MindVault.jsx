@@ -334,9 +334,9 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
               <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
                 {idea.files.map((file, i) => {
-                  const BASE_URL = 'https://b538-109-75-62-2.ngrok-free.app/';
-                  const url = BASE_URL + file.relative_path;
-
+                 const BASE_URL = 'https://b538-109-75-62-2.ngrok-free.app/';
+                 const url = BASE_URL + file.relative_path.replace(/\\/g, '/');
+                 
                   const ext = file.extension?.toLowerCase() || '';
                   const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
                   const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
