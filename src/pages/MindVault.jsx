@@ -272,9 +272,10 @@ const MindVaultPage = () => {
   );
 };
 
+// Исправленная функция формирования URL в компоненте IdeaCard
 function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse, commentCount = 0 }) {
   const dispatch = useDispatch();
-  const comments = useSelector(state => state.post.comments[idea.id] || []); // <<< получаем комментарии
+  const comments = useSelector(state => state.post.comments[idea.id] || []); 
   const [expanded, setExpanded] = useState(isExpanded);
   const [showReadMore, setShowReadMore] = useState(false);
   const textWrapperRef = useRef(null);
@@ -334,12 +335,12 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
               <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
                 {idea.files.map((file, i) => {
+                  // Исправление путей к файлам
                   const rawPath = file.relative_path.replace(/\\/g, '/');
-                  const cleanedPath = rawPath.replace(/^backend\//, '');  
-
-                  const url = `https://b538-109-75-62-2.ngrok-free.app/api/v1/files/files/${cleanedPath}` +
+                  
+                  // Исправленный URL - убираем дублирование "files/files/"
+                  const url = `https://b538-109-75-62-2.ngrok-free.app/api/v1/files/files/${rawPath}` +
                     `?post_id=${idea.id}&section_key=chat_ideas&theme_id=1&content_type=post`;
-
 
                   const ext = file.extension?.toLowerCase() || '';
                   const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
@@ -353,8 +354,9 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                         alt={file.original_name || `image-${i}`}
                         style={{ maxWidth: '100%', borderRadius: '12px' }}
                         onError={(e) => {
-                          e.target.style.display = 'none';
-                          console.warn('❌ Не загрузилось изображение:', url);
+                          console.warn(`❌ Не загрузилось изображение: ${url}`);
+                          // Добавляем замещающее изображение вместо скрытия
+                          e.target.src = 'https://placehold.co/400x300?text=Изображение+недоступно';
                         }}
                       />
                     );
@@ -365,6 +367,16 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                         controls
                         src={url}
                         style={{ maxWidth: '100%', borderRadius: '12px' }}
+                        onError={(e) => {
+                          console.warn(`❌ Не загрузилось видео: ${url}`);
+                          // Добавляем сообщение об ошибке
+                          const parent = e.target.parentNode;
+                          const errorMsg = document.createElement('div');
+                          errorMsg.textContent = 'Видео недоступно';
+                          errorMsg.style.color = 'red';
+                          errorMsg.style.padding = '10px';
+                          parent.appendChild(errorMsg);
+                        }}
                       />
                     );
                   } else {
@@ -435,8 +447,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
         <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>{idea.views}</p>
       </div>
 
-
-      {/* 👉 показываем комментарии если есть */}
       {expanded && comments.length > 0 && (
         <div className="idea-card__comments-list">
           {comments.map(comment => (
