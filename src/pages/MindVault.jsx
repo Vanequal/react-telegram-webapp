@@ -343,7 +343,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                                           .replace(/^files\//, '');
 
                   const url = `https://b538-109-75-62-2.ngrok-free.app/api/v1/files/files/${cleanPath}` +
-                    `?post_id=${idea.id}&section_key=chat_ideas&theme_id=1&content_type=post`;
+                    `?post_id=${idea.id}&section_key=chat_ideas&theme_id=1&content_type=posts`;
                   const ext = file.extension?.toLowerCase() || '';
                   const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
                   const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
