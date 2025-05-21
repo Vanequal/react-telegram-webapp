@@ -278,7 +278,6 @@ const MindVaultPage = () => {
   );
 };
 
-// Исправленная функция формирования URL в компоненте IdeaCard
 function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse, commentCount = 0 }) {
   const dispatch = useDispatch();
   const comments = useSelector(state => state.post.comments[idea.id] || []); 
@@ -295,7 +294,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
 
   useEffect(() => {
     const viewed = getViewedIdeas();
-    if (viewed[idea.id]) return; // Уже засчитан
+    if (viewed[idea.id]) return;
 
     let timer = null;
 
@@ -357,7 +356,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                         style={{ maxWidth: '100%', borderRadius: '12px' }}
                         onError={(e) => {
                           console.warn(`❌ Не загрузилось изображение: ${url}`);
-                          // Добавляем замещающее изображение вместо скрытия
                           e.target.src = 'https://placehold.co/400x300?text=Изображение+недоступно';
                         }}
                       />
