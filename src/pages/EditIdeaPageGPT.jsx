@@ -41,7 +41,7 @@ const EditIdeaPageGPT = () => {
       theme_id: themeId,
       files: attachedFiles,
       publishing_method,
-      content_type: 'post',
+      content_type: 'posts',
     };
 
     try {
