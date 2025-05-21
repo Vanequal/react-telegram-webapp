@@ -19,7 +19,7 @@ export const createPost = createAsyncThunk(
         params: {
           section_key,
           theme_id,
-          content_type
+          content_type: 'posts'
         },
         headers: {
           'Content-Type': 'multipart/form-data'

@@ -53,8 +53,8 @@ const MindVaultPage = () => {
       }
     }
 
-    dispatch(fetchSection({ section_key: sectionKey, theme_id: themeId, content_type: 'post' }));
-    dispatch(fetchPosts({ section_key: sectionKey, theme_id: themeId, content_type: 'post' }));
+    dispatch(fetchSection({ section_key: sectionKey, theme_id: themeId, content_type: 'posts' }));
+    dispatch(fetchPosts({ section_key: sectionKey, theme_id: themeId, content_type: 'posts' }));
   }, [dispatch, sectionKey, themeId]);
 
   const postComments = useSelector(state => state.post.comments);
@@ -140,7 +140,8 @@ const MindVaultPage = () => {
         section_key: section.section_key,
         theme_id: section.theme.id,
         message_text: ideaText.trim(),
-        content_type: 'post'
+        publishing_metod: 'original',
+        content_type: 'posts'
       })).unwrap();
 
       navigate('/editideapagegpt', {
