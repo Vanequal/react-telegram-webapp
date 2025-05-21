@@ -119,12 +119,18 @@ const MindVaultPage = () => {
     }
     setShowPopover(false);
   };
-
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
+    let files = Array.from(e.target.files);
+  
+    if (files.length > 3) {
+      alert('Можно загрузить не более 3 файлов');
+      files = files.slice(0, 3);
+    }
+  
     setAttachedFiles(files);
     console.log("Выбраны файлы:", files);
   };
+  
 
   const handleSendClick = async () => {
     if (!ideaText.trim()) return;
