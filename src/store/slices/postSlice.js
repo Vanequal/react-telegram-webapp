@@ -6,11 +6,6 @@ export const createPost = createAsyncThunk(
   async ({ message_text, section_key, theme_id, publishing_method, files = [], content_type }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
-      formData.append('data', JSON.stringify({
-        message_text,
-        publishing_method
-      }));
-
       for (const file of files) {
         formData.append('files', file);
       }
@@ -19,7 +14,11 @@ export const createPost = createAsyncThunk(
         params: {
           section_key,
           theme_id,
-          content_type: 'posts'
+          content_type: 'posts',
+          data: JSON.stringify({
+            message_text,
+            publishing_method
+          })
         },
         headers: {
           'Content-Type': 'multipart/form-data'
