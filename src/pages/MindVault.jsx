@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchSection, fetchPosts } from '../store/slices/sectionSlice';
-import { createPostPreview, fetchPostComments } from '../store/slices/postSlice';
+// ✅ Используем правильные действия
+import { createPostPreview, fetchPostComments, fetchPostsInSection, fetchDownloadUrl } from '../store/slices/postSlice';
 import { reactToPost } from '../store/slices/postSlice';
 import { getViewedIdeas, markIdeaAsViewed } from '../utils/utils.js';
 
@@ -36,9 +36,9 @@ const MindVaultPage = () => {
   const fileInputMediaRef = useRef(null);
   const fileInputFilesRef = useRef(null);
 
-  const { posts, loading, data: section } = useSelector(state => state.section);
+  // ✅ Используем состояние из postSlice
+  const { posts, loading, error } = useSelector(state => state.post);
 
-  const localeTexts = section?.locale_texts;
   const themeId = Number(searchParams.get('id')) || 1;
   const sectionKey = 'chat_ideas';
 
@@ -54,8 +54,12 @@ const MindVaultPage = () => {
       }
     }
 
-    dispatch(fetchSection({ section_id: sectionKey, theme_id: themeId, content_type: 'posts' }));
-    dispatch(fetchPosts({ section_id: sectionKey, theme_id: themeId }));
+    // ✅ Используем правильное действие для загрузки постов
+    dispatch(fetchPostsInSection({ 
+      section_key: sectionKey, 
+      theme_id: themeId, 
+      content_type: 'posts' 
+    }));
   }, [dispatch, sectionKey, themeId]);
 
   const postComments = useSelector(state => state.post.comments);
@@ -91,7 +95,6 @@ const MindVaultPage = () => {
     navigate(`/discussion/${id}`, { state: { idea: ideaWithText } });
   };
 
-
   const handleArrowClick = (id) => setExpandedIdeaId(id);
   const handleCollapse = () => setExpandedIdeaId(null);
 
@@ -120,6 +123,7 @@ const MindVaultPage = () => {
     }
     setShowPopover(false);
   };
+  
   const handleFileChange = (e) => {
     let files = Array.from(e.target.files);
   
@@ -131,7 +135,6 @@ const MindVaultPage = () => {
     setAttachedFiles(files);
     console.log("Выбраны файлы:", files);
   };
-  
 
   const handleSendClick = async () => {
     if (!ideaText.trim()) return;
@@ -159,7 +162,7 @@ const MindVaultPage = () => {
     posts.forEach(post => {
       dispatch(fetchPostComments({
         post_id: post.id,
-        section_id: sectionKey,
+        section_key: sectionKey,
         theme_id: themeId,
         content_type: 'post',
       }));
@@ -180,7 +183,7 @@ const MindVaultPage = () => {
           <IdeaCard
             idea={ideas.find(i => i.id === expandedIdeaId)}
             onExpand={handleExpand}
-            commentCount={idea.comments}
+            commentCount={ideas.find(i => i.id === expandedIdeaId)?.comments || 0}
             onArrowClick={handleArrowClick}
             isExpanded={true}
             onCollapse={handleCollapse}
@@ -200,7 +203,13 @@ const MindVaultPage = () => {
 
         {!loading && ideas.length === 0 && (
           <p className="mind-vault-header__description" style={{ textAlign: 'center', padding: '1rem', color: 'gray' }}>
-            {localeTexts?.messages?.empty_section || 'Идей пока нет'}
+            Идей пока нет
+          </p>
+        )}
+
+        {error && (
+          <p style={{ textAlign: 'center', padding: '1rem', color: 'red' }}>
+            Ошибка загрузки: {error}
           </p>
         )}
       </div>
@@ -234,7 +243,7 @@ const MindVaultPage = () => {
             <input
               type="text"
               className="vault-footer__input"
-              placeholder={localeTexts?.inputs?.message || 'Добавить идею'}
+              placeholder="Добавить идею"
               value={ideaText}
               onChange={(e) => setIdeaText(e.target.value)}
             />
@@ -380,7 +389,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                         style={{ maxWidth: '100%', borderRadius: '12px' }}
                         onError={(e) => {
                           console.warn(`❌ Не загрузилось видео: ${url}`);
-                          // Добавляем сообщение об ошибке
                           const parent = e.target.parentNode;
                           const errorMsg = document.createElement('div');
                           errorMsg.textContent = 'Видео недоступно';
@@ -437,7 +445,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
           <img src={dislikeIcon} alt="Dislike" />
           <span>{idea.dislikes}</span>
         </div>
-
       </div>
 
       <div className="idea-card__divider" />

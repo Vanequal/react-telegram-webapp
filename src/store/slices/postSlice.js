@@ -32,7 +32,6 @@ export const createPost = createAsyncThunk(
   }
 );
 
-
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
   async ({ section_id, theme_id, text }, { rejectWithValue }) => {
@@ -51,37 +50,47 @@ export const createPostPreview = createAsyncThunk(
   }
 );
 
-
+// ✅ Исправлено - добавлен await и правильные параметры
 export const fetchPostsInSection = createAsyncThunk(
   'post/fetchPostsInSection',
-  async ({ section_key, theme_id, content_type }, { rejectWithValue }) => {
+  async ({ section_key, theme_id, limit = 100 }, { rejectWithValue }) => {
     try {
-      const res = axios.get(`/api/v1/posts`, {
-        params: { section_id: section_key, theme_id }
+      const res = await axios.get(`/api/v1/posts`, {
+        params: { 
+          section_id: section_key, 
+          theme_id: theme_id,
+          limit: limit
+        }
       });
       
       return res.data;
     } catch (err) {
+      console.error('🔥 Ошибка загрузки постов:', err?.response?.data || err.message);
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки постов');
     }
   }
 );
 
+// ✅ Исправлено - правильные параметры согласно Swagger
 export const fetchPostById = createAsyncThunk(
   'post/fetchPostById',
-  async ({ post_id, section_key, theme_id, content_type }, { rejectWithValue }) => {
+  async ({ post_id, section_id, theme_id }, { rejectWithValue }) => {
     try {
       const res = await axios.get(`/api/v1/posts/${post_id}`, {
-        params: { message_id: post_id, section_id: section_key, theme_id }
+        params: { 
+          message_id: post_id, 
+          section_id: section_id, 
+          theme_id: theme_id 
+        }
       });
       
       return res.data;
     } catch (err) {
+      console.error('🔥 Ошибка загрузки поста:', err?.response?.data || err.message);
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки поста');
     }
   }
 );
-
 
 export const fetchPostComments = createAsyncThunk(
   'post/fetchComments',
@@ -92,6 +101,7 @@ export const fetchPostComments = createAsyncThunk(
       });
       return { postId: post_id, comments: res.data };
     } catch (err) {
+      console.error('🔥 Ошибка загрузки комментариев:', err?.response?.data || err.message);
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки комментариев');
     }
   }
@@ -110,6 +120,7 @@ export const createComment = createAsyncThunk(
       });
       return res.data;
     } catch (err) {
+      console.error('🔥 Ошибка добавления комментария:', err?.response?.data || err.message);
       return rejectWithValue(err.response?.data?.detail || 'Ошибка добавления комментария');
     }
   }
@@ -122,6 +133,7 @@ export const reactToPost = createAsyncThunk(
       await axios.post(`/api/v1/post/react`, { post_id, reaction });
       return { post_id, reaction };
     } catch (err) {
+      console.error('🔥 Ошибка реакции:', err?.response?.data || err.message);
       return rejectWithValue(err.response?.data?.detail || 'Ошибка при отправке реакции');
     }
   }
@@ -136,6 +148,7 @@ export const fetchDownloadUrl = createAsyncThunk(
       });
       return { filePath, url: res.data };
     } catch (err) {
+      console.error('🔥 Ошибка загрузки файла:', err?.response?.data || err.message);
       return rejectWithValue(err?.response?.data?.detail || 'Ошибка загрузки ссылки');
     }
   }
@@ -152,7 +165,16 @@ const postSlice = createSlice({
     fileLinks: {},
     selectedPost: null
   },
-  reducers: {},
+  reducers: {
+    // ✅ Добавляем редьюсер для очистки ошибок
+    clearError: (state) => {
+      state.error = null;
+    },
+    // ✅ Добавляем редьюсер для очистки постов
+    clearPosts: (state) => {
+      state.posts = [];
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(createPost.pending, (state) => {
@@ -180,17 +202,31 @@ const postSlice = createSlice({
         state.error = action.payload;
       })
 
+      // ✅ Исправлено - добавлены состояния загрузки
+      .addCase(fetchPostsInSection.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchPostsInSection.fulfilled, (state, action) => {
-        state.posts = action.payload;
+        state.loading = false;
+        state.posts = action.payload || [];
       })
       .addCase(fetchPostsInSection.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
+        state.posts = [];
       })
 
+      .addCase(fetchPostById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchPostById.fulfilled, (state, action) => {
+        state.loading = false;
         state.selectedPost = action.payload;
       })
       .addCase(fetchPostById.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       })
 
@@ -210,14 +246,19 @@ const postSlice = createSlice({
         }
         state.comments[post_id].push(comment);
       })
+      
       .addCase(fetchDownloadUrl.fulfilled, (state, action) => {
         const { filePath, url } = action.payload;
         state.fileLinks = {
           ...state.fileLinks,
           [filePath]: url
         };
+      })
+      .addCase(fetchDownloadUrl.rejected, (state, action) => {
+        console.warn('Ошибка загрузки файла:', action.payload);
       });
   }
 });
 
+export const { clearError, clearPosts } = postSlice.actions;
 export default postSlice.reducer;
