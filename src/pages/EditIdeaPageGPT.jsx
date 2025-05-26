@@ -49,12 +49,16 @@ const EditIdeaPageGPT = () => {
       if (actionResult.meta.requestStatus === 'fulfilled') {
         navigate('/mindvault');
       } else {
-        console.warn('Пост создался, но бек вернул ошибку', actionResult.payload);
-        navigate('/mindvault');
+        // ✅ ИСПРАВЛЕНО: правильная обработка ошибки
+        const errorMsg = typeof actionResult.payload === 'string' 
+          ? actionResult.payload 
+          : actionResult.payload?.message || 'Неизвестная ошибка';
+        console.warn('Ошибка создания поста:', errorMsg);
+        // Не переходим на /mindvault при ошибке
       }
     } catch (error) {
       console.error('Ошибка публикации:', error);
-      navigate('/mindvault');
+      // Не переходим на /mindvault при ошибке
     }
   };
 

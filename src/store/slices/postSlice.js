@@ -7,17 +7,18 @@ export const createPost = createAsyncThunk(
     try {
       const formData = new FormData();
 
-      // Добавляем файлы в FormData
+      // ✅ ИСПРАВЛЕНО: добавляем файлы правильно - каждый файл отдельно
       if (files && files.length > 0) {
-        for (const file of files) {
+        files.forEach(file => {
           formData.append('files', file);
-        }
-      } else {
-        // Если файлов нет, добавляем пустой файл для соответствия схеме
-        formData.append('files', new Blob(), '');
+        });
+      }
+      // Если файлов нет, добавляем пустое поле files (обязательное по схеме)
+      if (!files || files.length === 0) {
+        formData.append('files', '');
       }
 
-      // ✅ ИСПРАВЛЕНО: data передается как строка в query параметрах
+      // ✅ data передается как строка в query параметрах
       const dataStr = JSON.stringify({
         message_text,
         publishing_method
@@ -29,7 +30,6 @@ export const createPost = createAsyncThunk(
           theme_id,
           data: dataStr
         }
-        // Убираем явное указание Content-Type, пусть axios сам установит границы для multipart
       });
 
       return res.data;
