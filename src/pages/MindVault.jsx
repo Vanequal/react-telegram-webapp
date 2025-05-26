@@ -54,7 +54,7 @@ const MindVaultPage = () => {
       }
     }
 
-    dispatch(fetchSection({ section_key: sectionKey, theme_id: themeId, content_type: 'posts' }));
+    dispatch(fetchSection({ section_id: sectionKey, theme_id: themeId, content_type: 'posts' }));
     dispatch(fetchPosts({ section_id: sectionKey, theme_id: themeId }));
   }, [dispatch, sectionKey, themeId]);
 
@@ -159,7 +159,7 @@ const MindVaultPage = () => {
     posts.forEach(post => {
       dispatch(fetchPostComments({
         post_id: post.id,
-        section_key: sectionKey,
+        section_id: sectionKey,
         theme_id: themeId,
         content_type: 'post',
       }));
