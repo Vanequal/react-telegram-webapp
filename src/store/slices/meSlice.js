@@ -5,7 +5,7 @@ export const fetchCurrentUser = createAsyncThunk(
   'me/fetchCurrentUser',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('/api/v1/user/me');
+      const response = await axios.get('/api/v1/users/me');
       return response.data;
     } catch (err) {
       console.error('Fetch current user error:', err);
