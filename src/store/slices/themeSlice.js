@@ -1,12 +1,18 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../api/axios';
 
-export const fetchTheme = createAsyncThunk('theme/fetchTheme', async (theme_id = 1) => {
-  const response = await axios.get(`/api/v1/theme/${theme_id}`);
-  return response.data;
-});
-
-
+export const fetchTheme = createAsyncThunk(
+  'theme/fetchTheme',
+  async (theme_id, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`/api/v1/themes/${theme_id}`);
+      return response.data;
+    } catch (err) {
+      console.error('Theme fetch error:', err);
+      return rejectWithValue(err.response?.data?.detail || 'Fetch theme error');
+    }
+  }
+);
 
 const themeSlice = createSlice({
   name: 'theme',

@@ -3,18 +3,17 @@ import axios from '../../api/axios';
 
 export const createPost = createAsyncThunk(
   'post/create',
-  async ({ message_text, section_key, theme_id, publishing_method, files = [], content_type }, { rejectWithValue }) => {
+  async ({ message_text, section_id, theme_id, publishing_method, files = [] }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
       for (const file of files) {
         formData.append('files', file);
       }
 
-      const res = await axios.post('/api/v1/post/', formData, {
+      const res = await axios.post('/api/v1/posts', formData, {
         params: {
-          section_key,
+          section_id,
           theme_id,
-          content_type: 'posts',
           data: JSON.stringify({
             message_text,
             publishing_method
@@ -27,7 +26,7 @@ export const createPost = createAsyncThunk(
 
       return res.data;
     } catch (err) {
-      console.error('🔥 Полный ответ с ошибкой:', err?.response?.data || err.message || err);
+      console.error('🔥 Ошибка создания поста:', err?.response?.data || err.message);
       return rejectWithValue(err?.response?.data?.detail || 'Ошибка создания поста');
     }
   }
@@ -36,17 +35,13 @@ export const createPost = createAsyncThunk(
 
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
-  async ({ section_key, theme_id, message_text, files, content_type }, { rejectWithValue }) => {
+  async ({ section_id, theme_id, text }, { rejectWithValue }) => {
     try {
       const res = await axios.post(
-        `/api/v1/post/preview`,
-        { message_text },
+        `/api/v1/posts/gpt`,
+        { text },
         {
-          params: {
-            section_key,
-            theme_id,
-            content_type
-          }
+          params: { section_id, theme_id }
         }
       );
       return res.data;
@@ -55,6 +50,7 @@ export const createPostPreview = createAsyncThunk(
     }
   }
 );
+
 
 export const fetchPostsInSection = createAsyncThunk(
   'post/fetchPostsInSection',
@@ -129,6 +125,20 @@ export const reactToPost = createAsyncThunk(
   }
 );
 
+export const fetchDownloadUrl = createAsyncThunk(
+  'post/fetchDownloadUrl',
+  async ({ filePath, mimeType = 'application/octet-stream' }, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(`/api/v1/files/download/${encodeURIComponent(filePath)}`, {
+        params: { url: filePath, mime_type: mimeType }
+      });
+      return { filePath, url: res.data };
+    } catch (err) {
+      return rejectWithValue(err?.response?.data?.detail || 'Ошибка загрузки ссылки');
+    }
+  }
+);
+
 const postSlice = createSlice({
   name: 'post',
   initialState: {
@@ -137,6 +147,7 @@ const postSlice = createSlice({
     preview: null,
     comments: {},
     posts: [],
+    fileLinks: {},
     selectedPost: null
   },
   reducers: {},
@@ -196,6 +207,13 @@ const postSlice = createSlice({
           state.comments[post_id] = [];
         }
         state.comments[post_id].push(comment);
+      })
+      .addCase(fetchDownloadUrl.fulfilled, (state, action) => {
+        const { filePath, url } = action.payload;
+        state.fileLinks = {
+          ...state.fileLinks,
+          [filePath]: url
+        };
       });
   }
 });

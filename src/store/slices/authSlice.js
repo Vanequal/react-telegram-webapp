@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../api/axios';
-import qs from 'qs';
 
 export const authWithTelegram = createAsyncThunk(
   'auth/telegram',
@@ -8,17 +7,16 @@ export const authWithTelegram = createAsyncThunk(
     try {
       const response = await axios.post(
         '/api/v1/auth/telegram',
-        qs.stringify({ init_data: initData }),
+        { init_data: initData },
         {
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-Telegram-InitData': initData
+            'Content-Type': 'application/json'
           }
         }
       );
 
       const { token, ...userData } = response.data;
-      
+
       sessionStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
@@ -29,6 +27,7 @@ export const authWithTelegram = createAsyncThunk(
     }
   }
 );
+
 
 const authSlice = createSlice({
   name: 'auth',

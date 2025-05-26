@@ -37,6 +37,7 @@ const MindVaultPage = () => {
   const fileInputFilesRef = useRef(null);
 
   const { posts, loading, data: section } = useSelector(state => state.section);
+
   const localeTexts = section?.locale_texts;
   const themeId = Number(searchParams.get('id')) || 1;
   const sectionKey = 'chat_ideas';
@@ -286,6 +287,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
   const [showReadMore, setShowReadMore] = useState(false);
   const textWrapperRef = useRef(null);
   const cardRef = useRef(null);
+  const fileLinks = useSelector(state => state.post.fileLinks);
 
   useEffect(() => {
     if (textWrapperRef.current?.scrollHeight > 160) {
@@ -322,6 +324,16 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
     };
   }, [idea]);
 
+  useEffect(() => {
+    if (!idea.files || idea.files.length === 0) return;
+  
+    idea.files.forEach(file => {
+      const cleanPath = file.relative_path.replace(/\\/g, '/');
+      if (!fileLinks[cleanPath]) {
+        dispatch(fetchDownloadUrl({ filePath: cleanPath, mimeType: file.mime_type || 'application/octet-stream' }));
+      }
+    });
+  }, [idea.files, fileLinks, dispatch]);  
 
   return (
     <div className="idea-card" ref={cardRef}>
@@ -341,8 +353,8 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
               <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
                 {idea.files.map((file, i) => {
-                const cleanPath = file.relative_path.replace(/\\/g, '/');
-                const url = `https://b538-109-75-62-2.ngrok-free.app/${cleanPath}`;                
+               const cleanPath = file.relative_path.replace(/\\/g, '/');
+               const url = fileLinks[cleanPath];               
                   
                   const ext = file.extension?.toLowerCase() || '';
                   const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
