@@ -7,32 +7,35 @@ export const createPost = createAsyncThunk(
     try {
       const formData = new FormData();
 
-      // Добавляем файлы
-      for (const file of files) {
-        formData.append('files', file);
+      // Добавляем файлы в FormData
+      if (files && files.length > 0) {
+        for (const file of files) {
+          formData.append('files', file);
+        }
+      } else {
+        // Если файлов нет, добавляем пустой файл для соответствия схеме
+        formData.append('files', new Blob(), '');
       }
 
-      // ✅ ИСПРАВЛЕНО: согласно Swagger, data должен быть в query параметрах, а не в FormData
-      const dataObj = {
+      // ✅ ИСПРАВЛЕНО: data передается как строка в query параметрах
+      const dataStr = JSON.stringify({
         message_text,
         publishing_method
-      };
+      });
 
       const res = await axios.post('/api/v1/posts', formData, {
         params: {
           section_id,
           theme_id,
-          data: JSON.stringify(dataObj) // ✅ data передается как query parameter
-        },
-        headers: {
-          'Content-Type': 'multipart/form-data'
+          data: dataStr
         }
+        // Убираем явное указание Content-Type, пусть axios сам установит границы для multipart
       });
 
       return res.data;
     } catch (err) {
       console.error('🔥 Ошибка создания поста:', err?.response?.data || err.message);
-      return rejectWithValue(err?.response?.data?.detail || 'Ошибка создания поста');
+      return rejectWithValue(err?.response?.data?.error || err?.response?.data?.detail || 'Ошибка создания поста');
     }
   }
 );
