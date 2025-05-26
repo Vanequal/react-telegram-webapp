@@ -55,7 +55,7 @@ const MindVaultPage = () => {
     }
 
     dispatch(fetchSection({ section_key: sectionKey, theme_id: themeId, content_type: 'posts' }));
-    dispatch(fetchPosts({ section_key: sectionKey, theme_id: themeId, content_type: 'posts' }));
+    dispatch(fetchPosts({ section_id: sectionKey, theme_id: themeId }));
   }, [dispatch, sectionKey, themeId]);
 
   const postComments = useSelector(state => state.post.comments);
@@ -138,12 +138,10 @@ const MindVaultPage = () => {
 
     try {
       await dispatch(createPostPreview({
-        section_key: section.section_key,
+        section_id: section.section_key,
         theme_id: section.theme.id,
-        message_text: ideaText.trim(),
-        publishing_metod: 'original',
-        content_type: 'posts'
-      })).unwrap();
+        text: ideaText.trim()
+      })).unwrap();      
 
       navigate('/editideapagegpt', {
         state: {
