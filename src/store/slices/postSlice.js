@@ -15,17 +15,17 @@ export const createPost = createAsyncThunk(
         message_text,
         publishing_method
       }));
-      
+
       const res = await axios.post('/api/v1/posts', formData, {
         params: {
           section_id,
-          theme_id
+          theme_id    
         },
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
+
       return res.data;
     } catch (err) {
       console.error('🔥 Ошибка создания поста:', err?.response?.data || err.message);
