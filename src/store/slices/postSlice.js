@@ -7,19 +7,22 @@ export const createPost = createAsyncThunk(
     try {
       const formData = new FormData();
 
+      // Добавляем файлы
       for (const file of files) {
         formData.append('files', file);
       }
 
-      formData.append('data', JSON.stringify({
+      // ✅ ИСПРАВЛЕНО: согласно Swagger, data должен быть в query параметрах, а не в FormData
+      const dataObj = {
         message_text,
         publishing_method
-      }));
+      };
 
       const res = await axios.post('/api/v1/posts', formData, {
         params: {
           section_id,
-          theme_id    
+          theme_id,
+          data: JSON.stringify(dataObj) // ✅ data передается как query parameter
         },
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -40,7 +43,7 @@ export const createPostPreview = createAsyncThunk(
     try {
       const res = await axios.post(
         `/api/v1/posts/gpt`,
-        { text },
+        { text }, // ✅ Тело запроса корректно
         {
           params: { section_id, theme_id }
         }

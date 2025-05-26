@@ -35,13 +35,13 @@ const EditIdeaPageGPT = () => {
   const handlePublish = async (text, publishing_method = 'original') => {
     if (!text) return;
 
+    // ✅ ИСПРАВЛЕНО: параметры согласно структуре из postSlice
     const payload = {
       message_text: text,
-      section_key: sectionKey,
+      section_id: sectionKey, // ✅ исправлено с section_key на section_id
       theme_id: themeId,
       files: attachedFiles,
-      publishing_method,
-      content_type: 'posts',
+      publishing_method
     };
 
     try {
@@ -113,7 +113,7 @@ const EditIdeaPageGPT = () => {
 
         {preview && (
           <div className="idea-card-gpt__actions">
-            <button className="idea-card-gpt__action-button" onClick={() => handlePublish(preview.message_text, 'original')}>
+            <button className="idea-card-gpt__action-button" onClick={() => handlePublish(preview.original_text, 'original')}>
               Опубликовать оригинал
             </button>
             <button className="idea-card-gpt__action-button" onClick={() => handlePublish(preview.gpt_text, 'gpt')}>
