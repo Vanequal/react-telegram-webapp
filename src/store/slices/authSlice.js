@@ -22,16 +22,16 @@ export const authWithTelegram = createAsyncThunk(
 
       sessionStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      console.log('📦 Заголовки ответа:', response.headers);
 
       return { user: userData, token };
     } catch (err) {
       console.error('Auth error:', err);
       return rejectWithValue(err.response?.data?.detail || 'Auth error');
     }
+    
   }
 );
-
-
 
 const authSlice = createSlice({
   name: 'auth',
