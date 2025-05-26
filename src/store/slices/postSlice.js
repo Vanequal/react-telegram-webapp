@@ -6,24 +6,26 @@ export const createPost = createAsyncThunk(
   async ({ message_text, section_id, theme_id, publishing_method, files = [] }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
+
       for (const file of files) {
         formData.append('files', file);
       }
 
+      formData.append('data', JSON.stringify({
+        message_text,
+        publishing_method
+      }));
+      
       const res = await axios.post('/api/v1/posts', formData, {
         params: {
           section_id,
-          theme_id,
-          data: JSON.stringify({
-            message_text,
-            publishing_method
-          })
+          theme_id
         },
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-
+      
       return res.data;
     } catch (err) {
       console.error('🔥 Ошибка создания поста:', err?.response?.data || err.message);
