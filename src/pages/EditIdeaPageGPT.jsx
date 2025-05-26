@@ -25,10 +25,10 @@ const EditIdeaPageGPT = () => {
   const handleSend = () => {
     if (ideaText.trim()) {
       dispatch(createPostPreview({
-        section_key: sectionKey,
+        section_id: sectionKey,
         theme_id: themeId,
-        message_text: ideaText,
-      }));
+        text: ideaText,
+      }));      
     }
   };
 
@@ -76,7 +76,7 @@ const EditIdeaPageGPT = () => {
         ) : (
           <div className="idea-card-gpt">
             <p className="idea-card-gpt__label">Оригинал текста:</p>
-            <p className="idea-card-gpt__text">{preview.message_text}</p>
+            <p className="idea-card-gpt__text">{preview.original_text}</p>
 
             {attachedFiles.map((file, i) => (
               <div key={i} style={{ marginBottom: '10px' }}>
