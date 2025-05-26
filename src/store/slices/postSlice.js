@@ -56,9 +56,10 @@ export const fetchPostsInSection = createAsyncThunk(
   'post/fetchPostsInSection',
   async ({ section_key, theme_id, content_type }, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`/api/v1/post/posts`, {
-        params: { section_key, theme_id, content_type }
+      const res = axios.get(`/api/v1/posts`, {
+        params: { section_id: section_key, theme_id }
       });
+      
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки постов');
@@ -70,9 +71,10 @@ export const fetchPostById = createAsyncThunk(
   'post/fetchPostById',
   async ({ post_id, section_key, theme_id, content_type }, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`/api/v1/post/${post_id}`, {
-        params: { section_key, theme_id, content_type }
+      const res = await axios.get(`/api/v1/posts/${post_id}`, {
+        params: { message_id: post_id, section_id: section_key, theme_id }
       });
+      
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки поста');
