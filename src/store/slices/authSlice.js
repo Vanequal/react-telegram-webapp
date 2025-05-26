@@ -15,7 +15,10 @@ export const authWithTelegram = createAsyncThunk(
         }
       );
 
-      const { token, ...userData } = response.data;
+      const token = response.headers['new-access-token'];
+      const userData = response.data;
+
+      if (!token) throw new Error('Токен не найден в заголовках');
 
       sessionStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -27,6 +30,7 @@ export const authWithTelegram = createAsyncThunk(
     }
   }
 );
+
 
 
 const authSlice = createSlice({
