@@ -7,20 +7,12 @@ export const createPost = createAsyncThunk(
     try {
       const formData = new FormData();
 
-      // ✅ ИСПРАВЛЕНО: добавляем файлы правильно - каждый файл отдельно
-      if (files && files.length > 0) {
-        files.forEach(file => {
-          formData.append('files', file);
-        });
-      }
-      // Если файлов нет, добавляем пустое поле files (обязательное по схеме)
-      if (!files || files.length === 0) {
-        formData.append('files', '');
-      }
+      (files.length > 0 ? files : ['']).forEach((file) =>
+        formData.append('files', file)
+      );
 
-      // ✅ data передается как строка в query параметрах
       const dataStr = JSON.stringify({
-        message_text,
+        text: message_text,
         publishing_method
       });
 
@@ -40,13 +32,14 @@ export const createPost = createAsyncThunk(
   }
 );
 
+
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
   async ({ section_id, theme_id, text }, { rejectWithValue }) => {
     try {
       const res = await axios.post(
-        `/api/v1/posts/gpt`,
-        { text }, // ✅ Тело запроса корректно
+        `/api/v1/messages/gpt`,
+        { text },
         {
           params: { section_id, theme_id }
         }
@@ -58,7 +51,7 @@ export const createPostPreview = createAsyncThunk(
   }
 );
 
-// ✅ Исправлено - добавлен await и правильные параметры
+
 export const fetchPostsInSection = createAsyncThunk(
   'post/fetchPostsInSection',
   async ({ section_key, theme_id, limit = 100 }, { rejectWithValue }) => {
@@ -79,14 +72,12 @@ export const fetchPostsInSection = createAsyncThunk(
   }
 );
 
-// ✅ Исправлено - правильные параметры согласно Swagger
 export const fetchPostById = createAsyncThunk(
   'post/fetchPostById',
   async ({ post_id, section_id, theme_id }, { rejectWithValue }) => {
     try {
       const res = await axios.get(`/api/v1/posts/${post_id}`, {
         params: { 
-          message_id: post_id, 
           section_id: section_id, 
           theme_id: theme_id 
         }
@@ -102,11 +93,17 @@ export const fetchPostById = createAsyncThunk(
 
 export const fetchPostComments = createAsyncThunk(
   'post/fetchComments',
-  async ({ post_id, section_key, theme_id, content_type }, { rejectWithValue }) => {
+  async ({ post_id, section_key, theme_id, type = 'post' }, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`/api/v1/comment/comments`, {
-        params: { post_id, section_key, theme_id, content_type }
+      const res = await axios.get(`/api/v1/comments`, {
+        params: {
+          type,
+          message_id: post_id,
+          section_id: section_key,
+          theme_id
+        }
       });
+
       return { postId: post_id, comments: res.data };
     } catch (err) {
       console.error('🔥 Ошибка загрузки комментариев:', err?.response?.data || err.message);
@@ -117,15 +114,21 @@ export const fetchPostComments = createAsyncThunk(
 
 export const createComment = createAsyncThunk(
   'post/createComment',
-  async ({ post_id, message_text, parent_id = null, section_key, theme_id, content_type }, { rejectWithValue }) => {
+  async ({ post_id, message_text, parent_id = null, section_key, theme_id, type = 'post' }, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`/api/v1/comment/create`, {
-        message_text,
-        reply_to_message_id: parent_id ?? null,
+      const res = await axios.post(`/api/v1/comments`, {
+        text: message_text,
+        reply_to_id: parent_id,
         files: []
       }, {
-        params: { post_id, section_key, theme_id, content_type }
+        params: {
+          message_id: post_id,
+          section_id: section_key,
+          theme_id,
+          type
+        }
       });
+
       return res.data;
     } catch (err) {
       console.error('🔥 Ошибка добавления комментария:', err?.response?.data || err.message);
@@ -174,11 +177,9 @@ const postSlice = createSlice({
     selectedPost: null
   },
   reducers: {
-    // ✅ Добавляем редьюсер для очистки ошибок
     clearError: (state) => {
       state.error = null;
     },
-    // ✅ Добавляем редьюсер для очистки постов
     clearPosts: (state) => {
       state.posts = [];
     }

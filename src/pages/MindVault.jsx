@@ -69,7 +69,7 @@ const MindVaultPage = () => {
     return {
       id: post.id,
       username: post.author?.first_name || 'Пользователь',
-      preview: post.message_text,
+      preview: post.text,
       likes: post.likes ?? 0,
       dislikes: post.dislikes ?? 0,
       comments: actualComments ?? post.comments_count ?? 0,
@@ -90,7 +90,7 @@ const MindVaultPage = () => {
     const post = posts.find(p => p.id === id);
     const ideaWithText = {
       ...selected,
-      message_text: post?.message_text || selected.preview
+      message_text: post?.text || selected.preview
     };
     navigate(`/discussion/${id}`, { state: { idea: ideaWithText } });
   };
@@ -164,7 +164,7 @@ const MindVaultPage = () => {
         post_id: post.id,
         section_key: sectionKey,
         theme_id: themeId,
-        content_type: 'post',
+        type: 'post',
       }));
     });
   }, [posts, dispatch, sectionKey, themeId]);
@@ -469,7 +469,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
         <div className="idea-card__comments-list">
           {comments.map(comment => (
             <div key={comment.id} className="idea-card__comment">
-              <strong>{comment.author?.first_name || 'Аноним'}:</strong> {comment.message_text}
+              <strong>{comment.author?.first_name || 'Аноним'}:</strong> {comment.text}
             </div>
           ))}
         </div>
