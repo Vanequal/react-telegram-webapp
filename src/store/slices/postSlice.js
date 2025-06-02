@@ -16,14 +16,13 @@ export const createPost = createAsyncThunk(
         publishing_method
       });
 
-      const res = await axios.post('/api/v1/posts', formData, {
+      const res = await axios.post('/api/v1/messages', formData, {
         params: {
           section_id,
           theme_id,
           data: dataStr
         }
-      });
-
+      });      
       return res.data;
     } catch (err) {
       console.error('🔥 Ошибка создания поста:', err?.response?.data || err.message);
