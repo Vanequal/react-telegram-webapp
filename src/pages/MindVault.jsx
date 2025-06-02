@@ -55,10 +55,10 @@ const MindVaultPage = () => {
     }
 
     // ✅ Используем правильное действие для загрузки постов
-    dispatch(fetchPostsInSection({ 
-      section_key: sectionKey, 
-      theme_id: themeId, 
-      content_type: 'posts' 
+    dispatch(fetchPostsInSection({
+      section_key: sectionKey,
+      theme_id: themeId,
+      content_type: 'posts'
     }));
   }, [dispatch, sectionKey, themeId]);
 
@@ -123,15 +123,15 @@ const MindVaultPage = () => {
     }
     setShowPopover(false);
   };
-  
+
   const handleFileChange = (e) => {
     let files = Array.from(e.target.files);
-  
+
     if (files.length > 3) {
       alert('Можно загрузить не более 3 файлов');
       files = files.slice(0, 3);
     }
-  
+
     setAttachedFiles(files);
     console.log("Выбраны файлы:", files);
   };
@@ -145,7 +145,7 @@ const MindVaultPage = () => {
         theme_id: themeId,
         text: ideaText.trim()
       })).unwrap();
-      
+
       navigate('/editideapagegpt', {
         state: {
           attachedFiles,
@@ -289,7 +289,7 @@ const MindVaultPage = () => {
 
 function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse, commentCount = 0 }) {
   const dispatch = useDispatch();
-  const comments = useSelector(state => state.post.comments[idea.id] || []); 
+  const comments = useSelector(state => state.post.comments[idea.id] || []);
   const [expanded, setExpanded] = useState(isExpanded);
   const [showReadMore, setShowReadMore] = useState(false);
   const textWrapperRef = useRef(null);
@@ -333,14 +333,14 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
 
   useEffect(() => {
     if (!idea.files || idea.files.length === 0) return;
-  
+
     idea.files.forEach(file => {
       const cleanPath = file.relative_path.replace(/\\/g, '/');
       if (!fileLinks[cleanPath]) {
         dispatch(fetchDownloadUrl({ filePath: cleanPath, mimeType: file.mime_type || 'application/octet-stream' }));
       }
     });
-  }, [idea.files, fileLinks, dispatch]);  
+  }, [idea.files, fileLinks, dispatch]);
 
   return (
     <div className="idea-card" ref={cardRef}>
@@ -360,9 +360,9 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
               <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
                 {idea.files.map((file, i) => {
-               const cleanPath = file.relative_path.replace(/\\/g, '/');
-               const url = fileLinks[cleanPath];               
-                  
+                  const cleanPath = file.relative_path.replace(/\\/g, '/');
+                  const url = fileLinks[cleanPath];
+
                   const ext = file.extension?.toLowerCase() || '';
                   const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
                   const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);

@@ -153,8 +153,11 @@ export const fetchDownloadUrl = createAsyncThunk(
   'post/fetchDownloadUrl',
   async ({ filePath, mimeType = 'application/octet-stream' }, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`/api/v1/files/download/${encodeURIComponent(filePath)}`, {
-        params: { url: filePath, mime_type: mimeType }
+      const res = await axios.get('/api/v1/files/download', {
+        params: {
+          url: filePath,
+          mime_type: mimeType
+        }
       });
       return { filePath, url: res.data };
     } catch (err) {
