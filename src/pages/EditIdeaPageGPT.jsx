@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { createPostPreview, createPost } from '../store/slices/postSlice';
+import { createPostPreview, createPost, clearAttachedFiles } from '../store/slices/postSlice';
 
 import MindVaultHeader from '../components/UI/MindVaultHeader';
 import skrepkaIcon from '../assets/img/skrepkaIcon.webp';
@@ -15,7 +15,7 @@ const EditIdeaPageGPT = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
-  const [attachedFiles, setAttachedFiles] = useState(location.state?.attachedFiles || []);
+  const attachedFiles = useSelector(state => state.post.attachedFiles);
   const [ideaText, setIdeaText] = useState('');
   const { preview } = useSelector(state => state.post);
 
@@ -41,13 +41,15 @@ const EditIdeaPageGPT = () => {
       section_id: sectionKey, // ✅ исправлено с section_key на section_id
       theme_id: themeId,
       files: attachedFiles,
-      publishing_method
+      publishing_method,
+      files: attachedFiles
     };
 
     try {
       const actionResult = await dispatch(createPost(payload));
       if (actionResult.meta.requestStatus === 'fulfilled') {
         navigate('/mindvault');
+        dispatch(clearAttachedFiles());
       } else {
         // ✅ ИСПРАВЛЕНО: правильная обработка ошибки
         const errorMsg = typeof actionResult.payload === 'string' 

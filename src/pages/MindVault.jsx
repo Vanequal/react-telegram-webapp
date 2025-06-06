@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-// ✅ Используем правильные действия
-import { createPostPreview, fetchPostComments, fetchPostsInSection, fetchDownloadUrl } from '../store/slices/postSlice';
+import { createPostPreview, fetchPostComments, fetchPostsInSection, fetchDownloadUrl, setAttachedFiles } from '../store/slices/postSlice';
 import { reactToPost } from '../store/slices/postSlice';
 import { getViewedIdeas, markIdeaAsViewed } from '../utils/utils.js';
 
@@ -149,7 +148,7 @@ const MindVaultPage = () => {
 
       dispatch(setAttachedFiles(attachedFiles));
       navigate('/editideapagegpt');
-      
+
     } catch (error) {
       console.error('Ошибка предпросмотра:', error);
     }
