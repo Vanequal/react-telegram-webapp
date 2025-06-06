@@ -57,13 +57,13 @@ export const fetchPostsInSection = createAsyncThunk(
   async ({ section_key, theme_id, limit = 100 }, { rejectWithValue }) => {
     try {
       const res = await axios.get(`/api/v1/posts`, {
-        params: { 
-          section_id: section_key, 
+        params: {
+          section_id: section_key,
           theme_id: theme_id,
           limit: limit
         }
       });
-      
+
       return res.data;
     } catch (err) {
       console.error('🔥 Ошибка загрузки постов:', err?.response?.data || err.message);
@@ -77,12 +77,12 @@ export const fetchPostById = createAsyncThunk(
   async ({ post_id, section_id, theme_id }, { rejectWithValue }) => {
     try {
       const res = await axios.get(`/api/v1/posts/${post_id}`, {
-        params: { 
-          section_id: section_id, 
-          theme_id: theme_id 
+        params: {
+          section_id: section_id,
+          theme_id: theme_id
         }
       });
-      
+
       return res.data;
     } catch (err) {
       console.error('🔥 Ошибка загрузки поста:', err?.response?.data || err.message);
@@ -177,7 +177,14 @@ const postSlice = createSlice({
     comments: {},
     posts: [],
     fileLinks: {},
+    attachedFiles: [],
     selectedPost: null
+  },
+  setAttachedFiles: (state, action) => {
+    state.attachedFiles = action.payload;
+  },
+  clearAttachedFiles: (state) => {
+    state.attachedFiles = [];
   },
   reducers: {
     clearError: (state) => {
@@ -258,7 +265,7 @@ const postSlice = createSlice({
         }
         state.comments[post_id].push(comment);
       })
-      
+
       .addCase(fetchDownloadUrl.fulfilled, (state, action) => {
         const { filePath, url } = action.payload;
         state.fileLinks = {

@@ -30,7 +30,8 @@ const MindVaultPage = () => {
   const [showPopover, setShowPopover] = useState(false);
   const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 });
   const [ideaText, setIdeaText] = useState('');
-  const [attachedFiles, setAttachedFiles] = useState([]);
+  const attachedFiles = useSelector(state => state.post.attachedFiles);
+
 
   const attachBtnRef = useRef(null);
   const fileInputMediaRef = useRef(null);
@@ -146,11 +147,9 @@ const MindVaultPage = () => {
         text: ideaText.trim()
       })).unwrap();
 
-      navigate('/editideapagegpt', {
-        state: {
-          attachedFiles,
-        },
-      });
+      dispatch(setAttachedFiles(attachedFiles));
+      navigate('/editideapagegpt');
+      
     } catch (error) {
       console.error('Ошибка предпросмотра:', error);
     }
