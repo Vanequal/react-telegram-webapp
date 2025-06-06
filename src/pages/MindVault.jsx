@@ -29,8 +29,7 @@ const MindVaultPage = () => {
   const [showPopover, setShowPopover] = useState(false);
   const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 });
   const [ideaText, setIdeaText] = useState('');
-  const attachedFiles = useSelector(state => state.post.attachedFiles);
-
+  const [attachedFiles, setAttachedFiles] = useState([]);
 
   const attachBtnRef = useRef(null);
   const fileInputMediaRef = useRef(null);
@@ -125,34 +124,29 @@ const MindVaultPage = () => {
   };
 
   const handleFileChange = (e) => {
-    let files = Array.from(e.target.files);
-
-    if (files.length > 3) {
-      alert('Можно загрузить не более 3 файлов');
-      files = files.slice(0, 3);
-    }
-
+    const files = Array.from(e.target.files);
     setAttachedFiles(files);
-    console.log("Выбраны файлы:", files);
   };
+  
 
   const handleSendClick = async () => {
     if (!ideaText.trim()) return;
-
+  
+    dispatch(setAttachedFiles(attachedFiles));
+  
     try {
       await dispatch(createPostPreview({
         section_id: sectionKey,
         theme_id: themeId,
         text: ideaText.trim()
       })).unwrap();
-
-      dispatch(setAttachedFiles(attachedFiles));
+  
       navigate('/editideapagegpt');
-
     } catch (error) {
       console.error('Ошибка предпросмотра:', error);
     }
   };
+  
 
   useEffect(() => {
     if (!posts || posts.length === 0) return;
