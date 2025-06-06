@@ -6,23 +6,20 @@ export const createPost = createAsyncThunk(
   async ({ message_text, section_id, theme_id, publishing_method, files = [] }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
-
-      (files.length > 0 ? files : ['']).forEach((file) =>
-        formData.append('files', file)
-      );
-
-      const dataStr = JSON.stringify({
-        text: message_text,
-        publishing_method
+      formData.append('text', message_text);
+      formData.append('publishing_method', publishing_method);
+      
+      files.forEach(file => {
+        formData.append('files', file);
       });
-
+      
       const res = await axios.post('/api/v1/messages', formData, {
         params: {
           section_id,
-          theme_id,
-          data: dataStr
+          theme_id
         }
-      });      
+      });
+      
       return res.data;
     } catch (err) {
       console.error('🔥 Ошибка создания поста:', err?.response?.data || err.message);
