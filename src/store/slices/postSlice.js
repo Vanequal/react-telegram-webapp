@@ -7,32 +7,34 @@ export const createPost = createAsyncThunk(
     try {
       const formData = new FormData();
 
+      // ✅ ИСПРАВЛЕНО: добавляем файлы в FormData
       files.forEach((file) => {
         formData.append('files', file);
       });
 
-      const dataStr = JSON.stringify({
+      // ✅ ИСПРАВЛЕНО: правильная структура данных
+      const dataPayload = {
         text: message_text,
-        publishing_method
-      });
+        publishing_method: publishing_method || 'original'
+      };
 
       const res = await axios.post('/api/v1/messages', formData, {
         params: {
           section_id,
           theme_id,
-          data: dataStr
+          data: JSON.stringify(dataPayload)
+        },
+        headers: {
+          'Content-Type': 'multipart/form-data'
         }
       });
-      console.log('[DEBUG] Files:', files);
-      files.forEach(f => console.log(f instanceof File, f.name, f.type));
 
-
+      console.log('[DEBUG] Успешно создан пост с файлами:', files.length);
       return res.data;
     } catch (err) {
       console.error('🔥 Ошибка создания поста:', err?.response?.data || err.message);
       return rejectWithValue(err?.response?.data?.error || err?.response?.data?.detail || 'Ошибка создания поста');
     }
-
   }
 );
 
@@ -158,12 +160,13 @@ export const fetchDownloadUrl = createAsyncThunk(
   'post/fetchDownloadUrl',
   async ({ filePath, mimeType = 'application/octet-stream' }, { rejectWithValue }) => {
     try {
-      const res = await axios.get('/api/v1/files/download', {
+      const res = await axios.get(`/api/v1/files/download/${encodeURIComponent(filePath)}`, {
         params: {
           url: filePath,
           mime_type: mimeType
         }
       });
+
       return { filePath, url: res.data };
     } catch (err) {
       console.error('🔥 Ошибка загрузки файла:', err?.response?.data || err.message);
@@ -171,6 +174,7 @@ export const fetchDownloadUrl = createAsyncThunk(
     }
   }
 );
+
 
 const postSlice = createSlice({
   name: 'post',

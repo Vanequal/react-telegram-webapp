@@ -127,26 +127,29 @@ const MindVaultPage = () => {
     const files = Array.from(e.target.files);
     setAttachedFiles(files);
   };
-  
 
   const handleSendClick = async () => {
     if (!ideaText.trim()) return;
-  
+
     dispatch(setAttachedFiles(attachedFiles));
-  
+
     try {
-      await dispatch(createPostPreview({
+      const previewResult = await dispatch(createPostPreview({
         section_id: sectionKey,
         theme_id: themeId,
         text: ideaText.trim()
       })).unwrap();
-  
-      navigate('/editideapagegpt');
+
+      navigate('/editideapagegpt', {
+        state: {
+          attachedFiles: attachedFiles,
+          preview: previewResult
+        }
+      });
     } catch (error) {
       console.error('Ошибка предпросмотра:', error);
     }
   };
-  
 
   useEffect(() => {
     if (!posts || posts.length === 0) return;
@@ -327,9 +330,12 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
     if (!idea.files || idea.files.length === 0) return;
 
     idea.files.forEach(file => {
-      const cleanPath = file.relative_path.replace(/\\/g, '/');
+      const cleanPath = file.relative_path ? file.relative_path.replace(/\\/g, '/') : file.url;
       if (!fileLinks[cleanPath]) {
-        dispatch(fetchDownloadUrl({ filePath: cleanPath, mimeType: file.mime_type || 'application/octet-stream' }));
+        dispatch(fetchDownloadUrl({
+          filePath: cleanPath,
+          mimeType: file.mime_type || 'application/octet-stream'
+        }));
       }
     });
   }, [idea.files, fileLinks, dispatch]);
@@ -351,59 +357,84 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
             <div className="idea-card__files" style={{ marginTop: '8px' }}>
               <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
-                {idea.files.map((file, i) => {
-                  const cleanPath = file.relative_path.replace(/\\/g, '/');
-                  const url = fileLinks[cleanPath];
+                {idea.files && idea.files.length > 0 && (
+                  <div className="idea-card__files" style={{ marginTop: '8px' }}>
+                    <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+                      {idea.files.map((file, i) => {
+                        const cleanPath = file.relative_path ? file.relative_path.replace(/\\/g, '/') : file.url;
+                        const url = fileLinks[cleanPath];
 
-                  const ext = file.extension?.toLowerCase() || '';
-                  const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
-                  const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
+                        if (!url) {
+                          return (
+                            <div key={i} style={{ color: 'gray', fontSize: '12px' }}>
+                              Загрузка файла: {file.original_name || `Файл ${i + 1}`}...
+                            </div>
+                          );
+                        }
 
-                  if (isImage) {
-                    return (
-                      <img
-                        key={i}
-                        src={url}
-                        alt={file.original_name || `image-${i}`}
-                        style={{ maxWidth: '100%', borderRadius: '12px' }}
-                        onError={(e) => {
-                          console.warn(`❌ Не загрузилось изображение: ${url}`);
-                          e.target.src = 'https://placehold.co/400x300?text=Изображение+недоступно';
-                        }}
-                      />
-                    );
-                  } else if (isVideo) {
-                    return (
-                      <video
-                        key={i}
-                        controls
-                        src={url}
-                        style={{ maxWidth: '100%', borderRadius: '12px' }}
-                        onError={(e) => {
-                          console.warn(`❌ Не загрузилось видео: ${url}`);
-                          const parent = e.target.parentNode;
-                          const errorMsg = document.createElement('div');
-                          errorMsg.textContent = 'Видео недоступно';
-                          errorMsg.style.color = 'red';
-                          errorMsg.style.padding = '10px';
-                          parent.appendChild(errorMsg);
-                        }}
-                      />
-                    );
-                  } else {
-                    return (
-                      <a
-                        key={i}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: '#1976D2', wordBreak: 'break-word' }}
-                      >
-                        {file.original_name || `Файл ${i + 1}`}
-                      </a>
-                    );
-                  }
-                })}
+                        const ext = (file.extension || '').toLowerCase();
+                        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+                        const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
+
+                        if (isImage) {
+                          return (
+                            <img
+                              key={i}
+                              src={url}
+                              alt={file.original_name || `image-${i}`}
+                              style={{ maxWidth: '100%', borderRadius: '12px' }}
+                              onError={(e) => {
+                                console.warn(`❌ Не загрузилось изображение: ${url}`);
+                                e.target.style.display = 'none';
+                                const parent = e.target.parentNode;
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.target = '_blank';
+                                link.textContent = file.original_name || `Изображение ${i + 1}`;
+                                link.style.color = '#1976D2';
+                                parent.appendChild(link);
+                              }}
+                            />
+                          );
+                        } else if (isVideo) {
+                          return (
+                            <video
+                              key={i}
+                              controls
+                              src={url}
+                              style={{ maxWidth: '100%', borderRadius: '12px' }}
+                              onError={(e) => {
+                                console.warn(`❌ Не загрузилось видео: ${url}`);
+                                e.target.style.display = 'none';
+                                const parent = e.target.parentNode;
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.target = '_blank';
+                                link.textContent = file.original_name || `Видео ${i + 1}`;
+                                link.style.color = '#1976D2';
+                                parent.appendChild(link);
+                              }}
+                            />
+                          );
+                        } else {
+                          return (
+                            <a
+                              key={i}
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ color: '#1976D2', wordBreak: 'break-word' }}
+                              download={file.original_name}
+                            >
+                              📎 {file.original_name || `Файл ${i + 1}`}
+                            </a>
+                          );
+                        }
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

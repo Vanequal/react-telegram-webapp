@@ -35,33 +35,31 @@ const EditIdeaPageGPT = () => {
 
   const handlePublish = async (text, publishing_method = 'original') => {
     if (!text) return;
-
-    // ✅ ИСПРАВЛЕНО: параметры согласно структуре из postSlice
+  
+    // ✅ ИСПРАВЛЕНО: получаем файлы из Redux store
+    const { attachedFiles } = useSelector(state => state.post);
+    
     const payload = {
       message_text: text,
-      section_id: sectionKey, // ✅ исправлено с section_key на section_id
+      section_id: sectionKey,
       theme_id: themeId,
-      files: attachedFiles,
-      publishing_method,
-      files: attachedFiles
+      files: attachedFiles, 
+      publishing_method
     };
-
+  
     try {
       const actionResult = await dispatch(createPost(payload));
       if (actionResult.meta.requestStatus === 'fulfilled') {
         navigate('/mindvault');
         dispatch(clearAttachedFiles());
       } else {
-        // ✅ ИСПРАВЛЕНО: правильная обработка ошибки
         const errorMsg = typeof actionResult.payload === 'string' 
           ? actionResult.payload 
           : actionResult.payload?.message || 'Неизвестная ошибка';
         console.warn('Ошибка создания поста:', errorMsg);
-        // Не переходим на /mindvault при ошибке
       }
     } catch (error) {
       console.error('Ошибка публикации:', error);
-      // Не переходим на /mindvault при ошибке
     }
   };
 
