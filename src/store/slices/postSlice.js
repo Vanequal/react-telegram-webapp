@@ -23,12 +23,16 @@ export const createPost = createAsyncThunk(
           data: dataStr
         }
       });
+      console.log('[DEBUG] Files:', files);
+      files.forEach(f => console.log(f instanceof File, f.name, f.type));
+
 
       return res.data;
     } catch (err) {
       console.error('🔥 Ошибка создания поста:', err?.response?.data || err.message);
       return rejectWithValue(err?.response?.data?.error || err?.response?.data?.detail || 'Ошибка создания поста');
     }
+
   }
 );
 
@@ -192,7 +196,7 @@ const postSlice = createSlice({
     },
     clearAttachedFiles: (state) => {
       state.attachedFiles = [];
-    }    
+    }
   },
   extraReducers: (builder) => {
     builder
