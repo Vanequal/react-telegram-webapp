@@ -11,11 +11,12 @@ import sendIconActive from '../assets/img/sendButtonActive.png';
 import '../styles/EditIdeaPageGPT.scss';
 
 const EditIdeaPageGPT = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
-  const attachedFiles = useSelector(state => state.post.attachedFiles);
+  const location = useLocation();
+  const initialFiles = location.state?.attachedFiles || [];
+  const [attachedFiles, setAttachedFiles] = useState(initialFiles);  
   const [ideaText, setIdeaText] = useState('');
   const { preview } = useSelector(state => state.post);
 
