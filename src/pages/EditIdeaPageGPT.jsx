@@ -16,7 +16,7 @@ const EditIdeaPageGPT = () => {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const initialFiles = location.state?.attachedFiles || [];
-  const [attachedFiles, setAttachedFiles] = useState(initialFiles);  
+  const { attachedFiles } = useSelector(state => state.post);
   const [ideaText, setIdeaText] = useState('');
   const { preview } = useSelector(state => state.post);
 
