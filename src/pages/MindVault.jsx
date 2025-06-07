@@ -61,6 +61,14 @@ const MindVaultPage = () => {
     }));
   }, [dispatch, sectionKey, themeId]);
 
+  // Добавляем отладочный вывод
+  useEffect(() => {
+    if (posts && posts.length > 0) {
+      console.log('📊 Загруженные посты:', posts);
+      console.log('📊 Пример структуры первого поста:', posts[0]);
+    }
+  }, [posts]);
+
   const postComments = useSelector(state => state.post.comments);
 
   const ideas = (Array.isArray(posts) ? posts : []).map(post => {
@@ -69,8 +77,9 @@ const MindVaultPage = () => {
       id: post.id,
       username: post.author?.first_name || 'Пользователь',
       preview: post.text,
-      likes: post.likes ?? 0,
-      dislikes: post.dislikes ?? 0,
+      // Проверяем разные возможные поля для лайков/дислайков
+      likes: post.likes || post.count_likes || post.reactions?.likes || 0,
+      dislikes: post.dislikes || post.count_dislikes || post.reactions?.dislikes || 0,
       comments: actualComments ?? post.comments_count ?? 0,
       views: post.views ?? 0,
       pinned: post.pinned ?? false,
@@ -496,17 +505,17 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
         <div
           className="idea-card__badge"
           onClick={() => handleReaction('like')}
-          style={{ cursor: 'pointer' }}>
-          <img src={likeIcon} alt="Like" />
-          <span>{idea.likes}</span>
+          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <img src={likeIcon} alt="Like" style={{ width: '20px', height: '20px' }} />
+          <span>{idea.likes || 0}</span>
         </div>
 
         <div
           className="idea-card__badge"
           onClick={() => handleReaction('dislike')}
-          style={{ cursor: 'pointer' }}>
-          <img src={dislikeIcon} alt="Dislike" />
-          <span>{idea.dislikes}</span>
+          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <img src={dislikeIcon} alt="Dislike" style={{ width: '20px', height: '20px' }} />
+          <span>{idea.dislikes || 0}</span>
         </div>
       </div>
 

@@ -246,7 +246,12 @@ const postSlice = createSlice({
       })
       .addCase(fetchPostsInSection.fulfilled, (state, action) => {
         state.loading = false;
-        state.posts = action.payload || [];
+        // Обрабатываем посты и добавляем поля для реакций, если их нет
+        state.posts = (action.payload || []).map(post => ({
+          ...post,
+          likes: post.likes || post.count_likes || 0,
+          dislikes: post.dislikes || post.count_dislikes || 0
+        }));
       })
       .addCase(fetchPostsInSection.rejected, (state, action) => {
         state.loading = false;
