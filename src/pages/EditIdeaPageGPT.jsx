@@ -16,7 +16,7 @@ const EditIdeaPageGPT = () => {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const initialFiles = location.state?.attachedFiles || [];
-  const { attachedFiles } = useSelector(state => state.post);
+  const attachedFiles = location.state?.attachedFiles || [];
   const [ideaText, setIdeaText] = useState('');
   const { preview } = useSelector(state => state.post);
 
@@ -35,23 +35,19 @@ const EditIdeaPageGPT = () => {
 
   const handlePublish = async (text, publishing_method = 'original') => {
     if (!text) return;
-  
-    // ✅ ИСПРАВЛЕНО: получаем файлы из Redux store
-    const { attachedFiles } = useSelector(state => state.post);
-    
+
     const payload = {
       message_text: text,
       section_id: sectionKey,
       theme_id: themeId,
-      files: attachedFiles, 
+      files: attachedFiles,
       publishing_method
     };
-  
+
     try {
       const actionResult = await dispatch(createPost(payload));
       if (actionResult.meta.requestStatus === 'fulfilled') {
         navigate('/mindvault');
-        dispatch(clearAttachedFiles());
       } else {
         const errorMsg = typeof actionResult.payload === 'string' 
           ? actionResult.payload 

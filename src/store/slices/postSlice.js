@@ -185,7 +185,6 @@ const postSlice = createSlice({
     comments: {},
     posts: [],
     fileLinks: {},
-    attachedFiles: [],
     selectedPost: null
   },
   reducers: {
@@ -195,12 +194,6 @@ const postSlice = createSlice({
     clearPosts: (state) => {
       state.posts = [];
     },
-    setAttachedFiles: (state, action) => {
-      state.attachedFiles = action.payload;
-    },
-    clearAttachedFiles: (state) => {
-      state.attachedFiles = [];
-    }
   },
   extraReducers: (builder) => {
     builder
@@ -287,6 +280,6 @@ const postSlice = createSlice({
   }
 });
 
-export const { clearError, clearPosts, setAttachedFiles, clearAttachedFiles } = postSlice.actions;
+export const { clearError, clearPosts } = postSlice.actions;
 
 export default postSlice.reducer;

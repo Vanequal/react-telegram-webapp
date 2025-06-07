@@ -131,20 +131,18 @@ const MindVaultPage = () => {
   const handleSendClick = async () => {
     if (!ideaText.trim()) return;
 
-    dispatch(setAttachedFiles(attachedFiles));
-
     try {
       const previewResult = await dispatch(createPostPreview({
         section_id: sectionKey,
         theme_id: themeId,
         text: ideaText.trim()
       })).unwrap();
-
-      navigate('/editideapagegpt', {
-        state: {
+  
+      navigate('/editideapagegpt', { 
+        state: { 
           attachedFiles: attachedFiles,
-          preview: previewResult
-        }
+          preview: previewResult 
+        } 
       });
     } catch (error) {
       console.error('Ошибка предпросмотра:', error);
