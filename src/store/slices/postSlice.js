@@ -143,12 +143,29 @@ export const createComment = createAsyncThunk(
   }
 );
 
+// ✅ ИСПРАВЛЕНО: Новый endpoint для реакций
 export const reactToPost = createAsyncThunk(
   'post/reactToPost',
-  async ({ post_id, reaction }, { rejectWithValue }) => {
+  async ({ post_id, reaction, section_id, theme_id }, { rejectWithValue }) => {
     try {
-      await axios.post(`/api/v1/post/react`, { post_id, reaction });
-      return { post_id, reaction };
+      const res = await axios.post(
+        `/api/v1/messages/${post_id}/${reaction}`,
+        { reaction }, // тело запроса
+        {
+          params: {
+            section_id,
+            theme_id
+          }
+        }
+      );
+      
+      return { 
+        post_id, 
+        count_likes: res.data.count_likes,
+        count_dislikes: res.data.count_dislikes,
+        old_reaction: res.data.old_reaction,
+        new_reaction: res.data.new_reaction
+      };
     } catch (err) {
       console.error('🔥 Ошибка реакции:', err?.response?.data || err.message);
       return rejectWithValue(err.response?.data?.detail || 'Ошибка при отправке реакции');
@@ -265,6 +282,16 @@ const postSlice = createSlice({
           state.comments[post_id] = [];
         }
         state.comments[post_id].push(comment);
+      })
+
+      // ✅ НОВОЕ: Обновление лайков/дислайков после реакции
+      .addCase(reactToPost.fulfilled, (state, action) => {
+        const { post_id, count_likes, count_dislikes } = action.payload;
+        const post = state.posts.find(p => p.id === post_id);
+        if (post) {
+          post.likes = count_likes;
+          post.dislikes = count_dislikes;
+        }
       })
 
       .addCase(fetchDownloadUrl.fulfilled, (state, action) => {

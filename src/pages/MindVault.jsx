@@ -180,6 +180,8 @@ const MindVaultPage = () => {
             onArrowClick={handleArrowClick}
             isExpanded={true}
             onCollapse={handleCollapse}
+            sectionKey={sectionKey}
+            themeId={themeId}
           />
         ) : (
           ideas.map(idea => (
@@ -190,6 +192,8 @@ const MindVaultPage = () => {
               onExpand={handleExpand}
               onArrowClick={handleArrowClick}
               isExpanded={false}
+              sectionKey={sectionKey}
+              themeId={themeId}
             />
           ))
         )}
@@ -280,7 +284,7 @@ const MindVaultPage = () => {
   );
 };
 
-function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse, commentCount = 0 }) {
+function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse, commentCount = 0, sectionKey, themeId }) {
   const dispatch = useDispatch();
   const comments = useSelector(state => state.post.comments[idea.id] || []);
   const [expanded, setExpanded] = useState(isExpanded);
@@ -338,6 +342,16 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
     });
   }, [idea.files, fileLinks, dispatch]);
 
+  // ✅ Обработчик реакций с новыми параметрами
+  const handleReaction = (reaction) => {
+    dispatch(reactToPost({ 
+      post_id: idea.id, 
+      reaction,
+      section_id: sectionKey,
+      theme_id: themeId
+    }));
+  };
+
   return (
     <div className="idea-card" ref={cardRef}>
       <div className="idea-card__top">
@@ -351,92 +365,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       <div ref={textWrapperRef} className={`idea-card__text-wrapper ${expanded ? 'expanded' : ''}`}>
         <div className="idea-card__text-row">
           <div className="idea-card__text">{idea.preview}</div>
-          {idea.files && idea.files.length > 0 && (
-            <div className="idea-card__files" style={{ marginTop: '8px' }}>
-              <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
-                {idea.files && idea.files.length > 0 && (
-                  <div className="idea-card__files" style={{ marginTop: '8px' }}>
-                    <strong style={{ fontSize: '14px' }}>Прикреплённые файлы:</strong>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
-                      {idea.files.map((file, i) => {
-                        const cleanPath = file.relative_path ? file.relative_path.replace(/\\/g, '/') : file.url;
-                        const url = fileLinks[cleanPath];
-
-                        if (!url) {
-                          return (
-                            <div key={i} style={{ color: 'gray', fontSize: '12px' }}>
-                              Загрузка файла: {file.original_name || `Файл ${i + 1}`}...
-                            </div>
-                          );
-                        }
-
-                        const ext = (file.extension || '').toLowerCase();
-                        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
-                        const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
-
-                        if (isImage) {
-                          return (
-                            <img
-                              key={i}
-                              src={url}
-                              alt={file.original_name || `image-${i}`}
-                              style={{ maxWidth: '100%', borderRadius: '12px' }}
-                              onError={(e) => {
-                                console.warn(`❌ Не загрузилось изображение: ${url}`);
-                                e.target.style.display = 'none';
-                                const parent = e.target.parentNode;
-                                const link = document.createElement('a');
-                                link.href = url;
-                                link.target = '_blank';
-                                link.textContent = file.original_name || `Изображение ${i + 1}`;
-                                link.style.color = '#1976D2';
-                                parent.appendChild(link);
-                              }}
-                            />
-                          );
-                        } else if (isVideo) {
-                          return (
-                            <video
-                              key={i}
-                              controls
-                              src={url}
-                              style={{ maxWidth: '100%', borderRadius: '12px' }}
-                              onError={(e) => {
-                                console.warn(`❌ Не загрузилось видео: ${url}`);
-                                e.target.style.display = 'none';
-                                const parent = e.target.parentNode;
-                                const link = document.createElement('a');
-                                link.href = url;
-                                link.target = '_blank';
-                                link.textContent = file.original_name || `Видео ${i + 1}`;
-                                link.style.color = '#1976D2';
-                                parent.appendChild(link);
-                              }}
-                            />
-                          );
-                        } else {
-                          return (
-                            <a
-                              key={i}
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{ color: '#1976D2', wordBreak: 'break-word' }}
-                              download={file.original_name}
-                            >
-                              📎 {file.original_name || `Файл ${i + 1}`}
-                            </a>
-                          );
-                        }
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
+          
           <span className="idea-card__timestamp">
             {new Date(idea.timestamp).toLocaleString('ru-RU', {
               day: '2-digit',
@@ -452,17 +381,130 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
         <button className="idea-card__read-more" onClick={() => setExpanded(true)}>Читать далее</button>
       )}
 
+      {/* ✅ Отображение файлов под текстом */}
+      {idea.files && idea.files.length > 0 && (
+        <div className="idea-card__files" style={{ marginTop: '12px', paddingBottom: '12px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {idea.files.map((file, i) => {
+              const cleanPath = file.relative_path ? file.relative_path.replace(/\\/g, '/') : file.url;
+              const url = fileLinks[cleanPath];
+
+              if (!url) {
+                return (
+                  <div key={i} style={{ 
+                    padding: '8px 12px', 
+                    backgroundColor: '#f5f5f5', 
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    color: '#666'
+                  }}>
+                    Загрузка: {file.original_name || `Файл ${i + 1}`}...
+                  </div>
+                );
+              }
+
+              const ext = (file.extension || '').toLowerCase();
+              const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+              const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
+
+              if (isImage) {
+                return (
+                  <a 
+                    key={i} 
+                    href={url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ 
+                      display: 'inline-block',
+                      maxWidth: '200px',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      border: '1px solid #e0e0e0'
+                    }}
+                  >
+                    <img
+                      src={url}
+                      alt={file.original_name || `image-${i}`}
+                      style={{ 
+                        width: '100%', 
+                        height: 'auto',
+                        display: 'block'
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.parentNode.innerHTML = `📷 ${file.original_name || 'Изображение'}`;
+                        e.target.parentNode.style.padding = '8px 12px';
+                        e.target.parentNode.style.backgroundColor = '#f5f5f5';
+                      }}
+                    />
+                  </a>
+                );
+              } else if (isVideo) {
+                return (
+                  <a 
+                    key={i}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 12px',
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: '8px',
+                      textDecoration: 'none',
+                      color: '#1976D2',
+                      fontSize: '14px',
+                      border: '1px solid #e0e0e0'
+                    }}
+                  >
+                    🎥 {file.original_name || `Видео ${i + 1}`}
+                  </a>
+                );
+              } else {
+                return (
+                  <a
+                    key={i}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download={file.original_name}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 12px',
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: '8px',
+                      textDecoration: 'none',
+                      color: '#1976D2',
+                      fontSize: '14px',
+                      border: '1px solid #e0e0e0'
+                    }}
+                  >
+                    📎 {file.original_name || `Файл ${i + 1}`}
+                  </a>
+                );
+              }
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="idea-card__badges">
         <div
           className="idea-card__badge"
-          onClick={() => dispatch(reactToPost({ post_id: idea.id, reaction: 'like' }))}>
+          onClick={() => handleReaction('like')}
+          style={{ cursor: 'pointer' }}>
           <img src={likeIcon} alt="Like" />
           <span>{idea.likes}</span>
         </div>
 
         <div
           className="idea-card__badge"
-          onClick={() => dispatch(reactToPost({ post_id: idea.id, reaction: 'dislike' }))}>
+          onClick={() => handleReaction('dislike')}
+          style={{ cursor: 'pointer' }}>
           <img src={dislikeIcon} alt="Dislike" />
           <span>{idea.dislikes}</span>
         </div>
