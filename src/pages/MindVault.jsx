@@ -84,7 +84,9 @@ const MindVaultPage = () => {
       views: post.views ?? 0,
       pinned: post.pinned ?? false,
       timestamp: post.created_at ?? '',
-      files: post.files || []
+      files: post.files || [],
+      // Добавляем реакцию пользователя
+      userReaction: post.user_reaction || null
     };
   });
 
@@ -300,6 +302,14 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
   const [showReadMore, setShowReadMore] = useState(false);
   const textWrapperRef = useRef(null);
   const cardRef = useRef(null);
+  
+  // Получаем актуальные данные поста из Redux
+  const posts = useSelector(state => state.post.posts);
+  const currentPost = posts.find(p => p.id === idea.id);
+  
+  // Используем актуальные значения из Redux или из idea
+  const currentLikes = currentPost?.likes ?? idea.likes;
+  const currentDislikes = currentPost?.dislikes ?? idea.dislikes;
 
   useEffect(() => {
     if (textWrapperRef.current?.scrollHeight > 160) {
@@ -389,9 +399,19 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
               }
 
               // Формируем прямой URL к API для скачивания
-              const baseURL = window.location.origin; // или используйте базовый URL вашего API
-              const encodedUrl = encodeURIComponent(file.url);
-              const downloadUrl = `${baseURL}/api/v1/files/download/${encodedUrl}?url=${encodeURIComponent(file.url)}&mime_type=${encodeURIComponent(file.mime_type || 'application/octet-stream')}`;
+              // Получаем базовый URL из axios или используем текущий origin
+              const baseURL = window.location.origin;
+              
+              // ВАЖНО: В path параметре должен быть file.url, а не relative_path!
+              const fileUrl = file.url || file.relative_path; // fallback на relative_path если url пустой
+              
+              if (!fileUrl) {
+                console.error('❌ У файла нет ни url, ни relative_path:', file);
+                return null;
+              }
+              
+              const encodedUrl = encodeURIComponent(fileUrl);
+              const downloadUrl = `${baseURL}/api/v1/files/download/${encodedUrl}?url=${encodeURIComponent(fileUrl)}&mime_type=${encodeURIComponent(file.mime_type || 'application/octet-stream')}`;
 
               const ext = (file.extension || '').toLowerCase();
               const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
@@ -505,7 +525,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e0e0e0'}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}>
           <img src={likeIcon} alt="Like" style={{ width: '20px', height: '20px' }} />
-          <span style={{ fontSize: '14px', fontWeight: '500' }}>{idea.likes || 0}</span>
+          <span style={{ fontSize: '14px', fontWeight: '500' }}>{currentLikes}</span>
         </div>
 
         <div
@@ -524,7 +544,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e0e0e0'}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}>
           <img src={dislikeIcon} alt="Dislike" style={{ width: '20px', height: '20px' }} />
-          <span style={{ fontSize: '14px', fontWeight: '500' }}>{idea.dislikes || 0}</span>
+          <span style={{ fontSize: '14px', fontWeight: '500' }}>{currentDislikes}</span>
         </div>
       </div>
 

@@ -148,6 +148,13 @@ export const reactToPost = createAsyncThunk(
   'post/reactToPost',
   async ({ post_id, reaction, section_id, theme_id }, { rejectWithValue }) => {
     try {
+      console.log('📤 Отправляем реакцию:', {
+        message_id: post_id,
+        reaction,
+        section_id,
+        theme_id
+      });
+      
       const res = await axios.post(
         `/api/v1/messages/${post_id}/${reaction}`,
         { reaction }, // тело запроса
@@ -158,6 +165,8 @@ export const reactToPost = createAsyncThunk(
           }
         }
       );
+      
+      console.log('📥 Получен ответ:', res.data);
       
       return { 
         post_id, 
@@ -301,11 +310,24 @@ const postSlice = createSlice({
       // ✅ НОВОЕ: Обновление лайков/дислайков после реакции
       .addCase(reactToPost.fulfilled, (state, action) => {
         const { post_id, count_likes, count_dislikes } = action.payload;
+        console.log('📊 Обновляем реакции для поста:', {
+          post_id,
+          count_likes,
+          count_dislikes
+        });
+        
         const post = state.posts.find(p => p.id === post_id);
         if (post) {
           post.likes = count_likes;
           post.dislikes = count_dislikes;
+          console.log('✅ Пост обновлен:', post);
+        } else {
+          console.error('❌ Пост не найден в state:', post_id);
         }
+      })
+      .addCase(reactToPost.rejected, (state, action) => {
+        console.error('❌ Ошибка при отправке реакции:', action.payload);
+        state.error = action.payload;
       })
 
       .addCase(fetchDownloadUrl.fulfilled, (state, action) => {
