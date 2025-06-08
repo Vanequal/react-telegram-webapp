@@ -177,16 +177,24 @@ export const fetchDownloadUrl = createAsyncThunk(
   'post/fetchDownloadUrl',
   async ({ filePath, mimeType = 'application/octet-stream' }, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`/api/v1/files/download/${encodeURIComponent(filePath)}`, {
+      // Согласно документации: GET /api/v1/files/download/{file_url}
+      // В path нужно передать закодированный URL файла
+      const encodedUrl = encodeURIComponent(filePath);
+      const res = await axios.get(`/api/v1/files/download/${encodedUrl}`, {
         params: {
-          url: filePath,
-          mime_type: mimeType
+          url: filePath,      // URL файла
+          mime_type: mimeType // MIME тип
         }
       });
 
+      console.log(`✅ Получена ссылка для файла: ${filePath}`, res.data);
       return { filePath, url: res.data };
     } catch (err) {
-      console.error('🔥 Ошибка загрузки файла:', err?.response?.data || err.message);
+      console.error('🔥 Ошибка загрузки файла:', {
+        error: err?.response?.data || err.message,
+        filePath,
+        status: err?.response?.status
+      });
       return rejectWithValue(err?.response?.data?.detail || 'Ошибка загрузки ссылки');
     }
   }

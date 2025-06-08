@@ -340,13 +340,31 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
   useEffect(() => {
     if (!idea.files || idea.files.length === 0) return;
 
+    console.log(`📁 Обработка файлов для поста ${idea.id}:`, idea.files);
+
     idea.files.forEach(file => {
-      const cleanPath = file.relative_path ? file.relative_path.replace(/\\/g, '/') : file.url;
-      if (!fileLinks[cleanPath]) {
+      console.log('📄 Файл:', {
+        original_name: file.original_name,
+        relative_path: file.relative_path,
+        url: file.url,
+        extension: file.extension,
+        mime_type: file.mime_type
+      });
+
+      // Используем URL из файла
+      if (!file.url) {
+        console.warn('⚠️ У файла нет url:', file);
+        return;
+      }
+      
+      if (!fileLinks[file.url]) {
+        console.log(`🔄 Запрашиваем ссылку для скачивания: ${file.url}`);
         dispatch(fetchDownloadUrl({
-          filePath: cleanPath,
+          filePath: file.url,  // Отправляем URL
           mimeType: file.mime_type || 'application/octet-stream'
         }));
+      } else {
+        console.log(`✅ Ссылка уже есть: ${file.url} -> ${fileLinks[file.url]}`);
       }
     });
   }, [idea.files, fileLinks, dispatch]);
@@ -395,10 +413,15 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
         <div className="idea-card__files" style={{ marginTop: '12px', paddingBottom: '12px' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {idea.files.map((file, i) => {
-              const cleanPath = file.relative_path ? file.relative_path.replace(/\\/g, '/') : file.url;
-              const url = fileLinks[cleanPath];
+              // Используем URL из файла
+              if (!file.url) {
+                console.warn('⚠️ Файл без URL:', file);
+                return null;
+              }
 
-              if (!url) {
+              const downloadUrl = fileLinks[file.url];
+
+              if (!downloadUrl) {
                 return (
                   <div key={i} style={{ 
                     padding: '8px 12px', 
@@ -420,7 +443,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                 return (
                   <a 
                     key={i} 
-                    href={url} 
+                    href={downloadUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     style={{ 
@@ -432,7 +455,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                     }}
                   >
                     <img
-                      src={url}
+                      src={downloadUrl}
                       alt={file.original_name || `image-${i}`}
                       style={{ 
                         width: '100%', 
@@ -440,6 +463,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                         display: 'block'
                       }}
                       onError={(e) => {
+                        console.error(`❌ Ошибка загрузки изображения: ${downloadUrl}`);
                         e.target.style.display = 'none';
                         e.target.parentNode.innerHTML = `📷 ${file.original_name || 'Изображение'}`;
                         e.target.parentNode.style.padding = '8px 12px';
@@ -452,7 +476,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                 return (
                   <a 
                     key={i}
-                    href={url}
+                    href={downloadUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -475,7 +499,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                 return (
                   <a
                     key={i}
-                    href={url}
+                    href={downloadUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     download={file.original_name}
@@ -501,21 +525,48 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
         </div>
       )}
 
-      <div className="idea-card__badges">
+      <div className="idea-card__badges" style={{ 
+        display: 'flex', 
+        gap: '16px', 
+        marginTop: '12px',
+        marginBottom: '12px' 
+      }}>
         <div
           className="idea-card__badge"
           onClick={() => handleReaction('like')}
-          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          style={{ 
+            cursor: 'pointer', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '6px',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            backgroundColor: '#f5f5f5',
+            transition: 'background-color 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e0e0e0'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}>
           <img src={likeIcon} alt="Like" style={{ width: '20px', height: '20px' }} />
-          <span>{idea.likes || 0}</span>
+          <span style={{ fontSize: '14px', fontWeight: '500' }}>{idea.likes || 0}</span>
         </div>
 
         <div
           className="idea-card__badge"
           onClick={() => handleReaction('dislike')}
-          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          style={{ 
+            cursor: 'pointer', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '6px',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            backgroundColor: '#f5f5f5',
+            transition: 'background-color 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e0e0e0'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}>
           <img src={dislikeIcon} alt="Dislike" style={{ width: '20px', height: '20px' }} />
-          <span>{idea.dislikes || 0}</span>
+          <span style={{ fontSize: '14px', fontWeight: '500' }}>{idea.dislikes || 0}</span>
         </div>
       </div>
 
