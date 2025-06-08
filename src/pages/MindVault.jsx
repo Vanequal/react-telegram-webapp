@@ -300,7 +300,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
   const [showReadMore, setShowReadMore] = useState(false);
   const textWrapperRef = useRef(null);
   const cardRef = useRef(null);
-  const fileLinks = useSelector(state => state.post.fileLinks);
 
   useEffect(() => {
     if (textWrapperRef.current?.scrollHeight > 160) {
@@ -337,37 +336,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
     };
   }, [idea]);
 
-  useEffect(() => {
-    if (!idea.files || idea.files.length === 0) return;
-
-    console.log(`📁 Обработка файлов для поста ${idea.id}:`, idea.files);
-
-    idea.files.forEach(file => {
-      console.log('📄 Файл:', {
-        original_name: file.original_name,
-        relative_path: file.relative_path,
-        url: file.url,
-        extension: file.extension,
-        mime_type: file.mime_type
-      });
-
-      // Используем URL из файла
-      if (!file.url) {
-        console.warn('⚠️ У файла нет url:', file);
-        return;
-      }
-      
-      if (!fileLinks[file.url]) {
-        console.log(`🔄 Запрашиваем ссылку для скачивания: ${file.url}`);
-        dispatch(fetchDownloadUrl({
-          filePath: file.url,  // Отправляем URL
-          mimeType: file.mime_type || 'application/octet-stream'
-        }));
-      } else {
-        console.log(`✅ Ссылка уже есть: ${file.url} -> ${fileLinks[file.url]}`);
-      }
-    });
-  }, [idea.files, fileLinks, dispatch]);
+  // Убираем useEffect для загрузки файлов - теперь формируем URL напрямую
 
   // ✅ Обработчик реакций с новыми параметрами
   const handleReaction = (reaction) => {
@@ -419,21 +388,10 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                 return null;
               }
 
-              const downloadUrl = fileLinks[file.url];
-
-              if (!downloadUrl) {
-                return (
-                  <div key={i} style={{ 
-                    padding: '8px 12px', 
-                    backgroundColor: '#f5f5f5', 
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    color: '#666'
-                  }}>
-                    Загрузка: {file.original_name || `Файл ${i + 1}`}...
-                  </div>
-                );
-              }
+              // Формируем прямой URL к API для скачивания
+              const baseURL = window.location.origin; // или используйте базовый URL вашего API
+              const encodedUrl = encodeURIComponent(file.url);
+              const downloadUrl = `${baseURL}/api/v1/files/download/${encodedUrl}?url=${encodeURIComponent(file.url)}&mime_type=${encodeURIComponent(file.mime_type || 'application/octet-stream')}`;
 
               const ext = (file.extension || '').toLowerCase();
               const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
@@ -463,7 +421,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                         display: 'block'
                       }}
                       onError={(e) => {
-                        console.error(`❌ Ошибка загрузки изображения: ${downloadUrl}`);
+                        console.error(`❌ Ошибка загрузки изображения:`, file);
                         e.target.style.display = 'none';
                         e.target.parentNode.innerHTML = `📷 ${file.original_name || 'Изображение'}`;
                         e.target.parentNode.style.padding = '8px 12px';
