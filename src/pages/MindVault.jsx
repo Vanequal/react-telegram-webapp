@@ -35,7 +35,6 @@ const MindVaultPage = () => {
   const fileInputMediaRef = useRef(null);
   const fileInputFilesRef = useRef(null);
 
-  // ✅ Используем состояние из postSlice
   const { posts, loading, error } = useSelector(state => state.post);
 
   const themeId = Number(searchParams.get('id')) || 1;
@@ -53,7 +52,6 @@ const MindVaultPage = () => {
       }
     }
 
-    // ✅ Используем правильное действие для загрузки постов
     dispatch(fetchPostsInSection({
       section_key: sectionKey,
       theme_id: themeId,
@@ -61,7 +59,6 @@ const MindVaultPage = () => {
     }));
   }, [dispatch, sectionKey, themeId]);
 
-  // Добавляем отладочный вывод
   useEffect(() => {
     if (posts && posts.length > 0) {
       console.log('📊 Загруженные посты:', posts);
@@ -77,7 +74,6 @@ const MindVaultPage = () => {
       id: post.id,
       username: post.author?.first_name || 'Пользователь',
       preview: post.text,
-      // Проверяем разные возможные поля для лайков/дислайков
       likes: post.likes || post.count_likes || post.reactions?.likes || 0,
       dislikes: post.dislikes || post.count_dislikes || post.reactions?.dislikes || 0,
       comments: actualComments ?? post.comments_count ?? 0,
@@ -85,7 +81,6 @@ const MindVaultPage = () => {
       pinned: post.pinned ?? false,
       timestamp: post.created_at ?? '',
       files: post.files || [],
-      // Добавляем реакцию пользователя
       userReaction: post.user_reaction || null
     };
   });
@@ -346,9 +341,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
     };
   }, [idea]);
 
-  // Убираем useEffect для загрузки файлов - теперь формируем URL напрямую
-
-  // ✅ Обработчик реакций с новыми параметрами
   const handleReaction = (reaction) => {
     dispatch(reactToPost({ 
       post_id: idea.id, 
@@ -387,34 +379,26 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
         <button className="idea-card__read-more" onClick={() => setExpanded(true)}>Читать далее</button>
       )}
 
-      {/* ✅ Отображение файлов под текстом */}
       {idea.files && idea.files.length > 0 && (
         <div className="idea-card__files" style={{ marginTop: '12px', paddingBottom: '12px' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {idea.files.map((file, i) => {
-              // Используем URL из файла
               if (!file.url) {
                 console.warn('⚠️ Файл без URL:', file);
                 return null;
               }
 
-              // Формируем прямой URL к API для скачивания
-              // Получаем базовый URL из axios или используем текущий origin
               const baseURL = window.location.origin;
               
-              // Используем relative_path вместо url, так как url содержит абсолютный путь
               let fileUrl = file.relative_path || file.url;
-              
-              // Если это абсолютный путь Windows, пытаемся извлечь относительную часть
+
               if (fileUrl && fileUrl.includes('C:')) {
-                // Извлекаем часть после 'backend/files/uploads/'
                 const match = fileUrl.match(/backend\/files\/uploads\/(.*)/);
                 if (match) {
-                  fileUrl = match[1]; // Берем только относительную часть
+                  fileUrl = match[1];
                 }
               }
               
-              // Убираем дублирование пути если есть
               if (fileUrl && fileUrl.includes('backend/files/uploads/')) {
                 fileUrl = fileUrl.replace(/.*backend\/files\/uploads\//, '');
               }
@@ -424,14 +408,11 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                 return null;
               }
               
-              // Альтернативный вариант: используем прямой путь к файлу на сервере
-              // Это может работать лучше если API endpoint не работает
               const directFileUrl = `${baseURL}/files/uploads/${fileUrl}`;
               
               console.log('🔗 Сформированные URL:', {
-                api: downloadUrl,
                 direct: directFileUrl
-              });
+              });              
 
               const ext = (file.extension || '').toLowerCase();
               const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
@@ -441,7 +422,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                 return (
                   <a 
                     key={i} 
-                    href={downloadUrl} 
+                    href={directFileUrl}
                     target="_blank" 
                     rel="noopener noreferrer"
                     style={{ 
@@ -453,7 +434,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                     }}
                   >
                     <img
-                      src={downloadUrl}
+                      src={directFileUrl}
                       alt={file.original_name || `image-${i}`}
                       style={{ 
                         width: '100%', 
@@ -462,12 +443,10 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                       }}
                       onError={(e) => {
                         console.error(`❌ Ошибка загрузки изображения через API, пробуем direct URL:`, file);
-                        // Пробуем загрузить через прямой URL
                         if (!e.target.dataset.triedDirect) {
                           e.target.dataset.triedDirect = 'true';
                           e.target.src = directFileUrl;
                         } else {
-                          // Если оба способа не сработали, показываем fallback
                           const parent = e.target.parentNode;
                           if (parent) {
                             e.target.style.display = 'none';
@@ -488,7 +467,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                 return (
                   <a 
                     key={i}
-                    href={downloadUrl}
+                    href={directFileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -511,7 +490,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                 return (
                   <a
                     key={i}
-                    href={downloadUrl}
+                    href={directFileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     download={file.original_name}
