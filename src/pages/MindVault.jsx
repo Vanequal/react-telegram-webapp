@@ -402,16 +402,36 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
               // Получаем базовый URL из axios или используем текущий origin
               const baseURL = window.location.origin;
               
-              // ВАЖНО: В path параметре должен быть file.url, а не relative_path!
-              const fileUrl = file.url || file.relative_path; // fallback на relative_path если url пустой
+              // Используем relative_path вместо url, так как url содержит абсолютный путь
+              let fileUrl = file.relative_path || file.url;
+              
+              // Если это абсолютный путь Windows, пытаемся извлечь относительную часть
+              if (fileUrl && fileUrl.includes('C:')) {
+                // Извлекаем часть после 'backend/files/uploads/'
+                const match = fileUrl.match(/backend\/files\/uploads\/(.*)/);
+                if (match) {
+                  fileUrl = match[1]; // Берем только относительную часть
+                }
+              }
+              
+              // Убираем дублирование пути если есть
+              if (fileUrl && fileUrl.includes('backend/files/uploads/')) {
+                fileUrl = fileUrl.replace(/.*backend\/files\/uploads\//, '');
+              }
               
               if (!fileUrl) {
-                console.error('❌ У файла нет ни url, ни relative_path:', file);
+                console.error('❌ Не удалось получить корректный путь к файлу:', file);
                 return null;
               }
               
-              const encodedUrl = encodeURIComponent(fileUrl);
-              const downloadUrl = `${baseURL}/api/v1/files/download/${encodedUrl}?url=${encodeURIComponent(fileUrl)}&mime_type=${encodeURIComponent(file.mime_type || 'application/octet-stream')}`;
+              // Альтернативный вариант: используем прямой путь к файлу на сервере
+              // Это может работать лучше если API endpoint не работает
+              const directFileUrl = `${baseURL}/files/uploads/${fileUrl}`;
+              
+              console.log('🔗 Сформированные URL:', {
+                api: downloadUrl,
+                direct: directFileUrl
+              });
 
               const ext = (file.extension || '').toLowerCase();
               const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
@@ -441,11 +461,25 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                         display: 'block'
                       }}
                       onError={(e) => {
-                        console.error(`❌ Ошибка загрузки изображения:`, file);
-                        e.target.style.display = 'none';
-                        e.target.parentNode.innerHTML = `📷 ${file.original_name || 'Изображение'}`;
-                        e.target.parentNode.style.padding = '8px 12px';
-                        e.target.parentNode.style.backgroundColor = '#f5f5f5';
+                        console.error(`❌ Ошибка загрузки изображения через API, пробуем direct URL:`, file);
+                        // Пробуем загрузить через прямой URL
+                        if (!e.target.dataset.triedDirect) {
+                          e.target.dataset.triedDirect = 'true';
+                          e.target.src = directFileUrl;
+                        } else {
+                          // Если оба способа не сработали, показываем fallback
+                          const parent = e.target.parentNode;
+                          if (parent) {
+                            e.target.style.display = 'none';
+                            const fallbackLink = document.createElement('span');
+                            fallbackLink.textContent = `📷 ${file.original_name || 'Изображение'}`;
+                            fallbackLink.style.padding = '8px 12px';
+                            fallbackLink.style.backgroundColor = '#f5f5f5';
+                            fallbackLink.style.display = 'inline-block';
+                            fallbackLink.style.borderRadius = '8px';
+                            parent.appendChild(fallbackLink);
+                          }
+                        }
                       }}
                     />
                   </a>
