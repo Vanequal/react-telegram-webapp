@@ -388,49 +388,46 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       )}
 
       {/* ✅ Отображение файлов под текстом */}
-      // Replace the file rendering section in your IdeaCard component with this fixed version:
-
-{/* ✅ Отображение файлов под текстом */}
-{idea.files && idea.files.length > 0 && (
+      {idea.files && idea.files.length > 0 && (
   <div className="idea-card__files" style={{ marginTop: '12px', paddingBottom: '12px' }}>
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
       {idea.files.map((file, i) => {
-        // Используем URL из файла
-        if (!file.url) {
+        if (!file.relative_path && !file.url) {
           console.warn('⚠️ Файл без URL:', file);
           return null;
         }
 
-        // Формируем прямой URL к API для скачивания
-        const baseURL = window.location.origin;
+        // ✅ FIX: Use your backend API URL instead of frontend URL
+        // Replace this with your actual backend URL
+        const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000'; // Update this!
         
-        // Используем relative_path вместо url, так как url содержит абсолютный путь
-        let fileUrl = file.relative_path || file.url;
+        // Extract the relative path from the file object
+        let relativePath = file.relative_path;
         
-        // Если это абсолютный путь Windows, пытаемся извлечь относительную часть
-        if (fileUrl && fileUrl.includes('C:')) {
-          // Извлекаем часть после 'backend/files/uploads/'
-          const match = fileUrl.match(/backend\/files\/uploads\/(.*)/);
+        // If relative_path starts with 'backend/', remove it since we'll add the base URL
+        if (relativePath && relativePath.startsWith('backend/')) {
+          relativePath = relativePath.replace('backend/', '');
+        }
+        
+        // If no relative_path, try to extract from the absolute path
+        if (!relativePath && file.url) {
+          const match = file.url.match(/backend[\/\\]files[\/\\]uploads[\/\\](.*)/);
           if (match) {
-            fileUrl = match[1]; // Берем только относительную часть
+            relativePath = match[1].replace(/\\/g, '/'); // Convert Windows paths to URL paths
           }
         }
         
-        // Убираем дублирование пути если есть
-        if (fileUrl && fileUrl.includes('backend/files/uploads/')) {
-          fileUrl = fileUrl.replace(/.*backend\/files\/uploads\//, '');
-        }
-        
-        if (!fileUrl) {
-          console.error('❌ Не удалось получить корректный путь к файлу:', file);
+        if (!relativePath) {
+          console.error('❌ Не удалось получить относительный путь к файлу:', file);
           return null;
         }
         
-        // ✅ FIX: Properly define downloadUrl variable
-        const downloadUrl = `${baseURL}/files/uploads/${fileUrl}`;
-        const directFileUrl = downloadUrl; // Same URL for direct access
+        // ✅ Construct the correct URL using your backend domain
+        const downloadUrl = `${BACKEND_BASE_URL}/files/uploads/${relativePath}`;
         
         console.log('🔗 Сформированный URL:', downloadUrl);
+        console.log('🔧 Backend URL:', BACKEND_BASE_URL);
+        console.log('📁 Relative path:', relativePath);
 
         const ext = (file.extension || '').toLowerCase();
         const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
@@ -460,23 +457,32 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                   display: 'block'
                 }}
                 onError={(e) => {
-                  console.error(`❌ Ошибка загрузки изображения:`, file);
-                  // Если загрузка не удалась, показываем fallback
+                  console.error(`❌ Ошибка загрузки изображения:`, {
+                    file,
+                    attemptedUrl: downloadUrl,
+                    backendUrl: BACKEND_BASE_URL
+                  });
+                  
                   if (!e.target.dataset.errorHandled) {
                     e.target.dataset.errorHandled = 'true';
                     const parent = e.target.parentNode;
                     if (parent) {
                       e.target.style.display = 'none';
                       const fallbackLink = document.createElement('span');
-                      fallbackLink.textContent = `📷 ${file.original_name || 'Изображение'}`;
+                      fallbackLink.textContent = `📷 ${file.original_name || 'Изображение'} (недоступно)`;
                       fallbackLink.style.padding = '8px 12px';
-                      fallbackLink.style.backgroundColor = '#f5f5f5';
+                      fallbackLink.style.backgroundColor = '#ffebee';
+                      fallbackLink.style.color = '#c62828';
                       fallbackLink.style.display = 'inline-block';
                       fallbackLink.style.borderRadius = '8px';
-                      fallbackLink.style.color = '#666';
+                      fallbackLink.style.fontSize = '12px';
+                      fallbackLink.style.border = '1px solid #ef5350';
                       parent.appendChild(fallbackLink);
                     }
                   }
+                }}
+                onLoad={() => {
+                  console.log('✅ Изображение успешно загружено:', downloadUrl);
                 }}
               />
             </a>
@@ -533,6 +539,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
     </div>
   </div>
 )}
+
 
       <div className="idea-card__badges" style={{ 
         display: 'flex', 
