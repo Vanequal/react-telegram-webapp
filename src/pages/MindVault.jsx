@@ -388,55 +388,38 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       )}
 
       {/* ✅ Отображение файлов под текстом */}
-      {idea.files && idea.files.length > 0 && (
+      // Замените секцию отображения файлов на эту версию:
+
+{/* ✅ Отображение файлов под текстом */}
+{idea.files && idea.files.length > 0 && (
   <div className="idea-card__files" style={{ marginTop: '12px', paddingBottom: '12px' }}>
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
       {idea.files.map((file, i) => {
-        if (!file.relative_path && !file.url) {
+        if (!file.url && !file.relative_path) {
           console.warn('⚠️ Файл без URL:', file);
           return null;
         }
 
-        // ✅ ИСПРАВЛЕНИЕ 1: Используйте URL вашего продакшн бекенда
-        // Замените это на ваш реальный URL бекенда!
+        // ✅ ПРАВИЛЬНЫЙ URL для вашего API
         const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://b538-109-75-62-2.ngrok-free.app';
         
-        // ✅ ИСПРАВЛЕНИЕ 2: Правильно обрабатываем путь без дублирования
-        let cleanPath = '';
+        // Используем абсолютный путь из file.url для параметра url
+        const fileAbsolutePath = file.url;
         
-        if (file.relative_path) {
-          cleanPath = file.relative_path;
-          
-          // Убираем 'backend/' в начале если есть
-          if (cleanPath.startsWith('backend/')) {
-            cleanPath = cleanPath.replace('backend/', '');
-          }
-          
-          // Убираем 'files/uploads/' в начале если есть (избегаем дублирования)
-          if (cleanPath.startsWith('files/uploads/')) {
-            cleanPath = cleanPath.replace('files/uploads/', '');
-          }
-        } else if (file.url) {
-          // Извлекаем путь из абсолютного пути Windows
-          const match = file.url.match(/backend[\/\\]files[\/\\]uploads[\/\\](.*)/);
-          if (match) {
-            cleanPath = match[1].replace(/\\/g, '/');
-          }
-        }
-        
-        if (!cleanPath) {
-          console.error('❌ Не удалось получить путь к файлу:', file);
+        if (!fileAbsolutePath) {
+          console.error('❌ Нет абсолютного пути к файлу:', file);
           return null;
         }
         
-        // ✅ ИСПРАВЛЕНИЕ 3: Формируем правильный URL без дублирования
-        const downloadUrl = `${BACKEND_BASE_URL}/files/uploads/${cleanPath}`;
+        // ✅ Формируем URL согласно вашему API endpoint
+        // Кодируем путь к файлу для безопасной передачи в URL
+        const encodedFilePath = encodeURIComponent(fileAbsolutePath);
+        const downloadUrl = `${BACKEND_BASE_URL}/api/v1/files/download/{file_url}?url=${encodedFilePath}`;
         
-        console.log('🔗 Исходные данные файла:', {
-          relative_path: file.relative_path,
-          url: file.url,
-          cleanPath: cleanPath,
-          finalUrl: downloadUrl
+        console.log('🔗 Сформированный URL для файла:', {
+          оригинальный_путь: fileAbsolutePath,
+          закодированный_путь: encodedFilePath,
+          финальный_URL: downloadUrl
         });
 
         const ext = (file.extension || '').toLowerCase();
@@ -469,9 +452,9 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                 onError={(e) => {
                   console.error(`❌ Ошибка загрузки изображения:`, {
                     файл: file.original_name,
+                    оригинальный_путь: fileAbsolutePath,
                     попытка_URL: downloadUrl,
-                    бэкенд_URL: BACKEND_BASE_URL,
-                    чистый_путь: cleanPath
+                    статус_ответа: e.target.naturalWidth === 0 ? 'Не загружено' : 'Частично загружено'
                   });
                   
                   if (!e.target.dataset.errorHandled) {
@@ -488,6 +471,8 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                       fallbackLink.style.borderRadius = '8px';
                       fallbackLink.style.fontSize = '12px';
                       fallbackLink.style.border = '1px solid #ef5350';
+                      fallbackLink.style.cursor = 'pointer';
+                      fallbackLink.onclick = () => window.open(downloadUrl, '_blank');
                       parent.appendChild(fallbackLink);
                     }
                   }
@@ -550,7 +535,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
     </div>
   </div>
 )}
-
 
       <div className="idea-card__badges" style={{ 
         display: 'flex', 
