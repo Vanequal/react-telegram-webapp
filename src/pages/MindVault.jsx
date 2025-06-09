@@ -388,7 +388,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       )}
 
       {/* ✅ Отображение файлов под текстом */}
-      // Замените секцию отображения файлов на эту версию:
 
 {/* ✅ Отображение файлов под текстом */}
 {idea.files && idea.files.length > 0 && (
@@ -435,10 +434,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                   width: '100%', 
                   height: 'auto',
                   display: 'block'
-                }}
-                onError={(e) => {
-                  // Просто скрываем изображение если не загрузилось
-                  e.target.style.display = 'none';
                 }}
               />
             </a>
