@@ -388,154 +388,151 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       )}
 
       {/* ✅ Отображение файлов под текстом */}
-      {idea.files && idea.files.length > 0 && (
-        <div className="idea-card__files" style={{ marginTop: '12px', paddingBottom: '12px' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {idea.files.map((file, i) => {
-              // Используем URL из файла
-              if (!file.url) {
-                console.warn('⚠️ Файл без URL:', file);
-                return null;
-              }
+      // Replace the file rendering section in your IdeaCard component with this fixed version:
 
-              // Формируем прямой URL к API для скачивания
-              // Получаем базовый URL из axios или используем текущий origin
-              const baseURL = window.location.origin;
-              
-              // Используем relative_path вместо url, так как url содержит абсолютный путь
-              let fileUrl = file.relative_path || file.url;
-              
-              // Если это абсолютный путь Windows, пытаемся извлечь относительную часть
-              if (fileUrl && fileUrl.includes('C:')) {
-                // Извлекаем часть после 'backend/files/uploads/'
-                const match = fileUrl.match(/backend\/files\/uploads\/(.*)/);
-                if (match) {
-                  fileUrl = match[1]; // Берем только относительную часть
-                }
-              }
-              
-              // Убираем дублирование пути если есть
-              if (fileUrl && fileUrl.includes('backend/files/uploads/')) {
-                fileUrl = fileUrl.replace(/.*backend\/files\/uploads\//, '');
-              }
-              
-              if (!fileUrl) {
-                console.error('❌ Не удалось получить корректный путь к файлу:', file);
-                return null;
-              }
-              
-              // Альтернативный вариант: используем прямой путь к файлу на сервере
-              // Это может работать лучше если API endpoint не работает
-              const directFileUrl = `${baseURL}/files/uploads/${fileUrl}`;
-              
-              console.log('🔗 Сформированные URL:', {
-                api: downloadUrl,
-                direct: directFileUrl
-              });
+{/* ✅ Отображение файлов под текстом */}
+{idea.files && idea.files.length > 0 && (
+  <div className="idea-card__files" style={{ marginTop: '12px', paddingBottom: '12px' }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+      {idea.files.map((file, i) => {
+        // Используем URL из файла
+        if (!file.url) {
+          console.warn('⚠️ Файл без URL:', file);
+          return null;
+        }
 
-              const ext = (file.extension || '').toLowerCase();
-              const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
-              const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
+        // Формируем прямой URL к API для скачивания
+        const baseURL = window.location.origin;
+        
+        // Используем relative_path вместо url, так как url содержит абсолютный путь
+        let fileUrl = file.relative_path || file.url;
+        
+        // Если это абсолютный путь Windows, пытаемся извлечь относительную часть
+        if (fileUrl && fileUrl.includes('C:')) {
+          // Извлекаем часть после 'backend/files/uploads/'
+          const match = fileUrl.match(/backend\/files\/uploads\/(.*)/);
+          if (match) {
+            fileUrl = match[1]; // Берем только относительную часть
+          }
+        }
+        
+        // Убираем дублирование пути если есть
+        if (fileUrl && fileUrl.includes('backend/files/uploads/')) {
+          fileUrl = fileUrl.replace(/.*backend\/files\/uploads\//, '');
+        }
+        
+        if (!fileUrl) {
+          console.error('❌ Не удалось получить корректный путь к файлу:', file);
+          return null;
+        }
+        
+        // ✅ FIX: Properly define downloadUrl variable
+        const downloadUrl = `${baseURL}/files/uploads/${fileUrl}`;
+        const directFileUrl = downloadUrl; // Same URL for direct access
+        
+        console.log('🔗 Сформированный URL:', downloadUrl);
 
-              if (isImage) {
-                return (
-                  <a 
-                    key={i} 
-                    href={downloadUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    style={{ 
-                      display: 'inline-block',
-                      maxWidth: '200px',
-                      borderRadius: '8px',
-                      overflow: 'hidden',
-                      border: '1px solid #e0e0e0'
-                    }}
-                  >
-                    <img
-                      src={downloadUrl}
-                      alt={file.original_name || `image-${i}`}
-                      style={{ 
-                        width: '100%', 
-                        height: 'auto',
-                        display: 'block'
-                      }}
-                      onError={(e) => {
-                        console.error(`❌ Ошибка загрузки изображения через API, пробуем direct URL:`, file);
-                        // Пробуем загрузить через прямой URL
-                        if (!e.target.dataset.triedDirect) {
-                          e.target.dataset.triedDirect = 'true';
-                          e.target.src = directFileUrl;
-                        } else {
-                          // Если оба способа не сработали, показываем fallback
-                          const parent = e.target.parentNode;
-                          if (parent) {
-                            e.target.style.display = 'none';
-                            const fallbackLink = document.createElement('span');
-                            fallbackLink.textContent = `📷 ${file.original_name || 'Изображение'}`;
-                            fallbackLink.style.padding = '8px 12px';
-                            fallbackLink.style.backgroundColor = '#f5f5f5';
-                            fallbackLink.style.display = 'inline-block';
-                            fallbackLink.style.borderRadius = '8px';
-                            parent.appendChild(fallbackLink);
-                          }
-                        }
-                      }}
-                    />
-                  </a>
-                );
-              } else if (isVideo) {
-                return (
-                  <a 
-                    key={i}
-                    href={downloadUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      padding: '8px 12px',
-                      backgroundColor: '#f5f5f5',
-                      borderRadius: '8px',
-                      textDecoration: 'none',
-                      color: '#1976D2',
-                      fontSize: '14px',
-                      border: '1px solid #e0e0e0'
-                    }}
-                  >
-                    🎥 {file.original_name || `Видео ${i + 1}`}
-                  </a>
-                );
-              } else {
-                return (
-                  <a
-                    key={i}
-                    href={downloadUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    download={file.original_name}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      padding: '8px 12px',
-                      backgroundColor: '#f5f5f5',
-                      borderRadius: '8px',
-                      textDecoration: 'none',
-                      color: '#1976D2',
-                      fontSize: '14px',
-                      border: '1px solid #e0e0e0'
-                    }}
-                  >
-                    📎 {file.original_name || `Файл ${i + 1}`}
-                  </a>
-                );
-              }
-            })}
-          </div>
-        </div>
-      )}
+        const ext = (file.extension || '').toLowerCase();
+        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+        const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
+
+        if (isImage) {
+          return (
+            <a 
+              key={i} 
+              href={downloadUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ 
+                display: 'inline-block',
+                maxWidth: '200px',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                border: '1px solid #e0e0e0'
+              }}
+            >
+              <img
+                src={downloadUrl}
+                alt={file.original_name || `image-${i}`}
+                style={{ 
+                  width: '100%', 
+                  height: 'auto',
+                  display: 'block'
+                }}
+                onError={(e) => {
+                  console.error(`❌ Ошибка загрузки изображения:`, file);
+                  // Если загрузка не удалась, показываем fallback
+                  if (!e.target.dataset.errorHandled) {
+                    e.target.dataset.errorHandled = 'true';
+                    const parent = e.target.parentNode;
+                    if (parent) {
+                      e.target.style.display = 'none';
+                      const fallbackLink = document.createElement('span');
+                      fallbackLink.textContent = `📷 ${file.original_name || 'Изображение'}`;
+                      fallbackLink.style.padding = '8px 12px';
+                      fallbackLink.style.backgroundColor = '#f5f5f5';
+                      fallbackLink.style.display = 'inline-block';
+                      fallbackLink.style.borderRadius = '8px';
+                      fallbackLink.style.color = '#666';
+                      parent.appendChild(fallbackLink);
+                    }
+                  }
+                }}
+              />
+            </a>
+          );
+        } else if (isVideo) {
+          return (
+            <a 
+              key={i}
+              href={downloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 12px',
+                backgroundColor: '#f5f5f5',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                color: '#1976D2',
+                fontSize: '14px',
+                border: '1px solid #e0e0e0'
+              }}
+            >
+              🎥 {file.original_name || `Видео ${i + 1}`}
+            </a>
+          );
+        } else {
+          return (
+            <a
+              key={i}
+              href={downloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              download={file.original_name}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 12px',
+                backgroundColor: '#f5f5f5',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                color: '#1976D2',
+                fontSize: '14px',
+                border: '1px solid #e0e0e0'
+              }}
+            >
+              📎 {file.original_name || `Файл ${i + 1}`}
+            </a>
+          );
+        }
+      })}
+    </div>
+  </div>
+)}
 
       <div className="idea-card__badges" style={{ 
         display: 'flex', 
