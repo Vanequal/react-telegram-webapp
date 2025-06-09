@@ -396,31 +396,18 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
       {idea.files.map((file, i) => {
         if (!file.url && !file.relative_path) {
-          console.warn('⚠️ Файл без URL:', file);
           return null;
         }
 
-        // ✅ ПРАВИЛЬНЫЙ URL для вашего API
         const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://b538-109-75-62-2.ngrok-free.app';
-        
-        // Используем абсолютный путь из file.url для параметра url
         const fileAbsolutePath = file.url;
         
         if (!fileAbsolutePath) {
-          console.error('❌ Нет абсолютного пути к файлу:', file);
           return null;
         }
         
-        // ✅ Формируем URL согласно вашему API endpoint
-        // Кодируем путь к файлу для безопасной передачи в URL
         const encodedFilePath = encodeURIComponent(fileAbsolutePath);
         const downloadUrl = `${BACKEND_BASE_URL}/api/v1/files/download/{file_url}?url=${encodedFilePath}`;
-        
-        console.log('🔗 Сформированный URL для файла:', {
-          оригинальный_путь: fileAbsolutePath,
-          закодированный_путь: encodedFilePath,
-          финальный_URL: downloadUrl
-        });
 
         const ext = (file.extension || '').toLowerCase();
         const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
@@ -450,35 +437,8 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                   display: 'block'
                 }}
                 onError={(e) => {
-                  console.error(`❌ Ошибка загрузки изображения:`, {
-                    файл: file.original_name,
-                    оригинальный_путь: fileAbsolutePath,
-                    попытка_URL: downloadUrl,
-                    статус_ответа: e.target.naturalWidth === 0 ? 'Не загружено' : 'Частично загружено'
-                  });
-                  
-                  if (!e.target.dataset.errorHandled) {
-                    e.target.dataset.errorHandled = 'true';
-                    const parent = e.target.parentNode;
-                    if (parent) {
-                      e.target.style.display = 'none';
-                      const fallbackLink = document.createElement('span');
-                      fallbackLink.textContent = `📷 ${file.original_name || 'Изображение'} (недоступно)`;
-                      fallbackLink.style.padding = '8px 12px';
-                      fallbackLink.style.backgroundColor = '#ffebee';
-                      fallbackLink.style.color = '#c62828';
-                      fallbackLink.style.display = 'inline-block';
-                      fallbackLink.style.borderRadius = '8px';
-                      fallbackLink.style.fontSize = '12px';
-                      fallbackLink.style.border = '1px solid #ef5350';
-                      fallbackLink.style.cursor = 'pointer';
-                      fallbackLink.onclick = () => window.open(downloadUrl, '_blank');
-                      parent.appendChild(fallbackLink);
-                    }
-                  }
-                }}
-                onLoad={() => {
-                  console.log('✅ Изображение успешно загружено:', downloadUrl);
+                  // Просто скрываем изображение если не загрузилось
+                  e.target.style.display = 'none';
                 }}
               />
             </a>
