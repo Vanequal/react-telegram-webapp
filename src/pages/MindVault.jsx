@@ -397,37 +397,47 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
           return null;
         }
 
-        // ✅ FIX: Use your backend API URL instead of frontend URL
-        // Replace this with your actual backend URL
-        const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000'; // Update this!
+        // ✅ ИСПРАВЛЕНИЕ 1: Используйте URL вашего продакшн бекенда
+        // Замените это на ваш реальный URL бекенда!
+        const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://b538-109-75-62-2.ngrok-free.app';
         
-        // Extract the relative path from the file object
-        let relativePath = file.relative_path;
+        // ✅ ИСПРАВЛЕНИЕ 2: Правильно обрабатываем путь без дублирования
+        let cleanPath = '';
         
-        // If relative_path starts with 'backend/', remove it since we'll add the base URL
-        if (relativePath && relativePath.startsWith('backend/')) {
-          relativePath = relativePath.replace('backend/', '');
-        }
-        
-        // If no relative_path, try to extract from the absolute path
-        if (!relativePath && file.url) {
+        if (file.relative_path) {
+          cleanPath = file.relative_path;
+          
+          // Убираем 'backend/' в начале если есть
+          if (cleanPath.startsWith('backend/')) {
+            cleanPath = cleanPath.replace('backend/', '');
+          }
+          
+          // Убираем 'files/uploads/' в начале если есть (избегаем дублирования)
+          if (cleanPath.startsWith('files/uploads/')) {
+            cleanPath = cleanPath.replace('files/uploads/', '');
+          }
+        } else if (file.url) {
+          // Извлекаем путь из абсолютного пути Windows
           const match = file.url.match(/backend[\/\\]files[\/\\]uploads[\/\\](.*)/);
           if (match) {
-            relativePath = match[1].replace(/\\/g, '/'); // Convert Windows paths to URL paths
+            cleanPath = match[1].replace(/\\/g, '/');
           }
         }
         
-        if (!relativePath) {
-          console.error('❌ Не удалось получить относительный путь к файлу:', file);
+        if (!cleanPath) {
+          console.error('❌ Не удалось получить путь к файлу:', file);
           return null;
         }
         
-        // ✅ Construct the correct URL using your backend domain
-        const downloadUrl = `${BACKEND_BASE_URL}/files/uploads/${relativePath}`;
+        // ✅ ИСПРАВЛЕНИЕ 3: Формируем правильный URL без дублирования
+        const downloadUrl = `${BACKEND_BASE_URL}/files/uploads/${cleanPath}`;
         
-        console.log('🔗 Сформированный URL:', downloadUrl);
-        console.log('🔧 Backend URL:', BACKEND_BASE_URL);
-        console.log('📁 Relative path:', relativePath);
+        console.log('🔗 Исходные данные файла:', {
+          relative_path: file.relative_path,
+          url: file.url,
+          cleanPath: cleanPath,
+          finalUrl: downloadUrl
+        });
 
         const ext = (file.extension || '').toLowerCase();
         const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
@@ -458,9 +468,10 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                 }}
                 onError={(e) => {
                   console.error(`❌ Ошибка загрузки изображения:`, {
-                    file,
-                    attemptedUrl: downloadUrl,
-                    backendUrl: BACKEND_BASE_URL
+                    файл: file.original_name,
+                    попытка_URL: downloadUrl,
+                    бэкенд_URL: BACKEND_BASE_URL,
+                    чистый_путь: cleanPath
                   });
                   
                   if (!e.target.dataset.errorHandled) {
