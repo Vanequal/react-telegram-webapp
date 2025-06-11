@@ -77,15 +77,15 @@ const MindVaultPage = () => {
       id: post.id,
       username: post.author?.first_name || 'Пользователь',
       preview: post.text,
-      // Проверяем разные возможные поля для лайков/дислайков
-      likes: post.likes || post.count_likes || post.reactions?.likes || 0,
-      dislikes: post.dislikes || post.count_dislikes || post.reactions?.dislikes || 0,
+      // ✅ ИСПРАВЛЕНО: теперь данные уже правильно обработаны в Redux
+      likes: post.likes || 0,
+      dislikes: post.dislikes || 0,
       comments: actualComments ?? post.comments_count ?? 0,
       views: post.views ?? 0,
       pinned: post.pinned ?? false,
       timestamp: post.created_at ?? '',
       files: post.files || [],
-      // Добавляем реакцию пользователя
+      // ✅ ИСПРАВЛЕНО: добавляем реакцию пользователя
       userReaction: post.user_reaction || null
     };
   });
@@ -303,13 +303,14 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
   const textWrapperRef = useRef(null);
   const cardRef = useRef(null);
   
-  // Получаем актуальные данные поста из Redux
+  // ✅ ИСПРАВЛЕНО: Получаем актуальные данные поста из Redux
   const posts = useSelector(state => state.post.posts);
   const currentPost = posts.find(p => p.id === idea.id);
   
-  // Используем актуальные значения из Redux или из idea
-  const currentLikes = currentPost?.likes ?? idea.likes;
-  const currentDislikes = currentPost?.dislikes ?? idea.dislikes;
+  // ✅ ИСПРАВЛЕНО: Используем актуальные значения из Redux
+  const currentLikes = currentPost?.likes ?? idea.likes ?? 0;
+  const currentDislikes = currentPost?.dislikes ?? idea.dislikes ?? 0;
+  const currentUserReaction = currentPost?.user_reaction ?? idea.userReaction ?? null;
 
   useEffect(() => {
     if (textWrapperRef.current?.scrollHeight > 160) {
@@ -346,9 +347,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
     };
   }, [idea]);
 
-  // Убираем useEffect для загрузки файлов - теперь формируем URL напрямую
-
-  // ✅ Обработчик реакций с новыми параметрами
+  // ✅ ИСПРАВЛЕНО: Обработчик реакций с корректными параметрами
   const handleReaction = (reaction) => {
     dispatch(reactToPost({ 
       post_id: idea.id, 
@@ -388,108 +387,106 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       )}
 
       {/* ✅ Отображение файлов под текстом */}
+      {idea.files && idea.files.length > 0 && (
+        <div className="idea-card__files" style={{ marginTop: '12px', paddingBottom: '12px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {idea.files.map((file, i) => {
+              if (!file.url && !file.relative_path) {
+                return null;
+              }
 
-{/* ✅ Отображение файлов под текстом */}
-{idea.files && idea.files.length > 0 && (
-  <div className="idea-card__files" style={{ marginTop: '12px', paddingBottom: '12px' }}>
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-      {idea.files.map((file, i) => {
-        if (!file.url && !file.relative_path) {
-          return null;
-        }
+              const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://b538-109-75-62-2.ngrok-free.app';
+              const fileAbsolutePath = file.url;
+              
+              if (!fileAbsolutePath) {
+                return null;
+              }
+              
+              const encodedFilePath = encodeURIComponent(fileAbsolutePath);
+              const downloadUrl = `${BACKEND_BASE_URL}/api/v1/files/download/{file_url}?url=${encodedFilePath}`;
 
-        const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://b538-109-75-62-2.ngrok-free.app';
-        const fileAbsolutePath = file.url;
-        
-        if (!fileAbsolutePath) {
-          return null;
-        }
-        
-        const encodedFilePath = encodeURIComponent(fileAbsolutePath);
-        const downloadUrl = `${BACKEND_BASE_URL}/api/v1/files/download/{file_url}?url=${encodedFilePath}`;
+              const ext = (file.extension || '').toLowerCase();
+              const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+              const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
 
-        const ext = (file.extension || '').toLowerCase();
-        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
-        const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
-
-        if (isImage) {
-          return (
-            <a 
-              key={i} 
-              href={downloadUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style={{ 
-                display: 'inline-block',
-                maxWidth: '200px',
-                borderRadius: '8px',
-                overflow: 'hidden',
-                border: '1px solid #e0e0e0'
-              }}
-            >
-              <img
-                src={downloadUrl}
-                alt={file.original_name || `image-${i}`}
-                style={{ 
-                  width: '100%', 
-                  height: 'auto',
-                  display: 'block'
-                }}
-              />
-            </a>
-          );
-        } else if (isVideo) {
-          return (
-            <a 
-              key={i}
-              href={downloadUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 12px',
-                backgroundColor: '#f5f5f5',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                color: '#1976D2',
-                fontSize: '14px',
-                border: '1px solid #e0e0e0'
-              }}
-            >
-              🎥 {file.original_name || `Видео ${i + 1}`}
-            </a>
-          );
-        } else {
-          return (
-            <a
-              key={i}
-              href={downloadUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              download={file.original_name}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 12px',
-                backgroundColor: '#f5f5f5',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                color: '#1976D2',
-                fontSize: '14px',
-                border: '1px solid #e0e0e0'
-              }}
-            >
-              📎 {file.original_name || `Файл ${i + 1}`}
-            </a>
-          );
-        }
-      })}
-    </div>
-  </div>
-)}
+              if (isImage) {
+                return (
+                  <a 
+                    key={i} 
+                    href={downloadUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ 
+                      display: 'inline-block',
+                      maxWidth: '200px',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      border: '1px solid #e0e0e0'
+                    }}
+                  >
+                    <img
+                      src={downloadUrl}
+                      alt={file.original_name || `image-${i}`}
+                      style={{ 
+                        width: '100%', 
+                        height: 'auto',
+                        display: 'block'
+                      }}
+                    />
+                  </a>
+                );
+              } else if (isVideo) {
+                return (
+                  <a 
+                    key={i}
+                    href={downloadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 12px',
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: '8px',
+                      textDecoration: 'none',
+                      color: '#1976D2',
+                      fontSize: '14px',
+                      border: '1px solid #e0e0e0'
+                    }}
+                  >
+                    🎥 {file.original_name || `Видео ${i + 1}`}
+                  </a>
+                );
+              } else {
+                return (
+                  <a
+                    key={i}
+                    href={downloadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download={file.original_name}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 12px',
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: '8px',
+                      textDecoration: 'none',
+                      color: '#1976D2',
+                      fontSize: '14px',
+                      border: '1px solid #e0e0e0'
+                    }}
+                  >
+                    📎 {file.original_name || `Файл ${i + 1}`}
+                  </a>
+                );
+              }
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="idea-card__badges" style={{ 
         display: 'flex', 
@@ -507,13 +504,18 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
             gap: '6px',
             padding: '4px 8px',
             borderRadius: '4px',
-            backgroundColor: '#f5f5f5',
-            transition: 'background-color 0.2s'
+            backgroundColor: currentUserReaction === 'like' ? '#e3f2fd' : '#f5f5f5',
+            border: currentUserReaction === 'like' ? '1px solid #2196f3' : '1px solid #e0e0e0',
+            transition: 'all 0.2s'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e0e0e0'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}>
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentUserReaction === 'like' ? '#bbdefb' : '#e0e0e0'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = currentUserReaction === 'like' ? '#e3f2fd' : '#f5f5f5'}>
           <img src={likeIcon} alt="Like" style={{ width: '20px', height: '20px' }} />
-          <span style={{ fontSize: '14px', fontWeight: '500' }}>{currentLikes}</span>
+          <span style={{ 
+            fontSize: '14px', 
+            fontWeight: '500',
+            color: currentUserReaction === 'like' ? '#2196f3' : 'inherit'
+          }}>{currentLikes}</span>
         </div>
 
         <div
@@ -526,13 +528,18 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
             gap: '6px',
             padding: '4px 8px',
             borderRadius: '4px',
-            backgroundColor: '#f5f5f5',
-            transition: 'background-color 0.2s'
+            backgroundColor: currentUserReaction === 'dislike' ? '#ffebee' : '#f5f5f5',
+            border: currentUserReaction === 'dislike' ? '1px solid #f44336' : '1px solid #e0e0e0',
+            transition: 'all 0.2s'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e0e0e0'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}>
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentUserReaction === 'dislike' ? '#ffcdd2' : '#e0e0e0'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = currentUserReaction === 'dislike' ? '#ffebee' : '#f5f5f5'}>
           <img src={dislikeIcon} alt="Dislike" style={{ width: '20px', height: '20px' }} />
-          <span style={{ fontSize: '14px', fontWeight: '500' }}>{currentDislikes}</span>
+          <span style={{ 
+            fontSize: '14px', 
+            fontWeight: '500',
+            color: currentUserReaction === 'dislike' ? '#f44336' : 'inherit'
+          }}>{currentDislikes}</span>
         </div>
       </div>
 

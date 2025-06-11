@@ -38,7 +38,6 @@ export const createPost = createAsyncThunk(
   }
 );
 
-
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
   async ({ section_id, theme_id, text }, { rejectWithValue }) => {
@@ -56,7 +55,6 @@ export const createPostPreview = createAsyncThunk(
     }
   }
 );
-
 
 export const fetchPostsInSection = createAsyncThunk(
   'post/fetchPostsInSection',
@@ -170,10 +168,7 @@ export const reactToPost = createAsyncThunk(
       
       return { 
         post_id, 
-        count_likes: res.data.count_likes,
-        count_dislikes: res.data.count_dislikes,
-        old_reaction: res.data.old_reaction,
-        new_reaction: res.data.new_reaction
+        ...res.data // ✅ Используем весь ответ от API
       };
     } catch (err) {
       console.error('🔥 Ошибка реакции:', err?.response?.data || err.message);
@@ -209,7 +204,6 @@ export const fetchDownloadUrl = createAsyncThunk(
     }
   }
 );
-
 
 const postSlice = createSlice({
   name: 'post',
@@ -264,11 +258,13 @@ const postSlice = createSlice({
       })
       .addCase(fetchPostsInSection.fulfilled, (state, action) => {
         state.loading = false;
-        // Обрабатываем посты и добавляем поля для реакций, если их нет
+        // ✅ ИСПРАВЛЕНО: правильно извлекаем данные реакций из API
         state.posts = (action.payload || []).map(post => ({
           ...post,
-          likes: post.likes || post.count_likes || 0,
-          dislikes: post.dislikes || post.count_dislikes || 0
+          // Извлекаем данные из reactions объекта
+          likes: post.reactions?.count_likes || 0,
+          dislikes: post.reactions?.count_dislikes || 0,
+          user_reaction: post.reactions?.user_reaction || null
         }));
       })
       .addCase(fetchPostsInSection.rejected, (state, action) => {
@@ -283,7 +279,14 @@ const postSlice = createSlice({
       })
       .addCase(fetchPostById.fulfilled, (state, action) => {
         state.loading = false;
-        state.selectedPost = action.payload;
+        // ✅ ИСПРАВЛЕНО: также обрабатываем отдельный пост
+        const post = action.payload;
+        state.selectedPost = {
+          ...post,
+          likes: post.reactions?.count_likes || 0,
+          dislikes: post.reactions?.count_dislikes || 0,
+          user_reaction: post.reactions?.user_reaction || null
+        };
       })
       .addCase(fetchPostById.rejected, (state, action) => {
         state.loading = false;
@@ -307,22 +310,31 @@ const postSlice = createSlice({
         state.comments[post_id].push(comment);
       })
 
-      // ✅ НОВОЕ: Обновление лайков/дислайков после реакции
+      // ✅ ИСПРАВЛЕНО: Обновление лайков/дислайков после реакции
       .addCase(reactToPost.fulfilled, (state, action) => {
-        const { post_id, count_likes, count_dislikes } = action.payload;
+        const { post_id, count_likes, count_dislikes, new_reaction } = action.payload;
         console.log('📊 Обновляем реакции для поста:', {
           post_id,
           count_likes,
-          count_dislikes
+          count_dislikes,
+          new_reaction
         });
         
         const post = state.posts.find(p => p.id === post_id);
         if (post) {
           post.likes = count_likes;
           post.dislikes = count_dislikes;
+          post.user_reaction = new_reaction;
           console.log('✅ Пост обновлен:', post);
         } else {
           console.error('❌ Пост не найден в state:', post_id);
+        }
+
+        // ✅ Также обновляем selectedPost если он совпадает
+        if (state.selectedPost && state.selectedPost.id === post_id) {
+          state.selectedPost.likes = count_likes;
+          state.selectedPost.dislikes = count_dislikes;
+          state.selectedPost.user_reaction = new_reaction;
         }
       })
       .addCase(reactToPost.rejected, (state, action) => {
