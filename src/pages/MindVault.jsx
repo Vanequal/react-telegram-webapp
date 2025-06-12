@@ -395,7 +395,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                 return null;
               }
 
-              const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://b538-109-75-62-2.ngrok-free.app';
+              const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://voice-simon-shoe-disappointed.trycloudflare.com';
               const fileAbsolutePath = file.url;
               
               if (!fileAbsolutePath) {
