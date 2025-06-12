@@ -7,12 +7,10 @@ export const createPost = createAsyncThunk(
     try {
       const formData = new FormData();
 
-      // ✅ ИСПРАВЛЕНО: добавляем файлы в FormData
       files.forEach((file) => {
         formData.append('files', file);
       });
 
-      // ✅ ИСПРАВЛЕНО: правильная структура данных
       const dataPayload = {
         text: message_text,
         publishing_method: publishing_method || 'original'
@@ -141,7 +139,6 @@ export const createComment = createAsyncThunk(
   }
 );
 
-// ✅ ИСПРАВЛЕНО: Новый endpoint для реакций
 export const reactToPost = createAsyncThunk(
   'post/reactToPost',
   async ({ post_id, reaction, section_id, theme_id }, { rejectWithValue }) => {
@@ -152,10 +149,10 @@ export const reactToPost = createAsyncThunk(
         section_id,
         theme_id
       });
-
+      
       const res = await axios.post(
         `/api/v1/messages/${post_id}/${reaction}`,
-        { reaction }, // тело запроса
+        { reaction },
         {
           params: {
             section_id,
@@ -163,12 +160,12 @@ export const reactToPost = createAsyncThunk(
           }
         }
       );
-
+      
       console.log('📥 Получен ответ:', res.data);
-
-      return {
-        post_id,
-        ...res.data // ✅ Используем весь ответ от API
+      
+      return { 
+        post_id, 
+        ...res.data
       };
     } catch (err) {
       console.error('🔥 Ошибка реакции:', err?.response?.data || err.message);
@@ -181,18 +178,14 @@ export const fetchDownloadUrl = createAsyncThunk(
   'post/fetchDownloadUrl',
   async ({ filePath, mimeType = 'application/octet-stream' }, { rejectWithValue }) => {
     try {
-      // API возвращает сам файл, а не URL
-      // Поэтому нам нужно создать URL для отображения
       const encodedUrl = encodeURIComponent(filePath);
-
-      // Формируем прямой URL к файлу через API
       const downloadUrl = `${axios.defaults.baseURL}/api/v1/files/download/${encodedUrl}?url=${encodeURIComponent(filePath)}&mime_type=${encodeURIComponent(mimeType)}`;
-
+      
       console.log(`✅ Сформирован URL для файла:`, {
         original: filePath,
         downloadUrl: downloadUrl
       });
-
+      
       return { filePath, url: downloadUrl };
     } catch (err) {
       console.error('🔥 Ошибка формирования URL файла:', {
@@ -251,17 +244,14 @@ const postSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ✅ Исправлено - добавлены состояния загрузки
       .addCase(fetchPostsInSection.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchPostsInSection.fulfilled, (state, action) => {
         state.loading = false;
-        // ✅ ИСПРАВЛЕНО: правильно извлекаем данные реакций из API
         state.posts = (action.payload || []).map(post => ({
           ...post,
-          // Извлекаем данные из reactions объекта
           likes: post.reactions?.count_likes || 0,
           dislikes: post.reactions?.count_dislikes || 0,
           user_reaction: post.reactions?.user_reaction || null
@@ -279,7 +269,6 @@ const postSlice = createSlice({
       })
       .addCase(fetchPostById.fulfilled, (state, action) => {
         state.loading = false;
-        // ✅ ИСПРАВЛЕНО: также обрабатываем отдельный пост
         const post = action.payload;
         state.selectedPost = {
           ...post,
@@ -310,7 +299,7 @@ const postSlice = createSlice({
         state.comments[post_id].push(comment);
       })
 
-      // ✅ ИСПРАВЛЕНО: Обновление лайков/дислайков после реакции
+      // ✅ ИСПРАВЛЕНО: Корректное обновление реакций
       .addCase(reactToPost.fulfilled, (state, action) => {
         const { post_id, count_likes, count_dislikes, new_reaction } = action.payload;
         console.log('📊 Обновляем реакции для поста:', {
@@ -319,24 +308,41 @@ const postSlice = createSlice({
           count_dislikes,
           new_reaction
         });
-
-        state.posts = state.posts.map(post =>
-          post.id === post_id
-            ? {
+        
+        // Обновляем конкретный пост, не затрагивая другие
+        state.posts = state.posts.map(post => {
+          if (post.id === post_id) {
+            return {
               ...post,
               likes: count_likes,
               dislikes: count_dislikes,
-              user_reaction: new_reaction
-            }
-            : post
-        );
+              user_reaction: new_reaction,
+              // Также обновляем вложенный объект reactions для консистентности
+              reactions: {
+                ...post.reactions,
+                count_likes: count_likes,
+                count_dislikes: count_dislikes,
+                user_reaction: new_reaction
+              }
+            };
+          }
+          // Важно: возвращаем пост без изменений, если это не тот пост
+          return post;
+        });
 
-        if (state.selectedPost?.id === post_id) {
+        // Также обновляем selectedPost если он совпадает
+        if (state.selectedPost && state.selectedPost.id === post_id) {
           state.selectedPost = {
             ...state.selectedPost,
             likes: count_likes,
             dislikes: count_dislikes,
-            user_reaction: new_reaction
+            user_reaction: new_reaction,
+            reactions: {
+              ...state.selectedPost.reactions,
+              count_likes: count_likes,
+              count_dislikes: count_dislikes,
+              user_reaction: new_reaction
+            }
           };
         }
       })

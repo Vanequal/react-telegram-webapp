@@ -197,7 +197,7 @@ const MindVaultPage = () => {
         ) : (
           ideas.map(idea => (
             <IdeaCard
-            key={`${idea.id}-${idea.likes}-${idea.dislikes}-${idea.userReaction}`}
+              key={`${idea.id}-${idea.likes}-${idea.dislikes}-${idea.userReaction}`}
               idea={idea}
               commentCount={idea.comments}
               onExpand={handleExpand}
