@@ -78,8 +78,8 @@ const MindVaultPage = () => {
       username: post.author?.first_name || 'Пользователь',
       preview: post.text,
       // ✅ ИСПРАВЛЕНО: теперь данные уже правильно обработаны в Redux
-      likes: post.likes || 0,
-      dislikes: post.dislikes || 0,
+      likes: post.likes,
+      dislikes: post.dislikes,
       comments: actualComments ?? post.comments_count ?? 0,
       views: post.views ?? 0,
       pinned: post.pinned ?? false,
@@ -148,12 +148,12 @@ const MindVaultPage = () => {
         theme_id: themeId,
         text: ideaText.trim()
       })).unwrap();
-  
-      navigate('/editideapagegpt', { 
-        state: { 
+
+      navigate('/editideapagegpt', {
+        state: {
           attachedFiles: attachedFiles,
-          preview: previewResult 
-        } 
+          preview: previewResult
+        }
       });
     } catch (error) {
       console.error('Ошибка предпросмотра:', error);
@@ -302,12 +302,9 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
   const [showReadMore, setShowReadMore] = useState(false);
   const textWrapperRef = useRef(null);
   const cardRef = useRef(null);
-  
-  // ✅ ИСПРАВЛЕНО: Получаем актуальные данные поста из Redux
   const posts = useSelector(state => state.post.posts);
-  const currentPost = posts.find(p => p.id === idea.id);
-  
-  // ✅ ИСПРАВЛЕНО: Используем актуальные значения из Redux
+  const currentPost = posts.find(p => p.id === idea.id) || {};
+
   const currentLikes = currentPost?.likes ?? idea.likes ?? 0;
   const currentDislikes = currentPost?.dislikes ?? idea.dislikes ?? 0;
   const currentUserReaction = currentPost?.user_reaction ?? idea.userReaction ?? null;
@@ -349,8 +346,8 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
 
   // ✅ ИСПРАВЛЕНО: Обработчик реакций с корректными параметрами
   const handleReaction = (reaction) => {
-    dispatch(reactToPost({ 
-      post_id: idea.id, 
+    dispatch(reactToPost({
+      post_id: idea.id,
       reaction,
       section_id: sectionKey,
       theme_id: themeId
@@ -370,7 +367,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       <div ref={textWrapperRef} className={`idea-card__text-wrapper ${expanded ? 'expanded' : ''}`}>
         <div className="idea-card__text-row">
           <div className="idea-card__text">{idea.preview}</div>
-          
+
           <span className="idea-card__timestamp">
             {new Date(idea.timestamp).toLocaleString('ru-RU', {
               day: '2-digit',
@@ -397,11 +394,11 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
 
               const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://b538-109-75-62-2.ngrok-free.app';
               const fileAbsolutePath = file.url;
-              
+
               if (!fileAbsolutePath) {
                 return null;
               }
-              
+
               const encodedFilePath = encodeURIComponent(fileAbsolutePath);
               const downloadUrl = `${BACKEND_BASE_URL}/api/v1/files/download/{file_url}?url=${encodedFilePath}`;
 
@@ -411,12 +408,12 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
 
               if (isImage) {
                 return (
-                  <a 
-                    key={i} 
-                    href={downloadUrl} 
-                    target="_blank" 
+                  <a
+                    key={i}
+                    href={downloadUrl}
+                    target="_blank"
                     rel="noopener noreferrer"
-                    style={{ 
+                    style={{
                       display: 'inline-block',
                       maxWidth: '200px',
                       borderRadius: '8px',
@@ -427,8 +424,8 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                     <img
                       src={downloadUrl}
                       alt={file.original_name || `image-${i}`}
-                      style={{ 
-                        width: '100%', 
+                      style={{
+                        width: '100%',
                         height: 'auto',
                         display: 'block'
                       }}
@@ -437,7 +434,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
                 );
               } else if (isVideo) {
                 return (
-                  <a 
+                  <a
                     key={i}
                     href={downloadUrl}
                     target="_blank"
@@ -488,19 +485,19 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
         </div>
       )}
 
-      <div className="idea-card__badges" style={{ 
-        display: 'flex', 
-        gap: '16px', 
+      <div className="idea-card__badges" style={{
+        display: 'flex',
+        gap: '16px',
         marginTop: '12px',
-        marginBottom: '12px' 
+        marginBottom: '12px'
       }}>
         <div
           className="idea-card__badge"
           onClick={() => handleReaction('like')}
-          style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
+          style={{
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
             gap: '6px',
             padding: '4px 8px',
             borderRadius: '4px',
@@ -511,8 +508,8 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentUserReaction === 'like' ? '#bbdefb' : '#e0e0e0'}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = currentUserReaction === 'like' ? '#e3f2fd' : '#f5f5f5'}>
           <img src={likeIcon} alt="Like" style={{ width: '20px', height: '20px' }} />
-          <span style={{ 
-            fontSize: '14px', 
+          <span style={{
+            fontSize: '14px',
             fontWeight: '500',
             color: currentUserReaction === 'like' ? '#2196f3' : 'inherit'
           }}>{currentLikes}</span>
@@ -521,10 +518,10 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
         <div
           className="idea-card__badge"
           onClick={() => handleReaction('dislike')}
-          style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
+          style={{
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
             gap: '6px',
             padding: '4px 8px',
             borderRadius: '4px',
@@ -535,8 +532,8 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentUserReaction === 'dislike' ? '#ffcdd2' : '#e0e0e0'}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = currentUserReaction === 'dislike' ? '#ffebee' : '#f5f5f5'}>
           <img src={dislikeIcon} alt="Dislike" style={{ width: '20px', height: '20px' }} />
-          <span style={{ 
-            fontSize: '14px', 
+          <span style={{
+            fontSize: '14px',
             fontWeight: '500',
             color: currentUserReaction === 'dislike' ? '#f44336' : 'inherit'
           }}>{currentDislikes}</span>

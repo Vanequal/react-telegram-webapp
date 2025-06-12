@@ -152,7 +152,7 @@ export const reactToPost = createAsyncThunk(
         section_id,
         theme_id
       });
-      
+
       const res = await axios.post(
         `/api/v1/messages/${post_id}/${reaction}`,
         { reaction }, // тело запроса
@@ -163,11 +163,11 @@ export const reactToPost = createAsyncThunk(
           }
         }
       );
-      
+
       console.log('📥 Получен ответ:', res.data);
-      
-      return { 
-        post_id, 
+
+      return {
+        post_id,
         ...res.data // ✅ Используем весь ответ от API
       };
     } catch (err) {
@@ -184,15 +184,15 @@ export const fetchDownloadUrl = createAsyncThunk(
       // API возвращает сам файл, а не URL
       // Поэтому нам нужно создать URL для отображения
       const encodedUrl = encodeURIComponent(filePath);
-      
+
       // Формируем прямой URL к файлу через API
       const downloadUrl = `${axios.defaults.baseURL}/api/v1/files/download/${encodedUrl}?url=${encodeURIComponent(filePath)}&mime_type=${encodeURIComponent(mimeType)}`;
-      
+
       console.log(`✅ Сформирован URL для файла:`, {
         original: filePath,
         downloadUrl: downloadUrl
       });
-      
+
       return { filePath, url: downloadUrl };
     } catch (err) {
       console.error('🔥 Ошибка формирования URL файла:', {
@@ -319,22 +319,25 @@ const postSlice = createSlice({
           count_dislikes,
           new_reaction
         });
-        
-        const post = state.posts.find(p => p.id === post_id);
-        if (post) {
-          post.likes = count_likes;
-          post.dislikes = count_dislikes;
-          post.user_reaction = new_reaction;
-          console.log('✅ Пост обновлен:', post);
-        } else {
-          console.error('❌ Пост не найден в state:', post_id);
-        }
 
-        // ✅ Также обновляем selectedPost если он совпадает
-        if (state.selectedPost && state.selectedPost.id === post_id) {
-          state.selectedPost.likes = count_likes;
-          state.selectedPost.dislikes = count_dislikes;
-          state.selectedPost.user_reaction = new_reaction;
+        state.posts = state.posts.map(post =>
+          post.id === post_id
+            ? {
+              ...post,
+              likes: count_likes,
+              dislikes: count_dislikes,
+              user_reaction: new_reaction
+            }
+            : post
+        );
+
+        if (state.selectedPost?.id === post_id) {
+          state.selectedPost = {
+            ...state.selectedPost,
+            likes: count_likes,
+            dislikes: count_dislikes,
+            user_reaction: new_reaction
+          };
         }
       })
       .addCase(reactToPost.rejected, (state, action) => {
