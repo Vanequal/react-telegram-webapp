@@ -143,10 +143,8 @@ function DiscussionPage() {
       await dispatch(createComment({
         post_id: +id,
         message_text: commentText.trim(),
-        parent_id: null,
         section_key: 'chat_ideas',
-        theme_id: 1,
-        type: 'post'
+        theme_id: 1
       })).unwrap();
 
       setCommentText('');
@@ -156,7 +154,7 @@ function DiscussionPage() {
         post_id: +id,
         section_key: 'chat_ideas',
         theme_id: 1,
-        type: 'post'
+        type: 'message'
       }));
 
       // Прокручиваем к новому комментарию
@@ -180,7 +178,7 @@ function DiscussionPage() {
         post_id: idea.id,
         section_key: 'chat_ideas',
         theme_id: 1,
-        type: 'post'
+        type: 'message' // Изменено с 'post' на 'message'
       }));
     }
   }, [idea?.id, dispatch]);

@@ -106,7 +106,7 @@ export const fetchPostComments = createAsyncThunk(
 
       const res = await axios.get(`/api/v1/comments`, {
         params: {
-          type,
+          type: type,
           message_id: post_id,
           section_id: section_key,
           theme_id
@@ -124,27 +124,33 @@ export const fetchPostComments = createAsyncThunk(
 
 export const createComment = createAsyncThunk(
   'post/createComment',
-  async ({ post_id, message_text, parent_id = null, section_key, theme_id, type = 'post' }, { rejectWithValue }) => {
+  async ({ post_id, message_text, parent_id = null, section_key, theme_id }, { rejectWithValue }) => {
     try {
-      console.log('📤 Создание комментария:', {
+      console.log('📤 Создание комментария через /api/v1/messages:', {
         text: message_text,
-        reply_to_id: parent_id,
-        message_id: post_id,
+        parent_id: post_id,
         section_id: section_key,
-        theme_id,
-        type
+        theme_id
       });
 
-      const res = await axios.post(`/api/v1/comments`, {
+      // Создаем FormData как для обычного сообщения
+      const formData = new FormData();
+      
+      // Данные для комментария
+      const dataPayload = {
         text: message_text,
-        reply_to_id: parent_id,
-        files: []
-      }, {
+        publishing_method: 'original',
+        parent_id: post_id // Указываем ID родительского поста
+      };
+
+      const res = await axios.post('/api/v1/messages', formData, {
         params: {
-          message_id: post_id,
           section_id: section_key,
-          theme_id,
-          type
+          theme_id: theme_id,
+          data: JSON.stringify(dataPayload)
+        },
+        headers: {
+          'Content-Type': 'multipart/form-data'
         }
       });
 
@@ -152,7 +158,11 @@ export const createComment = createAsyncThunk(
       return { ...res.data, post_id }; // Добавляем post_id для обновления состояния
     } catch (err) {
       console.error('🔥 Ошибка добавления комментария:', err?.response?.data || err.message);
-      return rejectWithValue(err.response?.data?.detail || 'Ошибка добавления комментария');
+      return rejectWithValue(
+        err.response?.data?.detail || 
+        err.response?.data?.error || 
+        'Ошибка добавления комментария'
+      );
     }
   }
 );
@@ -346,6 +356,8 @@ const postSlice = createSlice({
         state.commentsLoading = false;
         const comment = action.payload;
         const post_id = comment.post_id;
+        
+        console.log('✅ Комментарий добавлен в store:', comment);
         
         // Инициализируем массив комментариев если его нет
         if (!state.comments[post_id]) {
