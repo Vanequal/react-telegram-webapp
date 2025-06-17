@@ -124,23 +124,22 @@ export const fetchPostComments = createAsyncThunk(
 
 export const createComment = createAsyncThunk(
   'post/createComment',
-  async ({ post_id, message_text, parent_id = null, section_key, theme_id }, { rejectWithValue }) => {
+  async ({ post_id, message_text, section_key, theme_id }, { rejectWithValue }) => {
     try {
-      console.log('📤 Создание комментария через /api/v1/messages:', {
+      console.log('📤 Создание комментария как обычного сообщения:', {
         text: message_text,
-        parent_id: post_id,
+        post_id: post_id,
         section_id: section_key,
         theme_id
       });
 
-      // Создаем FormData как для обычного сообщения
+      // Создаем FormData
       const formData = new FormData();
       
-      // Данные для комментария
+      // Создаем комментарий как обычное сообщение без parent_id
       const dataPayload = {
         text: message_text,
-        publishing_method: 'original',
-        parent_id: post_id // Указываем ID родительского поста
+        publishing_method: 'original'
       };
 
       const res = await axios.post('/api/v1/messages', formData, {
@@ -154,13 +153,30 @@ export const createComment = createAsyncThunk(
         }
       });
 
-      console.log('✅ Комментарий создан:', res.data);
-      return { ...res.data, post_id }; // Добавляем post_id для обновления состояния
+      console.log('✅ Сообщение создано (будет комментарием):', res.data);
+      
+      // Возвращаем созданное сообщение с добавлением post_id для связи
+      return { 
+        ...res.data, 
+        post_id: post_id,
+        // Если API не возвращает нужную структуру для комментария, формируем её
+        text: res.data.text,
+        author: res.data.author,
+        created_at: res.data.created_at,
+        id: res.data.id
+      };
     } catch (err) {
-      console.error('🔥 Ошибка добавления комментария:', err?.response?.data || err.message);
+      console.error('🔥 Ошибка создания сообщения-комментария:', err?.response?.data || err.message);
+      
+      // Подробная информация об ошибке
+      if (err.response?.data?.detail) {
+        console.error('📋 Детали ошибки:', err.response.data.detail);
+      }
+      
       return rejectWithValue(
         err.response?.data?.detail || 
         err.response?.data?.error || 
+        err.response?.data?.message ||
         'Ошибка добавления комментария'
       );
     }
