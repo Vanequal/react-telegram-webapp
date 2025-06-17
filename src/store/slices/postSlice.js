@@ -97,6 +97,13 @@ export const fetchPostComments = createAsyncThunk(
   'post/fetchComments',
   async ({ post_id, section_key, theme_id, type = 'post' }, { rejectWithValue }) => {
     try {
+      console.log('📥 Загрузка комментариев:', {
+        message_id: post_id,
+        section_id: section_key,
+        theme_id,
+        type
+      });
+
       const res = await axios.get(`/api/v1/comments`, {
         params: {
           type,
@@ -106,6 +113,7 @@ export const fetchPostComments = createAsyncThunk(
         }
       });
 
+      console.log('✅ Комментарии загружены:', res.data);
       return { postId: post_id, comments: res.data };
     } catch (err) {
       console.error('🔥 Ошибка загрузки комментариев:', err?.response?.data || err.message);
@@ -118,6 +126,15 @@ export const createComment = createAsyncThunk(
   'post/createComment',
   async ({ post_id, message_text, parent_id = null, section_key, theme_id, type = 'post' }, { rejectWithValue }) => {
     try {
+      console.log('📤 Создание комментария:', {
+        text: message_text,
+        reply_to_id: parent_id,
+        message_id: post_id,
+        section_id: section_key,
+        theme_id,
+        type
+      });
+
       const res = await axios.post(`/api/v1/comments`, {
         text: message_text,
         reply_to_id: parent_id,
@@ -131,7 +148,8 @@ export const createComment = createAsyncThunk(
         }
       });
 
-      return res.data;
+      console.log('✅ Комментарий создан:', res.data);
+      return { ...res.data, post_id }; // Добавляем post_id для обновления состояния
     } catch (err) {
       console.error('🔥 Ошибка добавления комментария:', err?.response?.data || err.message);
       return rejectWithValue(err.response?.data?.detail || 'Ошибка добавления комментария');
@@ -207,14 +225,26 @@ const postSlice = createSlice({
     comments: {},
     posts: [],
     fileLinks: {},
-    selectedPost: null
+    selectedPost: null,
+    commentsLoading: false,
+    commentError: null
   },
   reducers: {
     clearError: (state) => {
       state.error = null;
+      state.commentError = null;
     },
     clearPosts: (state) => {
       state.posts = [];
+    },
+    clearComments: (state, action) => {
+      if (action.payload) {
+        // Очистить комментарии для конкретного поста
+        delete state.comments[action.payload];
+      } else {
+        // Очистить все комментарии
+        state.comments = {};
+      }
     },
   },
   extraReducers: (builder) => {
@@ -282,21 +312,63 @@ const postSlice = createSlice({
         state.error = action.payload;
       })
 
+      // Обработка комментариев
+      .addCase(fetchPostComments.pending, (state) => {
+        state.commentsLoading = true;
+        state.commentError = null;
+      })
       .addCase(fetchPostComments.fulfilled, (state, action) => {
         const { postId, comments } = action.payload;
-        state.comments[postId] = comments;
+        state.commentsLoading = false;
+        state.comments[postId] = comments || [];
+        
+        // Также обновляем счетчик комментариев в посте
+        state.posts = state.posts.map(post => {
+          if (post.id === postId) {
+            return {
+              ...post,
+              comments_count: comments ? comments.length : 0
+            };
+          }
+          return post;
+        });
       })
       .addCase(fetchPostComments.rejected, (state, action) => {
-        state.error = action.payload;
+        state.commentsLoading = false;
+        state.commentError = action.payload;
       })
 
+      .addCase(createComment.pending, (state) => {
+        state.commentsLoading = true;
+        state.commentError = null;
+      })
       .addCase(createComment.fulfilled, (state, action) => {
+        state.commentsLoading = false;
         const comment = action.payload;
         const post_id = comment.post_id;
+        
+        // Инициализируем массив комментариев если его нет
         if (!state.comments[post_id]) {
           state.comments[post_id] = [];
         }
+        
+        // Добавляем новый комментарий
         state.comments[post_id].push(comment);
+        
+        // Обновляем счетчик комментариев в постах
+        state.posts = state.posts.map(post => {
+          if (post.id === post_id) {
+            return {
+              ...post,
+              comments_count: (post.comments_count || 0) + 1
+            };
+          }
+          return post;
+        });
+      })
+      .addCase(createComment.rejected, (state, action) => {
+        state.commentsLoading = false;
+        state.commentError = action.payload;
       })
 
       // ✅ ИСПРАВЛЕНО: Корректное обновление реакций
@@ -364,6 +436,6 @@ const postSlice = createSlice({
   }
 });
 
-export const { clearError, clearPosts } = postSlice.actions;
+export const { clearError, clearPosts, clearComments } = postSlice.actions;
 
 export default postSlice.reducer;
