@@ -126,7 +126,7 @@ export const createComment = createAsyncThunk(
   'post/createComment',
   async ({ post_id, message_text, section_key, theme_id }, { rejectWithValue }) => {
     try {
-      console.log('📤 Создание комментария как обычного сообщения:', {
+      console.log('📤 Создание комментария с type: "comment":', {
         text: message_text,
         post_id: post_id,
         section_id: section_key,
@@ -136,10 +136,11 @@ export const createComment = createAsyncThunk(
       // Создаем FormData
       const formData = new FormData();
       
-      // Создаем комментарий как обычное сообщение без parent_id
+      // Создаем комментарий с указанием type
       const dataPayload = {
         text: message_text,
-        publishing_method: 'original'
+        publishing_method: 'original',
+        type: 'comment' // Указываем что это комментарий
       };
 
       const res = await axios.post('/api/v1/messages', formData, {
@@ -153,20 +154,19 @@ export const createComment = createAsyncThunk(
         }
       });
 
-      console.log('✅ Сообщение создано (будет комментарием):', res.data);
+      console.log('✅ Комментарий создан с type:', res.data);
       
-      // Возвращаем созданное сообщение с добавлением post_id для связи
       return { 
         ...res.data, 
         post_id: post_id,
-        // Если API не возвращает нужную структуру для комментария, формируем её
+        // Обеспечиваем правильную структуру для комментария
         text: res.data.text,
         author: res.data.author,
         created_at: res.data.created_at,
         id: res.data.id
       };
     } catch (err) {
-      console.error('🔥 Ошибка создания сообщения-комментария:', err?.response?.data || err.message);
+      console.error('🔥 Ошибка создания комментария:', err?.response?.data || err.message);
       
       // Подробная информация об ошибке
       if (err.response?.data?.detail) {
