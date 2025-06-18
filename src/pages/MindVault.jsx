@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { createPostPreview, fetchPostComments, fetchPostsInSection } from '../store/slices/postSlice';
@@ -35,10 +35,18 @@ const MindVaultPage = () => {
   const fileInputMediaRef = useRef(null);
   const fileInputFilesRef = useRef(null);
 
-  const { posts, loading, error } = useSelector(state => state.post);
+  const { posts, loading, error, postsLoaded } = useSelector(state => state.post);
+  const postComments = useSelector(state => state.post.comments);
+  const commentsLoadingFlags = useSelector(state => state.post.commentsLoadingFlags);
 
   const themeId = Number(searchParams.get('id')) || 1;
   const sectionKey = 'chat_ideas';
+
+  const fetchParams = useMemo(() => ({
+    section_key: sectionKey,
+    theme_id: themeId,
+    content_type: 'posts'
+  }), [sectionKey, themeId]);
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
@@ -52,40 +60,67 @@ const MindVaultPage = () => {
       }
     }
 
-    dispatch(fetchPostsInSection({
-      section_key: sectionKey,
-      theme_id: themeId,
-      content_type: 'posts'
-    }));
-  }, [dispatch, sectionKey, themeId]);
+    // 🔥 ИСПРАВЛЕНО: Загружаем посты только если они еще не загружены
+    if (!postsLoaded && !loading) {
+      dispatch(fetchPostsInSection(fetchParams));
+    }
+  }, [dispatch, fetchParams, postsLoaded, loading]);
 
   useEffect(() => {
     if (posts && posts.length > 0) {
       console.log('📊 Загруженные посты:', posts);
       console.log('📊 Пример структуры первого поста:', posts[0]);
     }
-  }, [posts]);
+  }, [posts?.length]);
 
-  const postComments = useSelector(state => state.post.comments);
+  const ideas = useMemo(() => {
+    return (Array.isArray(posts) ? posts : []).map(post => {
+      const actualComments = postComments[post.id]?.length;
+      return {
+        id: post.id,
+        username: post.author?.first_name || 'Пользователь',
+        preview: post.text,
+        likes: post.likes || 0,
+        dislikes: post.dislikes || 0,
+        comments: actualComments ?? post.comments_count ?? 0,
+        views: post.views ?? 0,
+        pinned: post.pinned ?? false,
+        timestamp: post.created_at ?? '',
+        files: post.files || [],
+        userReaction: post.user_reaction || null
+      };
+    });
+  }, [posts, postComments]);
 
-  const ideas = (Array.isArray(posts) ? posts : []).map(post => {
-    const actualComments = postComments[post.id]?.length;
-    return {
-      id: post.id,
-      username: post.author?.first_name || 'Пользователь',
-      preview: post.text,
-      likes: post.likes || 0,
-      dislikes: post.dislikes || 0,
-      comments: actualComments ?? post.comments_count ?? 0,
-      views: post.views ?? 0,
-      pinned: post.pinned ?? false,
-      timestamp: post.created_at ?? '',
-      files: post.files || [],
-      userReaction: post.user_reaction || null
-    };
-  });
+  useEffect(() => {
+    if (!posts || posts.length === 0) return;
 
-  const handleExpand = (id) => {
+    console.log('🔍 Проверяем необходимость загрузки комментариев для постов:', posts.length);
+
+    posts.forEach(post => {
+      const isLoading = commentsLoadingFlags[post.id];
+      const hasComments = postComments[post.id];
+      
+      // Загружаем комментарии только если они еще не загружены и не загружаются
+      if (!isLoading && !hasComments) {
+        console.log(`📥 Загружаем комментарии для поста ${post.id}`);
+        
+        dispatch(fetchPostComments({
+          post_id: post.id,
+          section_key: sectionKey,
+          theme_id: themeId,
+          type: 'post',
+        }));
+      } else {
+        console.log(`⏭️ Пропускаем загрузку комментариев для поста ${post.id}:`, {
+          isLoading,
+          hasComments: !!hasComments
+        });
+      }
+    });
+  }, [posts?.length, dispatch, sectionKey, themeId]); 
+
+  const handleExpand = useCallback((id) => {
     const viewed = getViewedIdeas();
     if (!viewed[id]) {
       markIdeaAsViewed(id);
@@ -98,43 +133,43 @@ const MindVaultPage = () => {
       message_text: post?.text || selected.preview
     };
     navigate(`/discussion/${id}`, { state: { idea: ideaWithText } });
-  };
+  }, [ideas, posts, navigate]);
 
-  const handleArrowClick = (id) => setExpandedIdeaId(id);
-  const handleCollapse = () => setExpandedIdeaId(null);
+  const handleArrowClick = useCallback((id) => setExpandedIdeaId(id), []);
+  const handleCollapse = useCallback(() => setExpandedIdeaId(null), []);
 
-  const handleAttachClick = () => {
+  const handleAttachClick = useCallback(() => {
     if (attachBtnRef.current) {
       const rect = attachBtnRef.current.getBoundingClientRect();
       setPopoverPos({ top: rect.bottom + window.scrollY + 6, left: rect.left + window.scrollX });
       setShowPopover(true);
     }
-  };
+  }, []);
 
-  const handleMediaClick = () => {
+  const handleMediaClick = useCallback(() => {
     const tg = window.Telegram?.WebApp;
     const used = tg?.showAttachMenu?.({ media: true });
     if (!used) {
       fileInputMediaRef.current?.click();
     }
     setShowPopover(false);
-  };
+  }, []);
 
-  const handleFileClick = () => {
+  const handleFileClick = useCallback(() => {
     const tg = window.Telegram?.WebApp;
     const used = tg?.showAttachMenu?.({ files: true });
     if (!used) {
       fileInputFilesRef.current?.click();
     }
     setShowPopover(false);
-  };
+  }, []);
 
-  const handleFileChange = (e) => {
+  const handleFileChange = useCallback((e) => {
     const files = Array.from(e.target.files);
     setAttachedFiles(files);
-  };
+  }, []);
 
-  const handleSendClick = async () => {
+  const handleSendClick = useCallback(async () => {
     if (!ideaText.trim()) return;
 
     try {
@@ -153,20 +188,7 @@ const MindVaultPage = () => {
     } catch (error) {
       console.error('Ошибка предпросмотра:', error);
     }
-  };
-
-  useEffect(() => {
-    if (!posts || posts.length === 0) return;
-
-    posts.forEach(post => {
-      dispatch(fetchPostComments({
-        post_id: post.id,
-        section_key: sectionKey,
-        theme_id: themeId,
-        type: 'post',
-      }));
-    });
-  }, [posts, dispatch, sectionKey, themeId]);
+  }, [ideaText, dispatch, sectionKey, themeId, navigate, attachedFiles]);
 
   return (
     <>
@@ -291,12 +313,12 @@ const MindVaultPage = () => {
 };
 
 // Компонент для отображения изображения в полном размере
-const ImageModal = ({ src, alt, onClose }) => {
-  const handleBackdropClick = (e) => {
+const ImageModal = React.memo(({ src, alt, onClose }) => {
+  const handleBackdropClick = useCallback((e) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
-  };
+  }, [onClose]);
 
   return (
     <div 
@@ -351,9 +373,18 @@ const ImageModal = ({ src, alt, onClose }) => {
       </div>
     </div>
   );
-};
+});
 
-function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse, commentCount = 0, sectionKey, themeId }) {
+const IdeaCard = React.memo(function IdeaCard({ 
+  idea, 
+  onExpand, 
+  onArrowClick, 
+  isExpanded = false, 
+  onCollapse, 
+  commentCount = 0, 
+  sectionKey, 
+  themeId 
+}) {
   const dispatch = useDispatch();
   const comments = useSelector(state => state.post.comments[idea.id] || []);
   const [expanded, setExpanded] = useState(isExpanded);
@@ -363,7 +394,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
   const cardRef = useRef(null);
 
   const posts = useSelector(state => state.post.posts);
-  const currentPost = posts.find(p => p.id === idea.id);
+  const currentPost = useMemo(() => posts.find(p => p.id === idea.id), [posts, idea.id]);
 
   const currentLikes = currentPost?.likes ?? idea.likes ?? 0;
   const currentDislikes = currentPost?.dislikes ?? idea.dislikes ?? 0;
@@ -385,7 +416,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       if (entry.isIntersecting) {
         timer = setTimeout(() => {
           markIdeaAsViewed(idea.id);
-          idea.views += 1;
         }, 30000);
       } else {
         clearTimeout(timer);
@@ -402,19 +432,18 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       clearTimeout(timer);
       if (cardRef.current) observer.unobserve(cardRef.current);
     };
-  }, [idea]);
+  }, [idea.id]); 
 
-  const handleReaction = (reaction) => {
+  const handleReaction = useCallback((reaction) => {
     dispatch(reactToPost({ 
       post_id: idea.id, 
       reaction,
       section_id: sectionKey,
       theme_id: themeId
     }));
-  };
+  }, [dispatch, idea.id, sectionKey, themeId]);
 
-  // Функция для обработки файлов
-  const renderFiles = () => {
+  const renderFiles = useMemo(() => {
     if (!idea.files || idea.files.length === 0) return null;
 
     const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://voice-simon-shoe-disappointed.trycloudflare.com';
@@ -444,7 +473,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
 
     return (
       <div className="idea-card__files" style={{ marginTop: '12px', paddingBottom: '12px' }}>
-        {/* Отображение изображений в виде сетки квадратов */}
         {images.length > 0 && (
           <div style={{
             display: 'grid',
@@ -484,7 +512,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
           </div>
         )}
 
-        {/* Отображение других файлов */}
         {otherFiles.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {otherFiles.map((file) => (
@@ -517,7 +544,10 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
         )}
       </div>
     );
-  };
+  }, [idea.files]);
+
+  const handleExpandClick = useCallback(() => setExpanded(true), []);
+  const handleCardExpand = useCallback(() => onExpand(idea.id), [onExpand, idea.id]);
 
   return (
     <>
@@ -546,11 +576,12 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
         </div>
 
         {!expanded && showReadMore && (
-          <button className="idea-card__read-more" onClick={() => setExpanded(true)}>Читать далее</button>
+          <button className="idea-card__read-more" onClick={handleExpandClick}>
+            Читать далее
+          </button>
         )}
 
-        {/* Отображение файлов */}
-        {renderFiles()}
+        {renderFiles}
 
         <div className="idea-card__badges" style={{ 
           display: 'flex', 
@@ -611,7 +642,7 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
 
         <div
           className="idea-card__footer"
-          onClick={() => onExpand(idea.id)}
+          onClick={handleCardExpand}
           style={{ cursor: 'pointer' }}
         >
           <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
@@ -640,7 +671,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
         )}
       </div>
 
-      {/* Модальное окно для просмотра изображения */}
       {selectedImage && (
         <ImageModal
           src={selectedImage.downloadUrl}
@@ -650,6 +680,6 @@ function IdeaCard({ idea, onExpand, onArrowClick, isExpanded = false, onCollapse
       )}
     </>
   );
-}
+});
 
 export default MindVaultPage;

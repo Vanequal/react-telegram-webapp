@@ -95,8 +95,17 @@ export const fetchPostById = createAsyncThunk(
 
 export const fetchPostComments = createAsyncThunk(
   'post/fetchComments',
-  async ({ post_id, section_key, theme_id, type = 'post' }, { rejectWithValue }) => {
+  async ({ post_id, section_key, theme_id, type = 'post' }, { rejectWithValue, getState }) => {
     try {
+      // Проверяем, не загружаются ли уже комментарии для этого поста
+      const state = getState();
+      const isLoading = state.post.commentsLoadingFlags[post_id];
+      const hasComments = state.post.comments[post_id];
+      
+      if (isLoading || hasComments) {
+        return { postId: post_id, comments: hasComments || [] };
+      }
+
       console.log('📥 Загрузка комментариев:', {
         message_id: post_id,
         section_id: section_key,
@@ -253,7 +262,10 @@ const postSlice = createSlice({
     fileLinks: {},
     selectedPost: null,
     commentsLoading: false,
-    commentError: null
+    commentError: null,
+    // 🔥 НОВОЕ: Флаги для предотвращения дублирования запросов
+    commentsLoadingFlags: {}, // { postId: boolean }
+    postsLoaded: false, // Флаг для предотвращения повторной загрузки постов
   },
   reducers: {
     clearError: (state) => {
@@ -262,15 +274,24 @@ const postSlice = createSlice({
     },
     clearPosts: (state) => {
       state.posts = [];
+      state.postsLoaded = false;
+      state.commentsLoadingFlags = {};
     },
     clearComments: (state, action) => {
       if (action.payload) {
         // Очистить комментарии для конкретного поста
         delete state.comments[action.payload];
+        delete state.commentsLoadingFlags[action.payload];
       } else {
         // Очистить все комментарии
         state.comments = {};
+        state.commentsLoadingFlags = {};
       }
+    },
+    // 🔥 НОВОЕ: Экшен для установки флага загрузки комментариев
+    setCommentsLoadingFlag: (state, action) => {
+      const { postId, loading } = action.payload;
+      state.commentsLoadingFlags[postId] = loading;
     },
   },
   extraReducers: (builder) => {
@@ -281,6 +302,8 @@ const postSlice = createSlice({
       })
       .addCase(createPost.fulfilled, (state) => {
         state.loading = false;
+        // При создании нового поста сбрасываем флаг загрузки постов
+        state.postsLoaded = false;
       })
       .addCase(createPost.rejected, (state, action) => {
         state.loading = false;
@@ -306,17 +329,28 @@ const postSlice = createSlice({
       })
       .addCase(fetchPostsInSection.fulfilled, (state, action) => {
         state.loading = false;
-        state.posts = (action.payload || []).map(post => ({
+        state.postsLoaded = true; // 🔥 Отмечаем, что посты загружены
+        
+        // 🔥 ВАЖНО: Обновляем посты только если они действительно изменились
+        const newPosts = (action.payload || []).map(post => ({
           ...post,
           likes: post.reactions?.count_likes || 0,
           dislikes: post.reactions?.count_dislikes || 0,
           user_reaction: post.reactions?.user_reaction || null
         }));
+        
+        // Проверяем, изменились ли посты, чтобы избежать лишних перерендеров
+        const postsChanged = JSON.stringify(state.posts.map(p => p.id)) !== JSON.stringify(newPosts.map(p => p.id));
+        
+        if (postsChanged) {
+          state.posts = newPosts;
+        }
       })
       .addCase(fetchPostsInSection.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.posts = [];
+        state.postsLoaded = false;
       })
 
       .addCase(fetchPostById.pending, (state) => {
@@ -338,30 +372,39 @@ const postSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Обработка комментариев
-      .addCase(fetchPostComments.pending, (state) => {
+      // 🔥 ИСПРАВЛЕНО: Обработка комментариев с предотвращением дублирования
+      .addCase(fetchPostComments.pending, (state, action) => {
+        const postId = action.meta.arg.post_id;
         state.commentsLoading = true;
         state.commentError = null;
+        state.commentsLoadingFlags[postId] = true;
       })
       .addCase(fetchPostComments.fulfilled, (state, action) => {
         const { postId, comments } = action.payload;
         state.commentsLoading = false;
-        state.comments[postId] = comments || [];
+        state.commentsLoadingFlags[postId] = false;
         
-        // Также обновляем счетчик комментариев в посте
-        state.posts = state.posts.map(post => {
-          if (post.id === postId) {
-            return {
-              ...post,
+        // Сохраняем комментарии только если их еще нет или они изменились
+        if (!state.comments[postId] || state.comments[postId].length !== comments.length) {
+          state.comments[postId] = comments || [];
+          
+          // 🔥 ОПТИМИЗИРОВАНО: Обновляем только конкретный пост
+          const postIndex = state.posts.findIndex(post => post.id === postId);
+          if (postIndex !== -1) {
+            state.posts[postIndex] = {
+              ...state.posts[postIndex],
               comments_count: comments ? comments.length : 0
             };
           }
-          return post;
-        });
+        }
       })
       .addCase(fetchPostComments.rejected, (state, action) => {
+        const postId = action.meta.arg?.post_id;
         state.commentsLoading = false;
         state.commentError = action.payload;
+        if (postId) {
+          state.commentsLoadingFlags[postId] = false;
+        }
       })
 
       .addCase(createComment.pending, (state) => {
@@ -383,23 +426,21 @@ const postSlice = createSlice({
         // Добавляем новый комментарий
         state.comments[post_id].push(comment);
         
-        // Обновляем счетчик комментариев в постах
-        state.posts = state.posts.map(post => {
-          if (post.id === post_id) {
-            return {
-              ...post,
-              comments_count: (post.comments_count || 0) + 1
-            };
-          }
-          return post;
-        });
+        // 🔥 ОПТИМИЗИРОВАНО: Обновляем только конкретный пост
+        const postIndex = state.posts.findIndex(post => post.id === post_id);
+        if (postIndex !== -1) {
+          state.posts[postIndex] = {
+            ...state.posts[postIndex],
+            comments_count: (state.posts[postIndex].comments_count || 0) + 1
+          };
+        }
       })
       .addCase(createComment.rejected, (state, action) => {
         state.commentsLoading = false;
         state.commentError = action.payload;
       })
 
-      // ✅ ИСПРАВЛЕНО: Корректное обновление реакций
+      // 🔥 ИСПРАВЛЕНО: Корректное обновление реакций
       .addCase(reactToPost.fulfilled, (state, action) => {
         const { post_id, count_likes, count_dislikes, new_reaction } = action.payload;
         console.log('📊 Обновляем реакции для поста:', {
@@ -409,26 +450,22 @@ const postSlice = createSlice({
           new_reaction
         });
         
-        // Обновляем конкретный пост, не затрагивая другие
-        state.posts = state.posts.map(post => {
-          if (post.id === post_id) {
-            return {
-              ...post,
-              likes: count_likes,
-              dislikes: count_dislikes,
-              user_reaction: new_reaction,
-              // Также обновляем вложенный объект reactions для консистентности
-              reactions: {
-                ...post.reactions,
-                count_likes: count_likes,
-                count_dislikes: count_dislikes,
-                user_reaction: new_reaction
-              }
-            };
-          }
-          // Важно: возвращаем пост без изменений, если это не тот пост
-          return post;
-        });
+        // 🔥 ОПТИМИЗИРОВАНО: Обновляем только конкретный пост
+        const postIndex = state.posts.findIndex(post => post.id === post_id);
+        if (postIndex !== -1) {
+          state.posts[postIndex] = {
+            ...state.posts[postIndex],
+            likes: count_likes,
+            dislikes: count_dislikes,
+            user_reaction: new_reaction,
+            reactions: {
+              ...state.posts[postIndex].reactions,
+              count_likes: count_likes,
+              count_dislikes: count_dislikes,
+              user_reaction: new_reaction
+            }
+          };
+        }
 
         // Также обновляем selectedPost если он совпадает
         if (state.selectedPost && state.selectedPost.id === post_id) {
@@ -464,6 +501,6 @@ const postSlice = createSlice({
   }
 });
 
-export const { clearError, clearPosts, clearComments } = postSlice.actions;
+export const { clearError, clearPosts, clearComments, setCommentsLoadingFlag } = postSlice.actions;
 
 export default postSlice.reducer;
