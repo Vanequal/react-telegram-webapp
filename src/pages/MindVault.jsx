@@ -446,7 +446,7 @@ const IdeaCard = React.memo(function IdeaCard({
   const renderFiles = useMemo(() => {
     if (!idea.files || idea.files.length === 0) return null;
 
-    const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://voice-simon-shoe-disappointed.trycloudflare.com';
+    const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://bestsellers-revenge-tender-plots.trycloudflare.com';
     
     const images = [];
     const otherFiles = [];
