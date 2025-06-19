@@ -135,7 +135,6 @@ function DiscussionPage() {
   const idea = useMemo(() => ideaFromState || posts.find(p => String(p.id) === id), [ideaFromState, posts, id]);
   const comments = postComments;
 
-  // 🔥 ИСПРАВЛЕНО: Убрали дублирование запроса и исправили параметры
   const handleSendComment = async () => {
     if (!commentText.trim() || isSubmitting) return;
 
@@ -144,16 +143,13 @@ function DiscussionPage() {
       await dispatch(createComment({
         post_id: +id,
         message_text: commentText.trim(),
-        section_key: 'chat_ideas', // В Redux action используется section_key
+        section_key: 'chat_ideas',
         theme_id: 1,
-        files: [] // Добавили поддержку файлов если нужно
+        files: [] 
       })).unwrap();
 
       setCommentText('');
       
-      // 🔥 УБРАЛИ дублирующий запрос - комментарий уже добавится в store через createComment.fulfilled
-
-      // Прокручиваем к новому комментарию
       setTimeout(() => {
         const commentsContainer = document.querySelector('.comment-list');
         if (commentsContainer) {
@@ -168,14 +164,13 @@ function DiscussionPage() {
     }
   };
 
-  // 🔥 ИСПРАВЛЕНО: Правильный type для загрузки комментариев к посту
   useEffect(() => {
     if (idea?.id) {
       dispatch(fetchPostComments({
         post_id: idea.id,
         section_key: 'chat_ideas',
         theme_id: 1,
-        type: 'post' // 🔥 ИСПРАВЛЕНО: Используем 'post' вместо 'message'
+        type: 'post'
       }));
     }
   }, [idea?.id, dispatch]);
