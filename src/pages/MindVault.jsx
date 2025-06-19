@@ -171,22 +171,43 @@ const MindVaultPage = () => {
 
   const handleSendClick = useCallback(async () => {
     if (!ideaText.trim()) return;
-
-    try {
-      const previewResult = await dispatch(createPostPreview({
-        section_id: sectionKey,
-        theme_id: themeId,
-        text: ideaText.trim()
-      })).unwrap();
   
-      navigate('/editideapagegpt', { 
-        state: { 
-          attachedFiles: attachedFiles,
-          preview: previewResult 
-        } 
-      });
+    try {
+      if (attachedFiles.length > 0) {
+        const result = await dispatch(createPost({
+          message_text: ideaText.trim(),
+          section_id: sectionKey,
+          theme_id: themeId,
+          publishing_method: 'original',
+          files: attachedFiles
+        })).unwrap();
+        
+        console.log('✅ Пост с файлами создан:', result);
+        
+        setIdeaText('');
+        setAttachedFiles([]);
+        
+        dispatch(fetchPostsInSection({
+          section_key: sectionKey,
+          theme_id: themeId
+        }));
+        
+      } else {
+        const previewResult = await dispatch(createPostPreview({
+          section_id: sectionKey,
+          theme_id: themeId,
+          text: ideaText.trim()
+        })).unwrap();
+    
+        navigate('/editideapagegpt', { 
+          state: { 
+            attachedFiles: attachedFiles,
+            preview: previewResult 
+          } 
+        });
+      }
     } catch (error) {
-      console.error('Ошибка предпросмотра:', error);
+      console.error('Ошибка создания поста/предпросмотра:', error);
     }
   }, [ideaText, dispatch, sectionKey, themeId, navigate, attachedFiles]);
 

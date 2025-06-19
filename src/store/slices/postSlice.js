@@ -11,8 +11,10 @@ export const createPost = createAsyncThunk(
         formData.append('files', file);
       });
 
+      // 🔥 ИСПРАВЛЕНО: Добавляем type: "post" для создания поста
       const dataPayload = {
         text: message_text,
+        type: 'post', // Указываем что это пост
         publishing_method: publishing_method || 'original'
       };
 
@@ -133,7 +135,7 @@ export const fetchPostComments = createAsyncThunk(
 
 export const createComment = createAsyncThunk(
   'post/createComment',
-  async ({ post_id, message_text, section_key, theme_id }, { rejectWithValue }) => {
+  async ({ post_id, message_text, section_key, theme_id, files = [] }, { rejectWithValue }) => {
     try {
       console.log('📤 Создание комментария с type: "comment":', {
         text: message_text,
@@ -145,11 +147,17 @@ export const createComment = createAsyncThunk(
       // Создаем FormData
       const formData = new FormData();
       
-      // Создаем комментарий с указанием type
+      // 🔥 ИСПРАВЛЕНО: Добавляем файлы если они есть
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
+      
+      // 🔥 ИСПРАВЛЕНО: Создаем комментарий с указанием type и parent_id
       const dataPayload = {
         text: message_text,
-        publishing_method: 'original',
-        type: 'comment' // Указываем что это комментарий
+        type: 'comment', // Указываем что это комментарий
+        parent_id: post_id, // Указываем ID родительского поста
+        publishing_method: 'original'
       };
 
       const res = await axios.post('/api/v1/messages', formData, {
