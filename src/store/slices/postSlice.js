@@ -5,15 +5,6 @@ export const createPost = createAsyncThunk(
   'post/create',
   async ({ message_text, section_id, theme_id, publishing_method, files = [] }, { rejectWithValue }) => {
     try {
-      const formData = new FormData();
-
-      // Добавляем файлы в FormData (если есть)
-      if (files && files.length > 0) {
-        files.forEach((file) => {
-          formData.append('files', file);
-        });
-      }
-
       // Подготавливаем данные для query параметра
       const dataPayload = {
         text: message_text,
@@ -21,19 +12,44 @@ export const createPost = createAsyncThunk(
         publishing_method: publishing_method || 'original'
       };
 
-      // Отправляем запрос
-      const res = await axios.post('/api/v1/messages', formData, {
+      const requestConfig = {
         params: {
           section_id: section_id,
           theme_id: theme_id,
-          data: JSON.stringify(dataPayload) // data как JSON строка в query параметре
-        },
-        headers: {
-          'Content-Type': 'multipart/form-data'
+          data: JSON.stringify(dataPayload)
         }
+      };
+
+      let requestBody;
+
+      if (files && files.length > 0) {
+        // Если есть файлы - используем FormData
+        const formData = new FormData();
+        files.forEach((file) => {
+          formData.append('files', file);
+        });
+        requestBody = formData;
+        requestConfig.headers = {
+          'Content-Type': 'multipart/form-data'
+        };
+      } else {
+        // Если нет файлов - отправляем пустое тело или null
+        requestBody = null;
+        requestConfig.headers = {
+          'Content-Type': 'application/json'
+        };
+      }
+
+      console.log('Отправляем запрос:', {
+        hasFiles: files.length > 0,
+        filesCount: files.length,
+        params: requestConfig.params
       });
 
-      console.log('[DEBUG] Успешно создан пост с файлами:', files.length);
+      // Отправляем запрос
+      const res = await axios.post('/api/v1/messages', requestBody, requestConfig);
+
+      console.log('[DEBUG] Успешно создан пост:', res.data);
       return res.data;
     } catch (err) {
       console.error('🔥 Ошибка создания поста:', err?.response?.data || err.message);
