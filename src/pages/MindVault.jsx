@@ -174,6 +174,7 @@ const MindVaultPage = () => {
   
     try {
       if (attachedFiles.length > 0) {
+        // Если есть файлы - создаем пост напрямую
         const result = await dispatch(createPost({
           message_text: ideaText.trim(),
           section_id: sectionKey,
@@ -184,24 +185,27 @@ const MindVaultPage = () => {
         
         console.log('✅ Пост с файлами создан:', result);
         
+        // Очищаем форму
         setIdeaText('');
         setAttachedFiles([]);
         
+        // Перезагружаем посты
         dispatch(fetchPostsInSection({
           section_key: sectionKey,
           theme_id: themeId
         }));
         
       } else {
+        // Если нет файлов - создаем превью для AI обработки
         const previewResult = await dispatch(createPostPreview({
           section_id: sectionKey,
           theme_id: themeId,
           text: ideaText.trim()
         })).unwrap();
-    
+  
         navigate('/editideapagegpt', { 
           state: { 
-            attachedFiles: attachedFiles,
+            attachedFiles: [],
             preview: previewResult 
           } 
         });

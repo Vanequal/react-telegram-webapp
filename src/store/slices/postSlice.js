@@ -7,21 +7,26 @@ export const createPost = createAsyncThunk(
     try {
       const formData = new FormData();
 
-      files.forEach((file) => {
-        formData.append('files', file);
-      });
+      // Добавляем файлы в FormData (если есть)
+      if (files && files.length > 0) {
+        files.forEach((file) => {
+          formData.append('files', file);
+        });
+      }
 
+      // Подготавливаем данные для query параметра
       const dataPayload = {
         text: message_text,
         type: 'post', 
         publishing_method: publishing_method || 'original'
       };
 
+      // Отправляем запрос
       const res = await axios.post('/api/v1/messages', formData, {
         params: {
-          section_id,
-          theme_id,
-          data: JSON.stringify(dataPayload)
+          section_id: section_id,
+          theme_id: theme_id,
+          data: JSON.stringify(dataPayload) // data как JSON строка в query параметре
         },
         headers: {
           'Content-Type': 'multipart/form-data'
