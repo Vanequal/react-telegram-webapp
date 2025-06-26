@@ -100,11 +100,11 @@ const MindVaultPage = () => {
     posts.forEach(post => {
       const isLoading = commentsLoadingFlags[post.id];
       const hasComments = postComments[post.id];
-      
+
       // Загружаем комментарии только если они еще не загружены и не загружаются
       if (!isLoading && !hasComments) {
         console.log(`📥 Загружаем комментарии для поста ${post.id}`);
-        
+
         dispatch(fetchPostComments({
           post_id: post.id,
           section_key: sectionKey,
@@ -118,7 +118,7 @@ const MindVaultPage = () => {
         });
       }
     });
-  }, [posts?.length, dispatch, sectionKey, themeId]); 
+  }, [posts?.length, dispatch, sectionKey, themeId]);
 
   const handleExpand = useCallback((id) => {
     const viewed = getViewedIdeas();
@@ -171,7 +171,7 @@ const MindVaultPage = () => {
 
   const handleSendClick = useCallback(async () => {
     if (!ideaText.trim()) return;
-  
+
     try {
       if (attachedFiles.length > 0) {
         // Если есть файлы - создаем пост напрямую
@@ -182,19 +182,19 @@ const MindVaultPage = () => {
           publishing_method: 'original',
           files: attachedFiles
         })).unwrap();
-        
+
         console.log('✅ Пост с файлами создан:', result);
-        
+
         // Очищаем форму
         setIdeaText('');
         setAttachedFiles([]);
-        
+
         // Перезагружаем посты
         dispatch(fetchPostsInSection({
           section_key: sectionKey,
           theme_id: themeId
         }));
-        
+
       } else {
         // Если нет файлов - создаем превью для AI обработки
         const previewResult = await dispatch(createPostPreview({
@@ -202,12 +202,12 @@ const MindVaultPage = () => {
           theme_id: themeId,
           text: ideaText.trim()
         })).unwrap();
-  
-        navigate('/editideapagegpt', { 
-          state: { 
+
+        navigate('/editideapagegpt', {
+          state: {
             attachedFiles: [],
-            preview: previewResult 
-          } 
+            preview: previewResult
+          }
         });
       }
     } catch (error) {
@@ -346,7 +346,7 @@ const ImageModal = React.memo(({ src, alt, onClose }) => {
   }, [onClose]);
 
   return (
-    <div 
+    <div
       style={{
         position: 'fixed',
         top: 0,
@@ -400,15 +400,15 @@ const ImageModal = React.memo(({ src, alt, onClose }) => {
   );
 });
 
-const IdeaCard = React.memo(function IdeaCard({ 
-  idea, 
-  onExpand, 
-  onArrowClick, 
-  isExpanded = false, 
-  onCollapse, 
-  commentCount = 0, 
-  sectionKey, 
-  themeId 
+const IdeaCard = React.memo(function IdeaCard({
+  idea,
+  onExpand,
+  onArrowClick,
+  isExpanded = false,
+  onCollapse,
+  commentCount = 0,
+  sectionKey,
+  themeId
 }) {
   const dispatch = useDispatch();
   const comments = useSelector(state => state.post.comments[idea.id] || []);
@@ -457,11 +457,11 @@ const IdeaCard = React.memo(function IdeaCard({
       clearTimeout(timer);
       if (cardRef.current) observer.unobserve(cardRef.current);
     };
-  }, [idea.id]); 
+  }, [idea.id]);
 
   const handleReaction = useCallback((reaction) => {
-    dispatch(reactToPost({ 
-      post_id: idea.id, 
+    dispatch(reactToPost({
+      post_id: idea.id,
       reaction,
       section_id: sectionKey,
       theme_id: themeId
@@ -472,7 +472,7 @@ const IdeaCard = React.memo(function IdeaCard({
     if (!idea.files || idea.files.length === 0) return null;
 
     const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://trembl-quarterly-sector-t.trycloudflare.com';
-    
+
     const images = [];
     const otherFiles = [];
 
@@ -588,7 +588,7 @@ const IdeaCard = React.memo(function IdeaCard({
         <div ref={textWrapperRef} className={`idea-card__text-wrapper ${expanded ? 'expanded' : ''}`}>
           <div className="idea-card__text-row">
             <div className="idea-card__text">{idea.preview}</div>
-            
+
             <span className="idea-card__timestamp">
               {new Date(idea.timestamp).toLocaleString('ru-RU', {
                 day: '2-digit',
@@ -608,59 +608,44 @@ const IdeaCard = React.memo(function IdeaCard({
 
         {renderFiles}
 
-        <div className="idea-card__badges" style={{ 
-          display: 'flex', 
-          gap: '16px', 
-          marginTop: '12px',
-          marginBottom: '12px' 
-        }}>
-          <div
-            className="idea-card__badge"
-            onClick={() => handleReaction('like')}
-            style={{ 
-              cursor: 'pointer', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '6px',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              backgroundColor: currentUserReaction === 'like' ? '#e3f2fd' : '#f5f5f5',
-              border: currentUserReaction === 'like' ? '1px solid #2196f3' : '1px solid #e0e0e0',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentUserReaction === 'like' ? '#bbdefb' : '#e0e0e0'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = currentUserReaction === 'like' ? '#e3f2fd' : '#f5f5f5'}>
-            <img src={likeIcon} alt="Like" style={{ width: '20px', height: '20px' }} />
-            <span style={{ 
-              fontSize: '14px', 
-              fontWeight: '500',
-              color: currentUserReaction === 'like' ? '#2196f3' : 'inherit'
-            }}>{currentLikes}</span>
+        {/* Обновленная секция с реакциями в стиле DiscussionPage */}
+        <div className="idea-card__actions-container">
+          <div className="idea-card__reaction-badges">
+            <div
+              className="idea-card__reaction-badge"
+              onClick={() => handleReaction('like')}
+              style={{
+                cursor: 'pointer',
+                backgroundColor: currentUserReaction === 'like' ? '#E1EFFF' : '#E1EFFF',
+                opacity: currentUserReaction === 'like' ? 1 : 0.7
+              }}
+            >
+              <img src={likeIcon} alt="Like" />
+              <span>{currentLikes}</span>
+            </div>
+
+            <div
+              className="idea-card__reaction-badge"
+              onClick={() => handleReaction('dislike')}
+              style={{
+                cursor: 'pointer',
+                backgroundColor: currentUserReaction === 'dislike' ? '#FFE1E1' : '#E1EFFF',
+                opacity: currentUserReaction === 'dislike' ? 1 : 0.7
+              }}
+            >
+              <img src={dislikeIcon} alt="Dislike" />
+              <span>{currentDislikes}</span>
+            </div>
           </div>
 
-          <div
-            className="idea-card__badge"
-            onClick={() => handleReaction('dislike')}
-            style={{ 
-              cursor: 'pointer', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '6px',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              backgroundColor: currentUserReaction === 'dislike' ? '#ffebee' : '#f5f5f5',
-              border: currentUserReaction === 'dislike' ? '1px solid #f44336' : '1px solid #e0e0e0',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentUserReaction === 'dislike' ? '#ffcdd2' : '#e0e0e0'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = currentUserReaction === 'dislike' ? '#ffebee' : '#f5f5f5'}>
-            <img src={dislikeIcon} alt="Dislike" style={{ width: '20px', height: '20px' }} />
-            <span style={{ 
-              fontSize: '14px', 
-              fontWeight: '500',
-              color: currentUserReaction === 'dislike' ? '#f44336' : 'inherit'
-            }}>{currentDislikes}</span>
-          </div>
+          <span className="idea-card__timestamp">
+            {new Date(idea.timestamp).toLocaleString('ru-RU', {
+              day: '2-digit',
+              month: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </span>
         </div>
 
         <div className="idea-card__divider" />
