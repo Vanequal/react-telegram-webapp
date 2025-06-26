@@ -588,15 +588,6 @@ const IdeaCard = React.memo(function IdeaCard({
         <div ref={textWrapperRef} className={`idea-card__text-wrapper ${expanded ? 'expanded' : ''}`}>
           <div className="idea-card__text-row">
             <div className="idea-card__text">{idea.preview}</div>
-
-            <span className="idea-card__timestamp">
-              {new Date(idea.timestamp).toLocaleString('ru-RU', {
-                day: '2-digit',
-                month: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </span>
           </div>
         </div>
 
