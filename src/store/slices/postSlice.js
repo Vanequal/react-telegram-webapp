@@ -8,7 +8,7 @@ export const createPost = createAsyncThunk(
       // Подготавливаем данные для query параметра
       const dataPayload = {
         text: message_text,
-        type: 'post', 
+        type: 'post',
         publishing_method: publishing_method || 'original'
       };
 
@@ -122,7 +122,7 @@ export const fetchPostComments = createAsyncThunk(
       const state = getState();
       const isLoading = state.post.commentsLoadingFlags[post_id];
       const hasComments = state.post.comments[post_id];
-      
+
       if (isLoading || hasComments) {
         return { postId: post_id, comments: hasComments || [] };
       }
@@ -156,41 +156,62 @@ export const createComment = createAsyncThunk(
   'post/createComment',
   async ({ post_id, message_text, section_key, theme_id, files = [] }, { rejectWithValue }) => {
     try {
-      console.log('📤 Создание комментария с type: "comment":', {
+      console.log('📤 Создание комментария:', {
         text: message_text,
         post_id: post_id,
         section_id: section_key,
-        theme_id
+        theme_id,
+        files_count: files.length
       });
 
-      const formData = new FormData();
-
-      files.forEach((file) => {
-        formData.append('files', file);
-      });
-      
+      // Подготавливаем данные для query параметра
       const dataPayload = {
         text: message_text,
-        type: 'comment', 
+        type: 'comment',
         parent_id: post_id,
         publishing_method: 'original'
       };
 
-      const res = await axios.post('/api/v1/messages', formData, {
+      let requestBody;
+      let requestConfig = {
         params: {
           section_id: section_key,
           theme_id: theme_id,
           data: JSON.stringify(dataPayload)
-        },
-        headers: {
-          'Content-Type': 'multipart/form-data'
         }
+      };
+
+      if (files && files.length > 0) {
+        // Если есть файлы - используем FormData
+        const formData = new FormData();
+        files.forEach((file) => {
+          formData.append('files', file);
+        });
+        requestBody = formData;
+        requestConfig.headers = {
+          'Content-Type': 'multipart/form-data'
+        };
+      } else {
+        // Если нет файлов - отправляем пустое тело или null
+        requestBody = null;
+        requestConfig.headers = {
+          'Content-Type': 'application/json'
+        };
+      }
+
+      console.log('📋 Отправляем запрос с параметрами:', {
+        url: '/api/v1/messages',
+        params: requestConfig.params,
+        hasFiles: files.length > 0,
+        hasBody: !!requestBody
       });
 
-      console.log('✅ Комментарий создан с type:', res.data);
-      
-      return { 
-        ...res.data, 
+      const res = await axios.post('/api/v1/messages', requestBody, requestConfig);
+
+      console.log('✅ Комментарий создан:', res.data);
+
+      return {
+        ...res.data,
         post_id: post_id,
         text: res.data.text,
         author: res.data.author,
@@ -198,15 +219,19 @@ export const createComment = createAsyncThunk(
         id: res.data.id
       };
     } catch (err) {
-      console.error('🔥 Ошибка создания комментария:', err?.response?.data || err.message);
-      
+      console.error('🔥 Ошибка создания комментария:', {
+        error: err?.response?.data || err.message,
+        status: err?.response?.status,
+        headers: err?.response?.headers
+      });
+
       if (err.response?.data?.detail) {
         console.error('📋 Детали ошибки:', err.response.data.detail);
       }
-      
+
       return rejectWithValue(
-        err.response?.data?.detail || 
-        err.response?.data?.error || 
+        err.response?.data?.detail ||
+        err.response?.data?.error ||
         err.response?.data?.message ||
         'Ошибка добавления комментария'
       );
@@ -224,7 +249,7 @@ export const reactToPost = createAsyncThunk(
         section_id,
         theme_id
       });
-      
+
       const res = await axios.post(
         `/api/v1/messages/${post_id}/${reaction}`,
         { reaction },
@@ -235,11 +260,11 @@ export const reactToPost = createAsyncThunk(
           }
         }
       );
-      
+
       console.log('📥 Получен ответ:', res.data);
-      
-      return { 
-        post_id, 
+
+      return {
+        post_id,
         ...res.data
       };
     } catch (err) {
@@ -255,12 +280,12 @@ export const fetchDownloadUrl = createAsyncThunk(
     try {
       const encodedUrl = encodeURIComponent(filePath);
       const downloadUrl = `${axios.defaults.baseURL}/api/v1/files/download/${encodedUrl}?url=${encodeURIComponent(filePath)}&mime_type=${encodeURIComponent(mimeType)}`;
-      
+
       console.log(`✅ Сформирован URL для файла:`, {
         original: filePath,
         downloadUrl: downloadUrl
       });
-      
+
       return { filePath, url: downloadUrl };
     } catch (err) {
       console.error('🔥 Ошибка формирования URL файла:', {
@@ -285,8 +310,8 @@ const postSlice = createSlice({
     selectedPost: null,
     commentsLoading: false,
     commentError: null,
-    commentsLoadingFlags: {}, 
-    postsLoaded: false, 
+    commentsLoadingFlags: {},
+    postsLoaded: false,
   },
   reducers: {
     clearError: (state) => {
@@ -347,7 +372,7 @@ const postSlice = createSlice({
       })
       .addCase(fetchPostsInSection.fulfilled, (state, action) => {
         state.loading = false;
-        state.postsLoaded = true; 
+        state.postsLoaded = true;
 
         const newPosts = (action.payload || []).map(post => ({
           ...post,
@@ -356,7 +381,7 @@ const postSlice = createSlice({
           user_reaction: post.reactions?.user_reaction || null
         }));
         const postsChanged = JSON.stringify(state.posts.map(p => p.id)) !== JSON.stringify(newPosts.map(p => p.id));
-        
+
         if (postsChanged) {
           state.posts = newPosts;
         }
@@ -397,10 +422,10 @@ const postSlice = createSlice({
         const { postId, comments } = action.payload;
         state.commentsLoading = false;
         state.commentsLoadingFlags[postId] = false;
-        
+
         if (!state.comments[postId] || state.comments[postId].length !== comments.length) {
           state.comments[postId] = comments || [];
-          
+
           const postIndex = state.posts.findIndex(post => post.id === postId);
           if (postIndex !== -1) {
             state.posts[postIndex] = {
@@ -427,7 +452,7 @@ const postSlice = createSlice({
         state.commentsLoading = false;
         const comment = action.payload;
         const post_id = comment.post_id;
-        
+
         console.log('✅ Комментарий добавлен в store:', comment);
 
         if (!state.comments[post_id]) {
@@ -457,7 +482,7 @@ const postSlice = createSlice({
           count_dislikes,
           new_reaction
         });
-        
+
         const postIndex = state.posts.findIndex(post => post.id === post_id);
         if (postIndex !== -1) {
           state.posts[postIndex] = {
