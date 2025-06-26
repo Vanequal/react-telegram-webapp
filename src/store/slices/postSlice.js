@@ -168,7 +168,6 @@ export const createComment = createAsyncThunk(
         text: message_text,
         type: 'comment',
         content_id: post_id,
-        publishing_method: 'original'
       };
 
       let requestBody;
