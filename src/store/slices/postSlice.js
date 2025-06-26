@@ -164,11 +164,10 @@ export const createComment = createAsyncThunk(
         files_count: files.length
       });
 
-      // Подготавливаем данные для query параметра
       const dataPayload = {
         text: message_text,
         type: 'comment',
-        parent_id: post_id,
+        content_id: post_id,
         publishing_method: 'original'
       };
 
