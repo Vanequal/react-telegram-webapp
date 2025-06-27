@@ -1,7 +1,7 @@
 // components/IdeaCard.jsx
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { reactToPost } from '../../store/slices/postSlice';
+import { reactToPost } from '../store/slices/postSlice';
 import { getViewedIdeas, markIdeaAsViewed } from '../utils/utils';
 
 // Components
@@ -18,7 +18,7 @@ import donatIcon from '../assets/img/donatIcon.webp';
 import eyeIcon from '../assets/img/eyeIcon.webp';
 
 // Styles
-import '../../styles/components/idea-card.scss';
+import '../styles/components/idea-card.scss';
 
 // Constants
 const VIEW_THRESHOLD_MS = 30000;
