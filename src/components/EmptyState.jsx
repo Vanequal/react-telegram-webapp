@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../styles/components/state-components.scss';
+import '../styles/components/state-components.scss';
 
 const EmptyState = () => (
   <p className="empty-state">
