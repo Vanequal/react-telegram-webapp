@@ -56,7 +56,18 @@ const PostComposer = ({ postData, onPostDataChange, onSubmit }) => {
 
   const handleFileChange = useCallback((e) => {
     const newFiles = Array.from(e.target.files);
+    console.log('Files selected:', {
+      count: newFiles.length,
+      files: newFiles.map(f => ({
+        name: f.name,
+        size: f.size,
+        type: f.type
+      }))
+    });
     onPostDataChange({ ...postData, files: newFiles });
+    
+    // Очищаем input для возможности выбрать те же файлы снова
+    e.target.value = '';
   }, [postData, onPostDataChange]);
 
   const handleSubmit = useCallback(() => {
