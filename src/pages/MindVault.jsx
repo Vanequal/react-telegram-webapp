@@ -12,11 +12,11 @@ import { getViewedIdeas, markIdeaAsViewed } from '../utils/utils.js';
 
 // Components
 import MindVaultHeader from '../components/UI/MindVaultHeader';
-import IdeaCard from './components/IdeaCard';
-import PostComposer from './components/PostComposer';
-import EmptyState from './components/EmptyState';
-import LoadingState from './components/LoadingState';
-import ErrorState from './components/ErrorState';
+import IdeaCard from '../components/IdeaCard';
+import PostComposer from '../components/PostComposer';
+import EmptyState from '../components/EmptyState';
+import LoadingState from '../components/LoadingState';
+import ErrorState from '../components/ErrorState';
 
 // Styles
 import '../styles/components/mind-vault.scss';
