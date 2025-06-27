@@ -2,13 +2,16 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { 
+import * as postActions from '../store/slices/postSlice';
+import { getViewedIdeas, markIdeaAsViewed } from '../utils/utils.js';
+
+// Деструктуризация после импорта для лучшей отладки
+const { 
+  createPost,
   createPostPreview, 
   fetchPostComments, 
-  fetchPostsInSection,
-  createPost 
-} from '../store/slices/postSlice';
-import { getViewedIdeas, markIdeaAsViewed } from '../utils/utils.js';
+  fetchPostsInSection
+} = postActions;
 
 // Components
 import MindVaultHeader from '../components/UI/MindVaultHeader';
@@ -136,29 +139,52 @@ const MindVaultPage = () => {
     if (!postData.text.trim()) return;
 
     try {
+      // Проверяем наличие createPost
+      if (!createPost) {
+        console.error('createPost is not defined!');
+        return;
+      }
+
       if (postData.files.length > 0) {
         // Direct post creation with files
-        const result = await dispatch(createPost({
+        console.log('Creating post with files...', {
+          filesCount: postData.files.length,
+          files: postData.files,
+          text: postData.text
+        });
+
+        // Проверяем, что dispatch и createPost существуют
+        console.log('Dispatch available:', !!dispatch);
+        console.log('createPost available:', !!createPost);
+
+        const actionResult = await dispatch(createPost({
           message_text: postData.text.trim(),
           section_id: SECTION_KEY,
           theme_id: themeId,
           publishing_method: 'original',
           files: postData.files
-        })).unwrap();
-
-        console.log('✅ Post with files created:', result);
-
-        // Reset form
-        setPostData({ text: '', files: [] });
-
-        // Reload posts
-        dispatch(fetchPostsInSection({
-          section_key: SECTION_KEY,
-          theme_id: themeId
         }));
+
+        console.log('Action result:', actionResult);
+
+        if (actionResult.meta?.requestStatus === 'fulfilled') {
+          console.log('✅ Post with files created:', actionResult.payload);
+
+          // Reset form
+          setPostData({ text: '', files: [] });
+
+          // Reload posts
+          dispatch(fetchPostsInSection({
+            section_key: SECTION_KEY,
+            theme_id: themeId
+          }));
+        } else {
+          console.error('Failed to create post:', actionResult);
+        }
 
       } else {
         // Create preview for AI processing
+        console.log('Creating post preview...');
         const previewResult = await dispatch(createPostPreview({
           section_id: SECTION_KEY,
           theme_id: themeId,
@@ -174,6 +200,7 @@ const MindVaultPage = () => {
       }
     } catch (error) {
       console.error('Error creating post/preview:', error);
+      console.error('Error stack:', error.stack);
     }
   }, [postData, dispatch, themeId, navigate]);
 
