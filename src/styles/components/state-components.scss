@@ -1,0 +1,73 @@
+// styles/components/state-components.scss
+@import '../variables';
+
+.empty-state,
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: $text-secondary;
+  font-size: 16px;
+  font-family: $font-inter;
+}
+
+.error-state {
+  color: $error-color;
+}
+
+.loading-state {
+  @include flex-center;
+  
+  &::after {
+    content: '';
+    width: 24px;
+    height: 24px;
+    border: 3px solid $border-color;
+    border-top-color: $primary-color;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 12px;
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Media queries
+@media (max-width: $mobile) {
+  .idea-card {
+    width: 95%;
+    padding: 12px;
+
+    &__text {
+      font-size: 18px;
+    }
+  }
+
+  .file-attachments__images {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: $tablet) {
+  .idea-card {
+    max-width: 700px;
+  }
+
+  .discussion-page__container {
+    padding: 24px;
+  }
+}
