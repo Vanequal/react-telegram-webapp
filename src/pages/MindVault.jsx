@@ -2,11 +2,11 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { 
-  createPostPreview, 
-  fetchPostComments, 
+import {
+  createPostPreview,
+  fetchPostComments,
   fetchPostsInSection,
-  createPost 
+  createPost
 } from '../store/slices/postSlice';
 import { getViewedIdeas, markIdeaAsViewed } from '../utils/utils.js';
 
@@ -121,14 +121,14 @@ const MindVaultPage = () => {
     if (!viewed[id]) {
       markIdeaAsViewed(id);
     }
-    
+
     const selected = ideas.find(i => i.id === id);
     const post = posts.find(p => p.id === id);
     const ideaWithText = {
       ...selected,
       message_text: post?.text || selected.preview
     };
-    
+
     navigate(`/discussion/${id}`, { state: { idea: ideaWithText } });
   }, [ideas, posts, navigate]);
 
@@ -168,10 +168,11 @@ const MindVaultPage = () => {
 
         navigate('/editideapagegpt', {
           state: {
-            attachedFiles: [],
+            attachedFiles: postData.files,
             preview: previewResult
           }
         });
+        setPostData({ text: '', files: [] });
       }
     } catch (error) {
       console.error('Error creating post/preview:', error);
