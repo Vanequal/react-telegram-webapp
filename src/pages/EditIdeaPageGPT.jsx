@@ -1,39 +1,55 @@
-import React, { useState } from 'react';
+// EditIdeaPageGPT.jsx
+import React, { useState, useCallback } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { createPostPreview, createPost, clearAttachedFiles } from '../store/slices/postSlice';
+import { createPostPreview, createPost } from '../store/slices/postSlice';
 
+// Components
 import MindVaultHeader from '../components/UI/MindVaultHeader';
-import skrepkaIcon from '../assets/img/skrepkaIcon.webp';
-import sendIcon from '../assets/img/sendIcon.webp';
-import sendIconActive from '../assets/img/sendButtonActive.png';
+import IdeaPreviewCard from './components/IdeaPreviewCard';
+import PostComposer from './components/PostComposer';
 
-import '../styles/EditIdeaPageGPT.scss';
+// Styles
+import '../styles/components/edit-idea-gpt.scss';
+
+// Constants
+const DEFAULT_SECTION_KEY = 'chat_ideas';
+const DEFAULT_THEME_ID = 1;
 
 const EditIdeaPageGPT = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  const initialFiles = location.state?.attachedFiles || [];
+  
+  // State from navigation
   const attachedFiles = location.state?.attachedFiles || [];
-  const [ideaText, setIdeaText] = useState('');
+  
+  // Local state
+  const [postData, setPostData] = useState({
+    text: '',
+    files: []
+  });
+  
+  // Redux state
   const { preview } = useSelector(state => state.post);
 
-  const sectionKey = searchParams.get('section_key') || 'chat_ideas';
-  const themeId = Number(searchParams.get('theme_id')) || 1;
+  // Derived values
+  const sectionKey = searchParams.get('section_key') || DEFAULT_SECTION_KEY;
+  const themeId = Number(searchParams.get('theme_id')) || DEFAULT_THEME_ID;
 
-  const handleSend = () => {
-    if (ideaText.trim()) {
+  // Handlers
+  const handleSend = useCallback(() => {
+    if (postData.text.trim()) {
       dispatch(createPostPreview({
         section_id: sectionKey,
         theme_id: themeId,
-        text: ideaText,
+        text: postData.text,
       }));      
     }
-  };
+  }, [postData.text, dispatch, sectionKey, themeId]);
 
-  const handlePublish = async (text, publishing_method = 'original') => {
+  const handlePublish = useCallback(async (text, publishing_method = 'original') => {
     if (!text) return;
 
     const payload = {
@@ -52,17 +68,39 @@ const EditIdeaPageGPT = () => {
         const errorMsg = typeof actionResult.payload === 'string' 
           ? actionResult.payload 
           : actionResult.payload?.message || 'Неизвестная ошибка';
-        console.warn('Ошибка создания поста:', errorMsg);
+        console.warn('Error creating post:', errorMsg);
       }
     } catch (error) {
-      console.error('Ошибка публикации:', error);
+      console.error('Error publishing:', error);
     }
-  };
+  }, [dispatch, sectionKey, themeId, attachedFiles, navigate]);
+
+  const handlePublishOriginal = useCallback(() => {
+    handlePublish(preview.original_text, 'original');
+  }, [handlePublish, preview]);
+
+  const handlePublishGPT = useCallback(() => {
+    handlePublish(preview.gpt_text, 'gpt');
+  }, [handlePublish, preview]);
+
+  const handleEditGPT = useCallback(() => {
+    navigate('/textgpteditpage', { 
+      state: { gptText: preview.gpt_text } 
+    });
+  }, [navigate, preview]);
+
+  const handleNavigateBack = useCallback(() => {
+    window.history.back();
+  }, []);
+
+  const handlePostDataChange = useCallback((newData) => {
+    setPostData(newData);
+  }, []);
 
   return (
     <div className="edit-idea-page-gpt">
       <MindVaultHeader
-        onBackClick={() => window.history.back()}
+        onBackClick={handleNavigateBack}
         onDescriptionClick={() => {}}
         hideSectionTitle={true}
         textColor="black"
@@ -71,82 +109,61 @@ const EditIdeaPageGPT = () => {
 
       <div className="edit-idea-page-gpt__content">
         {!preview ? (
-          <p className="edit-idea-page-gpt__empty-message">
-            Идей в канале <span className="edit-idea-page-gpt__section-name">{sectionKey}</span> ещё нет.
-          </p>
+          <EmptyPreview sectionKey={sectionKey} />
         ) : (
-          <div className="idea-card-gpt">
-            <p className="idea-card-gpt__label">Оригинал текста:</p>
-            <p className="idea-card-gpt__text">{preview.original_text}</p>
-
-            {attachedFiles.map((file, i) => (
-              <div key={i} style={{ marginBottom: '10px' }}>
-                {file.type.startsWith('image/') ? (
-                  <img src={URL.createObjectURL(file)} alt={`image-${i}`} style={{ maxWidth: '100%', borderRadius: '12px' }} />
-                ) : file.type.startsWith('video/') ? (
-                  <video controls style={{ maxWidth: '100%', borderRadius: '12px' }} src={URL.createObjectURL(file)} />
-                ) : (
-                  <a href={URL.createObjectURL(file)} target="_blank" rel="noopener noreferrer" style={{ color: '#1976D2', wordBreak: 'break-word' }}>
-                    {file.name}
-                  </a>
-                )}
-              </div>
-            ))}
-
-            <p className="idea-card-gpt__label">Улучшенная версия от ИИ:</p>
-            <p className="idea-card-gpt__text">{preview.gpt_text}</p>
-
-            {attachedFiles.map((file, i) => (
-              <div key={i} style={{ marginBottom: '10px' }}>
-                {file.type.startsWith('image/') ? (
-                  <img src={URL.createObjectURL(file)} alt={`image-${i}`} style={{ maxWidth: '100%', borderRadius: '12px' }} />
-                ) : file.type.startsWith('video/') ? (
-                  <video controls style={{ maxWidth: '100%', borderRadius: '12px' }} src={URL.createObjectURL(file)} />
-                ) : (
-                  <a href={URL.createObjectURL(file)} target="_blank" rel="noopener noreferrer" style={{ color: '#1976D2', wordBreak: 'break-word' }}>
-                    {file.name}
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {preview && (
-          <div className="idea-card-gpt__actions">
-            <button className="idea-card-gpt__action-button" onClick={() => handlePublish(preview.original_text, 'original')}>
-              Опубликовать оригинал
-            </button>
-            <button className="idea-card-gpt__action-button" onClick={() => handlePublish(preview.gpt_text, 'gpt')}>
-              Опубликовать версию GPT
-            </button>
-            <button className="idea-card-gpt__action-button" onClick={() => navigate('/textgpteditpage', { state: { gptText: preview.gpt_text } })}>
-              Редактировать версию GPT
-            </button>
-          </div>
+          <>
+            <IdeaPreviewCard
+              preview={preview}
+              attachedFiles={attachedFiles}
+            />
+            
+            <PreviewActions
+              onPublishOriginal={handlePublishOriginal}
+              onPublishGPT={handlePublishGPT}
+              onEditGPT={handleEditGPT}
+            />
+          </>
         )}
       </div>
 
-      <div className="vault-footer">
-        <img src={skrepkaIcon} alt="Attach" className="vault-footer__icon" />
-        <input
-          type="text"
-          className="vault-footer__input"
-          placeholder="Написать заново"
-          value={ideaText}
-          onChange={(e) => setIdeaText(e.target.value)}
-        />
-        <img
-          src={ideaText.trim() ? sendIconActive : sendIcon}
-          alt="Send"
-          className="vault-footer__send"
-          style={{ opacity: ideaText.trim() ? 1 : 0.5, cursor: ideaText.trim() ? 'pointer' : 'not-allowed' }}
-          title={ideaText.trim() ? 'Готово к отправке' : 'Введите текст'}
-          onClick={handleSend}
-        />
-      </div>
+      <PostComposer
+        postData={postData}
+        onPostDataChange={handlePostDataChange}
+        onSubmit={handleSend}
+        placeholder="Написать заново"
+      />
     </div>
   );
 };
+
+// Sub-components
+const EmptyPreview = ({ sectionKey }) => (
+  <p className="edit-idea-page-gpt__empty-message">
+    Идей в канале <span className="edit-idea-page-gpt__section-name">{sectionKey}</span> ещё нет.
+  </p>
+);
+
+const PreviewActions = ({ onPublishOriginal, onPublishGPT, onEditGPT }) => (
+  <div className="idea-card-gpt__actions">
+    <button 
+      className="idea-card-gpt__action-button" 
+      onClick={onPublishOriginal}
+    >
+      Опубликовать оригинал
+    </button>
+    <button 
+      className="idea-card-gpt__action-button" 
+      onClick={onPublishGPT}
+    >
+      Опубликовать версию GPT
+    </button>
+    <button 
+      className="idea-card-gpt__action-button" 
+      onClick={onEditGPT}
+    >
+      Редактировать версию GPT
+    </button>
+  </div>
+);
 
 export default EditIdeaPageGPT;

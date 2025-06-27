@@ -1,0 +1,37 @@
+@import '../variables';
+
+.reaction-badges {
+  display: flex;
+  gap: 12px;
+}
+
+.reaction-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: $badge-background;
+  border-radius: 33px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  img {
+    width: 16px;
+    height: 16px;
+  }
+
+  span {
+    font-size: 14px;
+    color: $text-primary;
+    font-family: $font-roboto;
+  }
+
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  &--active {
+    background-color: darken($badge-background, 10%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}

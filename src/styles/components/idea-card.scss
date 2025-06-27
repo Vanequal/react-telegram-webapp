@@ -1,0 +1,133 @@
+@import '../variables';
+
+.idea-card {
+  @include card-style;
+  width: 90%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.3s ease;
+
+  &__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__user-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+  }
+
+  &__username {
+    font-family: $font-telegram;
+    font-size: 16px;
+    color: $text-primary;
+  }
+
+  &__pin {
+    width: 20px;
+    height: 20px;
+  }
+
+  &__text-wrapper {
+    max-height: 130px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+
+    &.expanded {
+      max-height: none;
+    }
+  }
+
+  &__text {
+    font-family: $font-space-grotesk;
+    font-size: 20px;
+    color: $text-primary;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  &__read-more {
+    @include button-reset;
+    color: $primary-color;
+    font-family: $font-roboto;
+    font-size: 16px;
+    text-decoration: underline;
+    
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  &__actions-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+  }
+
+  &__timestamp {
+    color: $text-secondary;
+    font-size: 14px;
+    font-family: $font-roboto;
+  }
+
+  &__divider {
+    height: 1px;
+    background-color: $border-color;
+    margin: 8px 0;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  &__avatar-stack {
+    width: 50px;
+    height: 28px;
+  }
+
+  &__comments {
+    font-family: $font-roboto;
+    font-size: 14px;
+    color: $primary-color;
+    flex: 1;
+  }
+
+  &__icon-donat,
+  &__icon-eye {
+    width: 24px;
+    height: 24px;
+  }
+
+  &__collapse {
+    @include button-reset;
+    color: $primary-color;
+    font-size: 14px;
+    margin-top: 12px;
+    text-decoration: underline;
+  }
+
+  &--no-header {
+    .idea-card__top {
+      display: none;
+    }
+  }
+}

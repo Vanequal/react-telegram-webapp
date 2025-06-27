@@ -1,0 +1,111 @@
+@import '../variables';
+
+.edit-idea-page-gpt {
+  background-color: $background-main;
+  min-height: 100vh;
+  padding-bottom: 80px;
+  font-family: $font-space-grotesk;
+  display: flex;
+  flex-direction: column;
+
+  &__content {
+    padding: 0 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    flex: 1;
+  }
+
+  &__empty-message {
+    font-size: 20px;
+    font-weight: 400;
+    color: $text-primary;
+    margin-top: 32px;
+    text-align: center;
+  }
+
+  &__section-name {
+    font-weight: 600;
+    color: $primary-color;
+  }
+}
+
+.idea-card-gpt {
+  @include card-style;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__label {
+    font-family: $font-montserrat;
+    font-weight: 600;
+    font-size: 18px;
+    color: $text-primary;
+    margin: 0;
+  }
+
+  &__text {
+    font-family: $font-montserrat;
+    font-weight: 400;
+    font-size: 16px;
+    color: $text-primary;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  &__action-button {
+    @include card-style;
+    font-family: $font-montserrat;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+.file-preview {
+  &__item {
+    margin-bottom: 12px;
+  }
+
+  &__image,
+  &__video {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &__link {
+    color: $primary-color;
+    text-decoration: none;
+    word-break: break-word;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

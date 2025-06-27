@@ -180,7 +180,6 @@ export const createComment = createAsyncThunk(
       };
 
       if (files && files.length > 0) {
-        // Если есть файлы - используем FormData
         const formData = new FormData();
         files.forEach((file) => {
           formData.append('files', file);

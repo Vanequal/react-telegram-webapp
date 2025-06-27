@@ -1,0 +1,43 @@
+$primary-color: #1976D2;
+$primary-light: #1E88D3;
+$background-main: #FCFCFE;
+$background-secondary: #EEEFF1;
+$background-white: #FFFFFF;
+$text-primary: #000000;
+$text-secondary: #98A0A6;
+$text-muted: #00000099;
+$border-color: #E2E6E9;
+$shadow-default: 0px 4px 4px rgba(0, 0, 0, 0.25);
+$badge-background: #E1EFFF;
+$error-color: #FC4C53;
+
+$font-inter: 'Inter', sans-serif;
+$font-montserrat: 'Montserrat', sans-serif;
+$font-space-grotesk: 'Space Grotesk', sans-serif;
+$font-roboto: 'Roboto', sans-serif;
+$font-telegram: 'Telegram HPLHS', sans-serif;
+
+
+$mobile: 480px;
+$tablet: 768px;
+$desktop: 1024px;
+
+@mixin card-style {
+  background-color: $background-white;
+  border-radius: 12px;
+  box-shadow: $shadow-default;
+  padding: 16px;
+}
+
+@mixin button-reset {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
