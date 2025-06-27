@@ -15,7 +15,7 @@ const {
 
 // Components
 import MindVaultHeader from '../components/UI/MindVaultHeader';
-import IdeaCard from './components/IdeaCard';
+import IdeaCard from '../components/IdeaCard';
 import PostComposer from '../components/PostComposer';
 import EmptyState from '../components/EmptyState';
 import LoadingState from '../components/LoadingState';
