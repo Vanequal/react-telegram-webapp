@@ -6,8 +6,8 @@ import { createPostPreview, createPost } from '../store/slices/postSlice';
 
 // Components
 import MindVaultHeader from '../components/UI/MindVaultHeader';
-import IdeaPreviewCard from './components/IdeaPreviewCard';
-import PostComposer from './components/PostComposer';
+import IdeaPreviewCard from '../components/IdeaPreviewCard';
+import PostComposer from '../components/PostComposer';
 
 // Styles
 import '../styles/components/edit-idea-gpt.scss';

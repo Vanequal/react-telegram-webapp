@@ -6,9 +6,9 @@ import { createComment, fetchPostComments } from '../store/slices/postSlice';
 
 // Components
 import MindVaultHeader from '../components/UI/MindVaultHeader';
-import DiscussionIdeaCard from './components/DiscussionIdeaCard';
-import CommentThread from './components/CommentThread';
-import CommentComposer from './components/CommentComposer';
+import DiscussionIdeaCard from '../components/DiscussionIdeaCard';
+import CommentThread from '../components/CommentThread';
+import CommentComposer from '../components/CommentComposer';
 
 // Styles
 import '../styles/components/discussion.scss';
