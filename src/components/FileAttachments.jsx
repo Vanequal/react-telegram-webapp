@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import '../../styles/components/file-attachments.scss';
+import '../styles/components/file-attachments.scss';
 
 const FileAttachments = ({ files, onImageClick }) => {
   const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://trembl-quarterly-sector-t.trycloudflare.com';

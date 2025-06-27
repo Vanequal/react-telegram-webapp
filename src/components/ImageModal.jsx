@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
-import '../../styles/components/image-modal.scss';
+import '../styles/components/image-modal.scss';
 
 const ImageModal = React.memo(({ src, alt, onClose }) => {
   const handleBackdropClick = useCallback((e) => {

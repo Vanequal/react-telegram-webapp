@@ -8,7 +8,7 @@ import sendIcon from '../assets/img/sendIcon.webp';
 import sendIconActive from '../assets/img/sendButtonActive.png';
 
 // Styles
-import '../../styles/components/post-composer.scss';
+import '../styles/components/post-composer.scss';
 
 const PostComposer = ({ postData, onPostDataChange, onSubmit }) => {
   const [showPopover, setShowPopover] = useState(false);

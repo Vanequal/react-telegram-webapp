@@ -1,7 +1,7 @@
 // components/IdeaCard.jsx
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { reactToPost } from '../store/slices/postSlice';
+import { reactToPost } from '../../store/slices/postSlice';
 import { getViewedIdeas, markIdeaAsViewed } from '../utils/utils';
 
 // Components
