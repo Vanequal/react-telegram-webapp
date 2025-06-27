@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import likeIcon from '../../assets/img/likeIcon.webp';
-import dislikeIcon from '../../assets/img/dislikeIcon.webp';
+import likeIcon from '../assets/img/likeIcon.webp';
+import dislikeIcon from '../assets/img/dislikeIcon.webp';
 import '../../styles/components/reaction-badges.scss';
 
 const ReactionBadges = ({ likes, dislikes, userReaction, onReaction }) => {

@@ -3,9 +3,9 @@ import React, { useRef, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
 // Icons
-import skrepkaIcon from '../../assets/img/skrepkaIcon.webp';
-import sendIcon from '../../assets/img/sendIcon.webp';
-import sendIconActive from '../../assets/img/sendButtonActive.png';
+import skrepkaIcon from '../assets/img/skrepkaIcon.webp';
+import sendIcon from '../assets/img/sendIcon.webp';
+import sendIconActive from '../assets/img/sendButtonActive.png';
 
 // Styles
 import '../../styles/components/post-composer.scss';

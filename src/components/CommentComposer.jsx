@@ -1,9 +1,9 @@
 // components/CommentComposer.jsx
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
-import skrepkaIcon from '../../assets/img/skrepkaIcon.webp';
-import sendIcon from '../../assets/img/sendIcon.webp';
-import sendIconActive from '../../assets/img/sendButtonActive.png';
+import skrepkaIcon from '../assets/img/skrepkaIcon.webp';
+import sendIcon from '../assets/img/sendIcon.webp';
+import sendIconActive from '../assets/img/sendButtonActive.png';
 
 const CommentComposer = ({ commentText, onCommentChange, onSubmit, isSubmitting }) => {
   const handleChange = useCallback((e) => {

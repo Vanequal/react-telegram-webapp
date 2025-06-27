@@ -2,9 +2,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ReactionBadges from './ReactionBadges';
-import avatarStack from '../../assets/img/avatarStack.webp';
-import donatIcon from '../../assets/img/donatIcon.webp';
-import eyeIcon from '../../assets/img/eyeIcon.webp';
+import avatarStack from '../assets/img/avatarStack.webp';
+import donatIcon from '../assets/img/donatIcon.webp';
+import eyeIcon from '../assets/img/eyeIcon.webp';
 
 const DiscussionIdeaCard = ({ idea }) => {
   const formatTimestamp = (timestamp) => {

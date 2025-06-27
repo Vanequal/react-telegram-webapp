@@ -11,11 +11,11 @@ import ReactionBadges from './ReactionBadges';
 import CommentsList from './CommentsList';
 
 // Icons
-import userIcon from '../../assets/img/userIcon.webp';
-import pinIcon from '../../assets/img/pinIcon.webp';
-import avatarStack from '../../assets/img/avatarStack.webp';
-import donatIcon from '../../assets/img/donatIcon.webp';
-import eyeIcon from '../../assets/img/eyeIcon.webp';
+import userIcon from '../assets/img/userIcon.webp';
+import pinIcon from '../assets/img/pinIcon.webp';
+import avatarStack from '../assets/img/avatarStack.webp';
+import donatIcon from '../assets/img/donatIcon.webp';
+import eyeIcon from '../assets/img/eyeIcon.webp';
 
 // Styles
 import '../../styles/components/idea-card.scss';

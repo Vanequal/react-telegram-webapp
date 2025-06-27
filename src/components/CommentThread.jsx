@@ -1,9 +1,9 @@
 // components/CommentThread.jsx
 import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import userIcon from '../../assets/img/userIcon.webp';
-import likeIcon from '../../assets/img/likeIcon.webp';
-import dislikeIcon from '../../assets/img/dislikeIcon.webp';
+import userIcon from '../assets/img/userIcon.webp';
+import likeIcon from '../assets/img/likeIcon.webp';
+import dislikeIcon from '../assets/img/dislikeIcon.webp';
 
 const CommentThread = ({ comment, isNew }) => {
   const [showReplies, setShowReplies] = useState(true);
