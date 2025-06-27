@@ -134,50 +134,28 @@ const MindVaultPage = () => {
 
   const handlePostSubmit = useCallback(async () => {
     if (!postData.text.trim()) return;
-
+  
     try {
-      if (postData.files.length > 0) {
-        // Direct post creation with files
-        const result = await dispatch(createPost({
-          message_text: postData.text.trim(),
-          section_id: SECTION_KEY,
-          theme_id: themeId,
-          publishing_method: 'original',
-          files: postData.files
-        })).unwrap();
-
-        console.log('✅ Post with files created:', result);
-
-        // Reset form
-        setPostData({ text: '', files: [] });
-
-        // Reload posts
-        dispatch(fetchPostsInSection({
-          section_key: SECTION_KEY,
-          theme_id: themeId
-        }));
-
-      } else {
-        // Create preview for AI processing
-        const previewResult = await dispatch(createPostPreview({
-          section_id: SECTION_KEY,
-          theme_id: themeId,
-          text: postData.text.trim(),
-          files: postData.files
-        })).unwrap();
-
-        navigate('/editideapagegpt', {
-          state: {
-            attachedFiles: postData.files,
-            preview: previewResult
-          }
-        });
-        setPostData({ text: '', files: [] });
-      }
+      const previewResult = await dispatch(createPostPreview({
+        section_id: SECTION_KEY,
+        theme_id: themeId,
+        text: postData.text.trim(),
+        files: postData.files 
+      })).unwrap();
+  
+      navigate('/editideapagegpt', {
+        state: {
+          attachedFiles: postData.files,
+          preview: previewResult
+        }
+      });
+  
+      setPostData({ text: '', files: [] });
     } catch (error) {
-      console.error('Error creating post/preview:', error);
+      console.error('Error creating post preview:', error);
     }
   }, [postData, dispatch, themeId, navigate]);
+  
 
   const handlePostDataChange = useCallback((newData) => {
     setPostData(newData);
