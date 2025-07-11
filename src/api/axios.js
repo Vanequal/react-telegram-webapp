@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'https://trembl-quarterly-sector-t.trycloudflare.com',
+  baseURL: 'https://cd37168a51c2.ngrok-free.app',
   headers: {
     'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true'
