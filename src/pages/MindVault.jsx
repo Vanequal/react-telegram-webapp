@@ -137,7 +137,7 @@ const MindVaultPage = () => {
   
     try {
       const previewResult = await dispatch(createPostPreview({
-        section_id: SECTION_KEY,
+        section_key: SECTION_KEY,
         theme_id: themeId,
         text: postData.text.trim(),
         files: postData.files 

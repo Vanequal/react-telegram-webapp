@@ -42,7 +42,7 @@ const EditIdeaPageGPT = () => {
   const handleSend = useCallback(() => {
     if (postData.text.trim()) {
       dispatch(createPostPreview({
-        section_id: sectionKey,
+        section_key: sectionKey,
         theme_id: themeId,
         text: postData.text,
       }));      
@@ -54,7 +54,7 @@ const EditIdeaPageGPT = () => {
 
     const payload = {
       message_text: text,
-      section_id: sectionKey,
+      section_key: sectionKey,
       theme_id: themeId,
       files: attachedFiles,
       publishing_method

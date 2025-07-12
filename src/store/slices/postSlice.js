@@ -3,7 +3,7 @@ import axios from '../../api/axios';
 
 export const createPost = createAsyncThunk(
   'post/create',
-  async ({ message_text, section_id, theme_id, publishing_method, files = [] }, { rejectWithValue }) => {
+  async ({ message_text, section_key, theme_id, publishing_method, files = [] }, { rejectWithValue }) => {
     try {
       // Подготавливаем данные для query параметра
       const dataPayload = {
@@ -14,7 +14,7 @@ export const createPost = createAsyncThunk(
 
       const requestConfig = {
         params: {
-          section_id: section_id,
+          section_key: section_key,
           theme_id: theme_id,
           data: JSON.stringify(dataPayload)
         }
@@ -60,13 +60,13 @@ export const createPost = createAsyncThunk(
 
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
-  async ({ section_id, theme_id, text }, { rejectWithValue }) => {
+  async ({ section_key, theme_id, text }, { rejectWithValue }) => {
     try {
       const res = await axios.post(
         `/api/v1/messages/gpt`,
         { text },
         {
-          params: { section_id, theme_id }
+          params: { section_key, theme_id }
         }
       );
       return res.data;
@@ -82,7 +82,7 @@ export const fetchPostsInSection = createAsyncThunk(
     try {
       const res = await axios.get(`/api/v1/posts`, {
         params: {
-          section_id: section_key,
+          section_key: section_key,
           theme_id: theme_id,
           limit: limit
         }
@@ -98,11 +98,11 @@ export const fetchPostsInSection = createAsyncThunk(
 
 export const fetchPostById = createAsyncThunk(
   'post/fetchPostById',
-  async ({ post_id, section_id, theme_id }, { rejectWithValue }) => {
+  async ({ post_id, section_key, theme_id }, { rejectWithValue }) => {
     try {
       const res = await axios.get(`/api/v1/posts/${post_id}`, {
         params: {
-          section_id: section_id,
+          section_key: section_key,
           theme_id: theme_id
         }
       });
@@ -129,7 +129,7 @@ export const fetchPostComments = createAsyncThunk(
 
       console.log('📥 Загрузка комментариев:', {
         message_id: post_id,
-        section_id: section_key,
+        section_key: section_key,
         theme_id,
         type
       });
@@ -138,7 +138,7 @@ export const fetchPostComments = createAsyncThunk(
         params: {
           type: type,
           message_id: post_id,
-          section_id: section_key,
+          section_key: section_key,
           theme_id
         }
       });
@@ -159,7 +159,7 @@ export const createComment = createAsyncThunk(
       console.log('📤 Создание комментария:', {
         text: message_text,
         post_id: post_id,
-        section_id: section_key,
+        section_key: section_key,
         theme_id,
         files_count: files.length
       });
@@ -173,7 +173,7 @@ export const createComment = createAsyncThunk(
       let requestBody;
       let requestConfig = {
         params: {
-          section_id: section_key,
+          section_key: section_key,
           theme_id: theme_id,
           data: JSON.stringify(dataPayload)
         }
@@ -238,12 +238,12 @@ export const createComment = createAsyncThunk(
 
 export const reactToPost = createAsyncThunk(
   'post/reactToPost',
-  async ({ post_id, reaction, section_id, theme_id }, { rejectWithValue }) => {
+  async ({ post_id, reaction, section_key, theme_id }, { rejectWithValue }) => {
     try {
       console.log('📤 Отправляем реакцию:', {
         message_id: post_id,
         reaction,
-        section_id,
+        section_key,
         theme_id
       });
 
@@ -252,7 +252,7 @@ export const reactToPost = createAsyncThunk(
         { reaction },
         {
           params: {
-            section_id,
+            section_key,
             theme_id
           }
         }

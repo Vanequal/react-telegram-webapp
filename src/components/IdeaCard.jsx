@@ -96,7 +96,7 @@ const IdeaCard = React.memo(function IdeaCard({
     dispatch(reactToPost({
       post_id: idea.id,
       reaction,
-      section_id: sectionKey,
+      section_key: sectionKey,
       theme_id: themeId
     }));
   }, [dispatch, idea.id, sectionKey, themeId]);
