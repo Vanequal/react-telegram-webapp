@@ -48,25 +48,33 @@ const MindVaultPage = () => {
   const fetchParams = useMemo(() => ({
     section_key: SECTION_KEY,
     theme_id: themeId,
-    content_type: 'posts'
+    limit: 100,
+    offset: 0
   }), [themeId]);
 
-  // Transform posts to ideas format
+  // Transform posts to ideas format с учетом новой структуры API
   const ideas = useMemo(() => {
     return (Array.isArray(posts) ? posts : []).map(post => {
-      const actualComments = postComments[post.id]?.length;
+      // Комментарии могут быть в разных местах
+      const actualComments = postComments[post.id]?.length || 
+                           post.comments?.length || 
+                           post.comments_count || 0;
+      
+      // Реакции из новой структуры API
+      const reactions = post.reactions || {};
+      
       return {
         id: post.id,
-        username: post.author?.first_name || 'Пользователь',
+        username: post.author?.first_name || post.author?.username || 'Пользователь',
         preview: post.text,
-        likes: post.likes || 0,
-        dislikes: post.dislikes || 0,
-        comments: actualComments ?? post.comments_count ?? 0,
+        likes: reactions.count_likes || post.likes || 0,
+        dislikes: reactions.count_dislikes || post.dislikes || 0,
+        comments: actualComments,
         views: post.views ?? 0,
         pinned: post.pinned ?? false,
         timestamp: post.created_at ?? '',
-        files: post.files || [],
-        userReaction: post.user_reaction || null
+        files: post.attachments || post.files || [], // API может возвращать attachments
+        userReaction: reactions.user_reaction || post.user_reaction || null
       };
     });
   }, [posts, postComments]);
@@ -104,12 +112,12 @@ const MindVaultPage = () => {
       const isLoading = commentsLoadingFlags[post.id];
       const hasComments = postComments[post.id];
 
+      // Загружаем комментарии только если их еще нет и они не загружаются
       if (!isLoading && !hasComments) {
         dispatch(fetchPostComments({
           post_id: post.id,
           section_key: SECTION_KEY,
           theme_id: themeId,
-          type: 'post',
         }));
       }
     });
@@ -140,7 +148,6 @@ const MindVaultPage = () => {
         section_key: SECTION_KEY,
         theme_id: themeId,
         text: postData.text.trim(),
-        files: postData.files 
       })).unwrap();
   
       navigate('/editideapagegpt', {
@@ -153,9 +160,10 @@ const MindVaultPage = () => {
       setPostData({ text: '', files: [] });
     } catch (error) {
       console.error('Error creating post preview:', error);
+      // Показываем ошибку пользователю
+      alert(`Ошибка создания превью: ${error}`);
     }
   }, [postData, dispatch, themeId, navigate]);
-  
 
   const handlePostDataChange = useCallback((newData) => {
     setPostData(newData);
@@ -224,6 +232,7 @@ const MindVaultPage = () => {
           postData={postData}
           onPostDataChange={handlePostDataChange}
           onSubmit={handlePostSubmit}
+          disabled={loading}
         />
       )}
     </>

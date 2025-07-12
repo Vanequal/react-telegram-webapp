@@ -22,8 +22,9 @@ const EditIdeaPageGPT = () => {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   
-  // State from navigation
+  // State from navigation - получаем приложенные файлы и превью
   const attachedFiles = location.state?.attachedFiles || [];
+  const navigationPreview = location.state?.preview || null;
   
   // Local state
   const [postData, setPostData] = useState({
@@ -31,8 +32,10 @@ const EditIdeaPageGPT = () => {
     files: []
   });
   
-  // Redux state
-  const { preview } = useSelector(state => state.post);
+  // Redux state - используем превью из Redux или из навигации
+  const reduxPreview = useSelector(state => state.post.preview);
+  const preview = reduxPreview || navigationPreview;
+  const loading = useSelector(state => state.post.loading);
 
   // Derived values
   const sectionKey = searchParams.get('section_key') || DEFAULT_SECTION_KEY;
@@ -52,6 +55,7 @@ const EditIdeaPageGPT = () => {
   const handlePublish = useCallback(async (text, publishing_method = 'original') => {
     if (!text) return;
 
+    // Используем новую структуру данных для API
     const payload = {
       message_text: text,
       section_key: sectionKey,
@@ -65,13 +69,18 @@ const EditIdeaPageGPT = () => {
       if (actionResult.meta.requestStatus === 'fulfilled') {
         navigate('/mindvault');
       } else {
+        // Обработка ошибок
         const errorMsg = typeof actionResult.payload === 'string' 
           ? actionResult.payload 
-          : actionResult.payload?.message || 'Неизвестная ошибка';
+          : actionResult.payload?.message || actionResult.payload?.detail || 'Неизвестная ошибка';
         console.warn('Error creating post:', errorMsg);
+        
+        // Можно показать пользователю уведомление об ошибке
+        alert(`Ошибка публикации: ${errorMsg}`);
       }
     } catch (error) {
       console.error('Error publishing:', error);
+      alert('Произошла ошибка при публикации поста');
     }
   }, [dispatch, sectionKey, themeId, attachedFiles, navigate]);
 
@@ -121,6 +130,9 @@ const EditIdeaPageGPT = () => {
               onPublishOriginal={handlePublishOriginal}
               onPublishGPT={handlePublishGPT}
               onEditGPT={handleEditGPT}
+              loading={loading}
+              hasOriginal={!!preview.original_text}
+              hasGPT={!!preview.gpt_text}
             />
           </>
         )}
@@ -131,6 +143,7 @@ const EditIdeaPageGPT = () => {
         onPostDataChange={handlePostDataChange}
         onSubmit={handleSend}
         placeholder="Написать заново"
+        disabled={loading}
       />
     </div>
   );
@@ -138,28 +151,45 @@ const EditIdeaPageGPT = () => {
 
 // Sub-components
 const EmptyPreview = ({ sectionKey }) => (
-  <p className="edit-idea-page-gpt__empty-message">
-    Идей в канале <span className="edit-idea-page-gpt__section-name">{sectionKey}</span> ещё нет.
-  </p>
+  <div className="edit-idea-page-gpt__empty-container">
+    <p className="edit-idea-page-gpt__empty-message">
+      Превью поста пока не создано.
+    </p>
+    <p className="edit-idea-page-gpt__empty-hint">
+      Напишите текст ниже, чтобы создать превью с помощью ИИ.
+    </p>
+  </div>
 );
 
-const PreviewActions = ({ onPublishOriginal, onPublishGPT, onEditGPT }) => (
+const PreviewActions = ({ 
+  onPublishOriginal, 
+  onPublishGPT, 
+  onEditGPT, 
+  loading, 
+  hasOriginal, 
+  hasGPT 
+}) => (
   <div className="idea-card-gpt__actions">
     <button 
       className="idea-card-gpt__action-button" 
       onClick={onPublishOriginal}
+      disabled={loading || !hasOriginal}
     >
-      Опубликовать оригинал
+      {loading ? 'Публикуем...' : 'Опубликовать оригинал'}
     </button>
+    
     <button 
       className="idea-card-gpt__action-button" 
       onClick={onPublishGPT}
+      disabled={loading || !hasGPT}
     >
-      Опубликовать версию GPT
+      {loading ? 'Публикуем...' : 'Опубликовать версию GPT'}
     </button>
+    
     <button 
-      className="idea-card-gpt__action-button" 
+      className="idea-card-gpt__action-button idea-card-gpt__action-button--secondary" 
       onClick={onEditGPT}
+      disabled={loading || !hasGPT}
     >
       Редактировать версию GPT
     </button>

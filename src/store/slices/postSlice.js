@@ -1,90 +1,85 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../api/axios';
 
+// Создание поста - используем новый endpoint /api/v1/posts
 export const createPost = createAsyncThunk(
   'post/create',
-  async ({ message_text, section_key, theme_id, publishing_method, files = [] }, { rejectWithValue }) => {
+  async ({ message_text, section_key, theme_id, publishing_method = 'original', files = [] }, { rejectWithValue }) => {
     try {
-      // Подготавливаем данные для query параметра
-      const dataPayload = {
-        text: message_text,
-        type: 'post',
-        publishing_method: publishing_method || 'original'
+      // Готовим данные согласно новому API
+      const requestData = {
+        data: {
+          text: message_text,
+          type: 'post',
+          publishing_method: publishing_method
+        },
+        attachments: files || []
       };
 
       const requestConfig = {
         params: {
           section_key: section_key,
-          theme_id: theme_id,
-          data: JSON.stringify(dataPayload)
+          theme_id: theme_id
+        },
+        headers: {
+          'Content-Type': 'application/json'
         }
       };
 
-      let requestBody;
-
-      if (files && files.length > 0) {
-        // Если есть файлы - используем FormData
-        const formData = new FormData();
-        files.forEach((file) => {
-          formData.append('files', file);
-        });
-        requestBody = formData;
-        requestConfig.headers = {
-          'Content-Type': 'multipart/form-data'
-        };
-      } else {
-        // Если нет файлов - отправляем пустое тело или null
-        requestBody = null;
-        requestConfig.headers = {
-          'Content-Type': 'application/json'
-        };
-      }
-
-      console.log('Отправляем запрос:', {
-        hasFiles: files.length > 0,
-        filesCount: files.length,
+      console.log('Отправляем запрос на создание поста:', {
+        url: '/api/v1/posts',
+        data: requestData,
         params: requestConfig.params
       });
 
-      // Отправляем запрос
-      const res = await axios.post('/api/v1/messages', requestBody, requestConfig);
+      // Используем новый endpoint
+      const res = await axios.post('/api/v1/posts', requestData, requestConfig);
 
-      console.log('[DEBUG] Успешно создан пост:', res.data);
+      console.log('✅ Пост успешно создан:', res.data);
       return res.data;
     } catch (err) {
       console.error('🔥 Ошибка создания поста:', err?.response?.data || err.message);
-      return rejectWithValue(err?.response?.data?.error || err?.response?.data?.detail || 'Ошибка создания поста');
+      return rejectWithValue(err?.response?.data?.detail || err?.response?.data?.error || 'Ошибка создания поста');
     }
   }
 );
 
+// Создание превью поста - используем новый endpoint /api/v1/messages/openai
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
   async ({ section_key, theme_id, text }, { rejectWithValue }) => {
     try {
       const res = await axios.post(
-        `/api/v1/messages/gpt`,
+        `/api/v1/messages/openai`,
         { text },
         {
           params: { section_key, theme_id }
         }
       );
-      return res.data;
+      
+      // API возвращает openai_text, а фронт ожидает gpt_text
+      return {
+        original_text: res.data.original_text,
+        gpt_text: res.data.openai_text || res.data.gpt_text
+      };
     } catch (err) {
+      console.error('🔥 Ошибка создания превью:', err?.response?.data || err.message);
       return rejectWithValue(err.response?.data?.detail || 'Ошибка предпросмотра поста');
     }
   }
 );
 
+// Получение постов в секции - endpoint остался тот же
 export const fetchPostsInSection = createAsyncThunk(
   'post/fetchPostsInSection',
-  async ({ section_key, theme_id, limit = 100 }, { rejectWithValue }) => {
+  async ({ section_key, theme_id, limit = 100, offset = 0 }, { rejectWithValue }) => {
     try {
       const res = await axios.get(`/api/v1/posts`, {
         params: {
           section_key: section_key,
           theme_id: theme_id,
-          limit: limit
+          limit: limit,
+          offset: offset
         }
       });
 
@@ -96,11 +91,12 @@ export const fetchPostsInSection = createAsyncThunk(
   }
 );
 
+// Получение конкретного поста - endpoint изменился на /api/v1/posts/{message_id}
 export const fetchPostById = createAsyncThunk(
   'post/fetchPostById',
-  async ({ post_id, section_key, theme_id }, { rejectWithValue }) => {
+  async ({ message_id, section_key, theme_id }, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`/api/v1/posts/${post_id}`, {
+      const res = await axios.get(`/api/v1/posts/${message_id}`, {
         params: {
           section_key: section_key,
           theme_id: theme_id
@@ -115,9 +111,10 @@ export const fetchPostById = createAsyncThunk(
   }
 );
 
+// Получение комментариев - используем данные из поста, так как комментарии приходят в поле comments
 export const fetchPostComments = createAsyncThunk(
   'post/fetchComments',
-  async ({ post_id, section_key, theme_id, type = 'post' }, { rejectWithValue, getState }) => {
+  async ({ post_id, section_key, theme_id }, { rejectWithValue, getState }) => {
     try {
       const state = getState();
       const isLoading = state.post.commentsLoadingFlags[post_id];
@@ -127,24 +124,22 @@ export const fetchPostComments = createAsyncThunk(
         return { postId: post_id, comments: hasComments || [] };
       }
 
-      console.log('📥 Загрузка комментариев:', {
+      console.log('📥 Загрузка комментариев через получение поста:', {
         message_id: post_id,
         section_key: section_key,
-        theme_id,
-        type
+        theme_id
       });
 
-      const res = await axios.get(`/api/v1/comments`, {
+      // Получаем пост целиком, комментарии в нем уже есть
+      const res = await axios.get(`/api/v1/posts/${post_id}`, {
         params: {
-          type: type,
-          message_id: post_id,
           section_key: section_key,
-          theme_id
+          theme_id: theme_id
         }
       });
 
-      console.log('✅ Комментарии загружены:', res.data);
-      return { postId: post_id, comments: res.data };
+      console.log('✅ Комментарии загружены:', res.data.comments);
+      return { postId: post_id, comments: res.data.comments || [] };
     } catch (err) {
       console.error('🔥 Ошибка загрузки комментариев:', err?.response?.data || err.message);
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки комментариев');
@@ -152,6 +147,7 @@ export const fetchPostComments = createAsyncThunk(
   }
 );
 
+// Создание комментария - оставляем старый endpoint, так как новый не описан
 export const createComment = createAsyncThunk(
   'post/createComment',
   async ({ post_id, message_text, section_key, theme_id, files = [] }, { rejectWithValue }) => {
@@ -189,7 +185,6 @@ export const createComment = createAsyncThunk(
           'Content-Type': 'multipart/form-data'
         };
       } else {
-        // Если нет файлов - отправляем пустое тело или null
         requestBody = null;
         requestConfig.headers = {
           'Content-Type': 'application/json'
@@ -236,6 +231,7 @@ export const createComment = createAsyncThunk(
   }
 );
 
+// Реакция на пост - endpoint правильный, но убираем лишний параметр
 export const reactToPost = createAsyncThunk(
   'post/reactToPost',
   async ({ post_id, reaction, section_key, theme_id }, { rejectWithValue }) => {
@@ -247,9 +243,10 @@ export const reactToPost = createAsyncThunk(
         theme_id
       });
 
+      // Убираем дублирование reaction в URL и body
       const res = await axios.post(
         `/api/v1/messages/${post_id}/${reaction}`,
-        { reaction },
+        { reaction }, // Оставляем body для совместимости, хотя реакция уже в URL
         {
           params: {
             section_key,
@@ -258,7 +255,7 @@ export const reactToPost = createAsyncThunk(
         }
       );
 
-      console.log('📥 Получен ответ:', res.data);
+      console.log('📥 Получен ответ на реакцию:', res.data);
 
       return {
         post_id,
@@ -271,6 +268,7 @@ export const reactToPost = createAsyncThunk(
   }
 );
 
+// Получение ссылки на файл - оставляем без изменений
 export const fetchDownloadUrl = createAsyncThunk(
   'post/fetchDownloadUrl',
   async ({ filePath, mimeType = 'application/octet-stream' }, { rejectWithValue }) => {
@@ -329,7 +327,9 @@ const postSlice = createSlice({
         state.commentsLoadingFlags = {};
       }
     },
-
+    clearPreview: (state) => {
+      state.preview = null;
+    },
     setCommentsLoadingFlag: (state, action) => {
       const { postId, loading } = action.payload;
       state.commentsLoadingFlags[postId] = loading;
@@ -337,19 +337,29 @@ const postSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Создание поста
       .addCase(createPost.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(createPost.fulfilled, (state) => {
+      .addCase(createPost.fulfilled, (state, action) => {
         state.loading = false;
-        state.postsLoaded = false;
+        // Добавляем новый пост в начало списка
+        const newPost = {
+          ...action.payload,
+          likes: action.payload.reactions?.count_likes || 0,
+          dislikes: action.payload.reactions?.count_dislikes || 0,
+          user_reaction: action.payload.reactions?.user_reaction || null
+        };
+        state.posts.unshift(newPost);
+        state.preview = null; // Очищаем превью после публикации
       })
       .addCase(createPost.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
+      // Создание превью
       .addCase(createPostPreview.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -363,6 +373,7 @@ const postSlice = createSlice({
         state.error = action.payload;
       })
 
+      // Получение постов
       .addCase(fetchPostsInSection.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -371,12 +382,15 @@ const postSlice = createSlice({
         state.loading = false;
         state.postsLoaded = true;
 
+        // Нормализуем данные для совместимости
         const newPosts = (action.payload || []).map(post => ({
           ...post,
           likes: post.reactions?.count_likes || 0,
           dislikes: post.reactions?.count_dislikes || 0,
-          user_reaction: post.reactions?.user_reaction || null
+          user_reaction: post.reactions?.user_reaction || null,
+          comments_count: post.comments?.length || 0
         }));
+
         const postsChanged = JSON.stringify(state.posts.map(p => p.id)) !== JSON.stringify(newPosts.map(p => p.id));
 
         if (postsChanged) {
@@ -390,6 +404,7 @@ const postSlice = createSlice({
         state.postsLoaded = false;
       })
 
+      // Получение конкретного поста
       .addCase(fetchPostById.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -401,7 +416,8 @@ const postSlice = createSlice({
           ...post,
           likes: post.reactions?.count_likes || 0,
           dislikes: post.reactions?.count_dislikes || 0,
-          user_reaction: post.reactions?.user_reaction || null
+          user_reaction: post.reactions?.user_reaction || null,
+          comments_count: post.comments?.length || 0
         };
       })
       .addCase(fetchPostById.rejected, (state, action) => {
@@ -409,6 +425,7 @@ const postSlice = createSlice({
         state.error = action.payload;
       })
 
+      // Получение комментариев
       .addCase(fetchPostComments.pending, (state, action) => {
         const postId = action.meta.arg.post_id;
         state.commentsLoading = true;
@@ -423,6 +440,7 @@ const postSlice = createSlice({
         if (!state.comments[postId] || state.comments[postId].length !== comments.length) {
           state.comments[postId] = comments || [];
 
+          // Обновляем счетчик комментариев в посте
           const postIndex = state.posts.findIndex(post => post.id === postId);
           if (postIndex !== -1) {
             state.posts[postIndex] = {
@@ -441,6 +459,7 @@ const postSlice = createSlice({
         }
       })
 
+      // Создание комментария
       .addCase(createComment.pending, (state) => {
         state.commentsLoading = true;
         state.commentError = null;
@@ -458,6 +477,7 @@ const postSlice = createSlice({
 
         state.comments[post_id].push(comment);
 
+        // Обновляем счетчик комментариев
         const postIndex = state.posts.findIndex(post => post.id === post_id);
         if (postIndex !== -1) {
           state.posts[postIndex] = {
@@ -471,6 +491,7 @@ const postSlice = createSlice({
         state.commentError = action.payload;
       })
 
+      // Реакции на пост
       .addCase(reactToPost.fulfilled, (state, action) => {
         const { post_id, count_likes, count_dislikes, new_reaction } = action.payload;
         console.log('📊 Обновляем реакции для поста:', {
@@ -480,6 +501,7 @@ const postSlice = createSlice({
           new_reaction
         });
 
+        // Обновляем в списке постов
         const postIndex = state.posts.findIndex(post => post.id === post_id);
         if (postIndex !== -1) {
           state.posts[postIndex] = {
@@ -496,6 +518,7 @@ const postSlice = createSlice({
           };
         }
 
+        // Обновляем выбранный пост
         if (state.selectedPost && state.selectedPost.id === post_id) {
           state.selectedPost = {
             ...state.selectedPost,
@@ -516,6 +539,7 @@ const postSlice = createSlice({
         state.error = action.payload;
       })
 
+      // Загрузка файлов
       .addCase(fetchDownloadUrl.fulfilled, (state, action) => {
         const { filePath, url } = action.payload;
         state.fileLinks = {
@@ -529,6 +553,6 @@ const postSlice = createSlice({
   }
 });
 
-export const { clearError, clearPosts, clearComments, setCommentsLoadingFlag } = postSlice.actions;
+export const { clearError, clearPosts, clearComments, clearPreview, setCommentsLoadingFlag } = postSlice.actions;
 
 export default postSlice.reducer;

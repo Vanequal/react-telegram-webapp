@@ -47,11 +47,24 @@ const IdeaCard = React.memo(function IdeaCard({
   const textWrapperRef = useRef(null);
   const cardRef = useRef(null);
 
-  // Derived data
+  // Derived data - обновляем для новой структуры API
   const currentPost = useMemo(() => posts.find(p => p.id === idea.id), [posts, idea.id]);
-  const currentLikes = currentPost?.likes ?? idea.likes ?? 0;
-  const currentDislikes = currentPost?.dislikes ?? idea.dislikes ?? 0;
-  const currentUserReaction = currentPost?.user_reaction ?? idea.userReaction ?? null;
+  
+  // Получаем данные реакций из разных источников для совместимости
+  const currentLikes = currentPost?.reactions?.count_likes ?? 
+                      currentPost?.likes ?? 
+                      idea.likes ?? 0;
+  
+  const currentDislikes = currentPost?.reactions?.count_dislikes ?? 
+                         currentPost?.dislikes ?? 
+                         idea.dislikes ?? 0;
+  
+  const currentUserReaction = currentPost?.reactions?.user_reaction ?? 
+                             currentPost?.user_reaction ?? 
+                             idea.userReaction ?? null;
+
+  // Получаем файлы из разных источников
+  const ideaFiles = idea.files || currentPost?.attachments || currentPost?.files || [];
 
   // Check if text needs "Read more" button
   useEffect(() => {
@@ -107,13 +120,23 @@ const IdeaCard = React.memo(function IdeaCard({
   const handleImageModalClose = useCallback(() => setSelectedImage(null), []);
 
   const formatTimestamp = (timestamp) => {
-    return new Date(timestamp).toLocaleString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    if (!timestamp) return '';
+    
+    try {
+      return new Date(timestamp).toLocaleString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.warn('Error formatting timestamp:', timestamp);
+      return '';
+    }
   };
+
+  // Определяем количество комментариев
+  const displayCommentCount = comments.length || commentCount || 0;
 
   return (
     <>
@@ -144,9 +167,9 @@ const IdeaCard = React.memo(function IdeaCard({
         )}
 
         {/* File Attachments */}
-        {idea.files?.length > 0 && (
+        {ideaFiles?.length > 0 && (
           <FileAttachments 
-            files={idea.files} 
+            files={ideaFiles} 
             onImageClick={handleImageClick}
           />
         )}
@@ -174,14 +197,14 @@ const IdeaCard = React.memo(function IdeaCard({
         >
           <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
           <span className="idea-card__comments">
-            {comments.length > 0
-              ? `${comments.length} комментариев`
+            {displayCommentCount > 0
+              ? `${displayCommentCount} комментариев`
               : 'Прокомментировать'}
           </span>
           <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
           <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
           <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>
-            {idea.views}
+            {idea.views || 0}
           </p>
         </div>
 
@@ -201,8 +224,8 @@ const IdeaCard = React.memo(function IdeaCard({
       {/* Image Modal */}
       {selectedImage && (
         <ImageModal
-          src={selectedImage.downloadUrl}
-          alt={selectedImage.alt}
+          src={selectedImage.downloadUrl || selectedImage.url}
+          alt={selectedImage.alt || selectedImage.name}
           onClose={handleImageModalClose}
         />
       )}
