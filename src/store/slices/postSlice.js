@@ -1,7 +1,37 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../api/axios';
 
-// Создание поста - используем новый endpoint /api/v1/posts
+export const uploadFiles = createAsyncThunk(
+  'post/uploadFiles',
+  async (files, { rejectWithValue }) => {
+    try {
+      if (!files || files.length === 0) {
+        return [];
+      }
+
+      console.log('📤 Загружаем файлы:', files.length);
+      
+      const formData = new FormData();
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
+
+      const res = await axios.post('/api/v1/files', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      console.log('✅ Файлы загружены:', res.data);
+      return res.data; // Массив объектов с id, stored_path и т.д.
+    } catch (err) {
+      console.error('🔥 Ошибка загрузки файлов:', err?.response?.data || err.message);
+      return rejectWithValue(err?.response?.data?.detail || 'Ошибка загрузки файлов');
+    }
+  }
+);
+
+// Создание поста - обновленная версия с поддержкой файлов
 export const createPost = createAsyncThunk(
   'post/create',
   async ({ message_text, section_key, theme_id, publishing_method = 'original', files = [] }, { rejectWithValue, dispatch }) => {
@@ -20,7 +50,7 @@ export const createPost = createAsyncThunk(
           type: 'post',
           publishing_method: publishing_method
         },
-        attachments: uploadedFiles.map(file => file.id) // Используем ID загруженных файлов
+        attachments: uploadedFiles || [] // Всегда массив, даже если пустой
       };
 
       const requestConfig = {
@@ -308,36 +338,6 @@ export const fetchDownloadUrl = createAsyncThunk(
         status: err?.response?.status
       });
       return rejectWithValue(err?.response?.data?.detail || 'Ошибка загрузки ссылки');
-    }
-  }
-);
-
-export const uploadFiles = createAsyncThunk(
-  'post/uploadFiles',
-  async (files, { rejectWithValue }) => {
-    try {
-      if (!files || files.length === 0) {
-        return [];
-      }
-
-      console.log('📤 Загружаем файлы:', files.length);
-      
-      const formData = new FormData();
-      files.forEach((file) => {
-        formData.append('files', file);
-      });
-
-      const res = await axios.post('/api/v1/files', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      console.log('✅ Файлы загружены:', res.data);
-      return res.data; // Массив объектов с id, stored_path и т.д.
-    } catch (err) {
-      console.error('🔥 Ошибка загрузки файлов:', err?.response?.data || err.message);
-      return rejectWithValue(err?.response?.data?.detail || 'Ошибка загрузки файлов');
     }
   }
 );

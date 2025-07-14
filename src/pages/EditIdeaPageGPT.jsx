@@ -64,24 +64,29 @@ const EditIdeaPageGPT = () => {
       ? postData.files 
       : attachedFiles;
 
-    const payload = {
-      message_text: text,
-      section_key: sectionKey,
-      theme_id: themeId,
-      files: filesToUpload,
-      publishing_method
-    };
-
     console.log('📤 Публикуем пост:', {
       text: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
       publishing_method,
-      files_count: filesToUpload.length,
+      files_count: filesToUpload?.length || 0,
       section_key: sectionKey,
       theme_id: themeId
     });
 
+    // Выбираем правильную функцию в зависимости от наличия файлов
+    const createFunction = (filesToUpload && filesToUpload.length > 0) 
+      ? createPost 
+      : createPost; // Пока используем ту же функцию
+
+    const payload = {
+      message_text: text,
+      section_key: sectionKey,
+      theme_id: themeId,
+      files: filesToUpload || [],
+      publishing_method
+    };
+
     try {
-      const actionResult = await dispatch(createPost(payload));
+      const actionResult = await dispatch(createFunction(payload));
       
       if (actionResult.meta.requestStatus === 'fulfilled') {
         console.log('✅ Пост успешно опубликован');
