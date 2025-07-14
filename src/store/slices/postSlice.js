@@ -111,104 +111,53 @@ export const fetchPostById = createAsyncThunk(
   }
 );
 
-// Получение комментариев - используем данные из поста, так как комментарии приходят в поле comments
-export const fetchPostComments = createAsyncThunk(
-  'post/fetchComments',
-  async ({ post_id, section_key, theme_id }, { rejectWithValue, getState }) => {
-    try {
-      const state = getState();
-      const isLoading = state.post.commentsLoadingFlags[post_id];
-      const hasComments = state.post.comments[post_id];
-
-      if (isLoading || hasComments) {
-        return { postId: post_id, comments: hasComments || [] };
-      }
-
-      console.log('📥 Загрузка комментариев через получение поста:', {
-        message_id: post_id,
-        section_key: section_key,
-        theme_id
-      });
-
-      // Получаем пост целиком, комментарии в нем уже есть
-      const res = await axios.get(`/api/v1/posts/${post_id}`, {
-        params: {
-          section_key: section_key,
-          theme_id: theme_id
-        }
-      });
-
-      console.log('✅ Комментарии загружены:', res.data.comments);
-      return { postId: post_id, comments: res.data.comments || [] };
-    } catch (err) {
-      console.error('🔥 Ошибка загрузки комментариев:', err?.response?.data || err.message);
-      return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки комментариев');
-    }
-  }
-);
-
-// Создание комментария - оставляем старый endpoint, так как новый не описан
 export const createComment = createAsyncThunk(
   'post/createComment',
   async ({ post_id, message_text, section_key, theme_id, files = [] }, { rejectWithValue }) => {
     try {
       console.log('📤 Создание комментария:', {
         text: message_text,
-        post_id: post_id,
+        content_id: post_id,
         section_key: section_key,
         theme_id,
         files_count: files.length
       });
 
-      const dataPayload = {
-        text: message_text,
-        type: 'comment',
-        content_id: post_id,
+      // Готовим данные согласно новому API
+      const requestData = {
+        data: {
+          text: message_text,
+          type: 'comment',
+          content_id: post_id,
+          // reply_to_id: 0 // Добавить при необходимости для ответов на комментарии
+        },
+        attachments: files || []
       };
 
-      let requestBody;
-      let requestConfig = {
+      const requestConfig = {
         params: {
           section_key: section_key,
-          theme_id: theme_id,
-          data: JSON.stringify(dataPayload)
+          theme_id: theme_id
+        },
+        headers: {
+          'Content-Type': 'application/json'
         }
       };
 
-      if (files && files.length > 0) {
-        const formData = new FormData();
-        files.forEach((file) => {
-          formData.append('files', file);
-        });
-        requestBody = formData;
-        requestConfig.headers = {
-          'Content-Type': 'multipart/form-data'
-        };
-      } else {
-        requestBody = null;
-        requestConfig.headers = {
-          'Content-Type': 'application/json'
-        };
-      }
-
-      console.log('📋 Отправляем запрос с параметрами:', {
-        url: '/api/v1/messages',
-        params: requestConfig.params,
-        hasFiles: files.length > 0,
-        hasBody: !!requestBody
+      console.log('📋 Отправляем запрос на создание комментария:', {
+        url: '/api/v1/comments',
+        data: requestData,
+        params: requestConfig.params
       });
 
-      const res = await axios.post('/api/v1/messages', requestBody, requestConfig);
+      // Используем новый endpoint для комментариев
+      const res = await axios.post('/api/v1/comments', requestData, requestConfig);
 
       console.log('✅ Комментарий создан:', res.data);
 
       return {
         ...res.data,
-        post_id: post_id,
-        text: res.data.text,
-        author: res.data.author,
-        created_at: res.data.created_at,
-        id: res.data.id
+        post_id: post_id, // Добавляем для совместимости с существующим кодом
       };
     } catch (err) {
       console.error('🔥 Ошибка создания комментария:', {
@@ -231,6 +180,44 @@ export const createComment = createAsyncThunk(
   }
 );
 
+// Получение комментариев - используем новый endpoint /api/v1/comments
+export const fetchPostComments = createAsyncThunk(
+  'post/fetchComments',
+  async ({ post_id, section_key, theme_id }, { rejectWithValue, getState }) => {
+    try {
+      const state = getState();
+      const isLoading = state.post.commentsLoadingFlags[post_id];
+      const hasComments = state.post.comments[post_id];
+
+      if (isLoading || hasComments) {
+        return { postId: post_id, comments: hasComments || [] };
+      }
+
+      console.log('📥 Загрузка комментариев через новый endpoint:', {
+        message_id: post_id,
+        section_key: section_key,
+        theme_id
+      });
+
+      // Используем новый endpoint для получения комментариев
+      const res = await axios.get('/api/v1/comments', {
+        params: {
+          message_id: post_id,
+          section_key: section_key,
+          theme_id: theme_id,
+          limit: 100,
+          offset: 0
+        }
+      });
+
+      console.log('✅ Комментарии загружены:', res.data);
+      return { postId: post_id, comments: res.data || [] };
+    } catch (err) {
+      console.error('🔥 Ошибка загрузки комментариев:', err?.response?.data || err.message);
+      return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки комментариев');
+    }
+  }
+);
 // Реакция на пост - endpoint правильный, но убираем лишний параметр
 export const reactToPost = createAsyncThunk(
   'post/reactToPost',
