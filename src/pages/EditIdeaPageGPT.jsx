@@ -29,13 +29,14 @@ const EditIdeaPageGPT = () => {
   // Local state
   const [postData, setPostData] = useState({
     text: '',
-    files: []
+    files: attachedFiles // Инициализируем файлами из навигации
   });
   
   // Redux state - используем превью из Redux или из навигации
   const reduxPreview = useSelector(state => state.post.preview);
   const preview = reduxPreview || navigationPreview;
   const loading = useSelector(state => state.post.loading);
+  const error = useSelector(state => state.post.error);
 
   // Derived values
   const sectionKey = searchParams.get('section_key') || DEFAULT_SECTION_KEY;
@@ -53,58 +54,95 @@ const EditIdeaPageGPT = () => {
   }, [postData.text, dispatch, sectionKey, themeId]);
 
   const handlePublish = useCallback(async (text, publishing_method = 'original') => {
-    if (!text) return;
+    if (!text) {
+      alert('Текст для публикации не может быть пустым');
+      return;
+    }
 
-    // Используем новую структуру данных для API
+    // Используем файлы из postData, которые могли быть обновлены пользователем
+    const filesToUpload = postData.files && postData.files.length > 0 
+      ? postData.files 
+      : attachedFiles;
+
     const payload = {
       message_text: text,
       section_key: sectionKey,
       theme_id: themeId,
-      files: attachedFiles,
+      files: filesToUpload,
       publishing_method
     };
 
+    console.log('📤 Публикуем пост:', {
+      text: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
+      publishing_method,
+      files_count: filesToUpload.length,
+      section_key: sectionKey,
+      theme_id: themeId
+    });
+
     try {
       const actionResult = await dispatch(createPost(payload));
+      
       if (actionResult.meta.requestStatus === 'fulfilled') {
+        console.log('✅ Пост успешно опубликован');
         navigate('/mindvault');
       } else {
         // Обработка ошибок
         const errorMsg = typeof actionResult.payload === 'string' 
           ? actionResult.payload 
           : actionResult.payload?.message || actionResult.payload?.detail || 'Неизвестная ошибка';
-        console.warn('Error creating post:', errorMsg);
         
-        // Можно показать пользователю уведомление об ошибке
+        console.error('❌ Ошибка публикации:', errorMsg);
         alert(`Ошибка публикации: ${errorMsg}`);
       }
     } catch (error) {
-      console.error('Error publishing:', error);
+      console.error('❌ Исключение при публикации:', error);
       alert('Произошла ошибка при публикации поста');
     }
-  }, [dispatch, sectionKey, themeId, attachedFiles, navigate]);
+  }, [dispatch, sectionKey, themeId, postData.files, attachedFiles, navigate]);
 
   const handlePublishOriginal = useCallback(() => {
+    if (!preview?.original_text) {
+      alert('Оригинальный текст недоступен');
+      return;
+    }
     handlePublish(preview.original_text, 'original');
   }, [handlePublish, preview]);
 
   const handlePublishGPT = useCallback(() => {
+    if (!preview?.gpt_text) {
+      alert('GPT версия недоступна');
+      return;
+    }
     handlePublish(preview.gpt_text, 'gpt');
   }, [handlePublish, preview]);
 
   const handleEditGPT = useCallback(() => {
+    if (!preview?.gpt_text) {
+      alert('GPT версия недоступна для редактирования');
+      return;
+    }
     navigate('/textgpteditpage', { 
-      state: { gptText: preview.gpt_text } 
+      state: { 
+        gptText: preview.gpt_text,
+        attachedFiles: postData.files || attachedFiles
+      } 
     });
-  }, [navigate, preview]);
+  }, [navigate, preview, postData.files, attachedFiles]);
 
   const handleNavigateBack = useCallback(() => {
     window.history.back();
   }, []);
 
   const handlePostDataChange = useCallback((newData) => {
-    setPostData(newData);
+    setPostData(prev => ({
+      ...prev,
+      ...newData
+    }));
   }, []);
+
+  // Показываем ошибки пользователю
+  const displayError = error && typeof error === 'string' ? error : null;
 
   return (
     <div className="edit-idea-page-gpt">
@@ -117,13 +155,19 @@ const EditIdeaPageGPT = () => {
       />
 
       <div className="edit-idea-page-gpt__content">
+        {displayError && (
+          <div className="edit-idea-page-gpt__error">
+            <p className="error-message">❌ {displayError}</p>
+          </div>
+        )}
+
         {!preview ? (
           <EmptyPreview sectionKey={sectionKey} />
         ) : (
           <>
             <IdeaPreviewCard
               preview={preview}
-              attachedFiles={attachedFiles}
+              attachedFiles={postData.files || attachedFiles}
             />
             
             <PreviewActions
@@ -144,6 +188,7 @@ const EditIdeaPageGPT = () => {
         onSubmit={handleSend}
         placeholder="Написать заново"
         disabled={loading}
+        showFileCount={true}
       />
     </div>
   );
@@ -174,6 +219,7 @@ const PreviewActions = ({
       className="idea-card-gpt__action-button" 
       onClick={onPublishOriginal}
       disabled={loading || !hasOriginal}
+      title={!hasOriginal ? 'Оригинальный текст недоступен' : ''}
     >
       {loading ? 'Публикуем...' : 'Опубликовать оригинал'}
     </button>
@@ -182,6 +228,7 @@ const PreviewActions = ({
       className="idea-card-gpt__action-button" 
       onClick={onPublishGPT}
       disabled={loading || !hasGPT}
+      title={!hasGPT ? 'GPT версия недоступна' : ''}
     >
       {loading ? 'Публикуем...' : 'Опубликовать версию GPT'}
     </button>
@@ -190,6 +237,7 @@ const PreviewActions = ({
       className="idea-card-gpt__action-button idea-card-gpt__action-button--secondary" 
       onClick={onEditGPT}
       disabled={loading || !hasGPT}
+      title={!hasGPT ? 'GPT версия недоступна для редактирования' : ''}
     >
       Редактировать версию GPT
     </button>

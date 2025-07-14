@@ -4,8 +4,15 @@ import axios from '../../api/axios';
 // Создание поста - используем новый endpoint /api/v1/posts
 export const createPost = createAsyncThunk(
   'post/create',
-  async ({ message_text, section_key, theme_id, publishing_method = 'original', files = [] }, { rejectWithValue }) => {
+  async ({ message_text, section_key, theme_id, publishing_method = 'original', files = [] }, { rejectWithValue, dispatch }) => {
     try {
+      // Сначала загружаем файлы, если они есть
+      let uploadedFiles = [];
+      if (files && files.length > 0) {
+        const uploadResult = await dispatch(uploadFiles(files)).unwrap();
+        uploadedFiles = uploadResult;
+      }
+
       // Готовим данные согласно новому API
       const requestData = {
         data: {
@@ -13,7 +20,7 @@ export const createPost = createAsyncThunk(
           type: 'post',
           publishing_method: publishing_method
         },
-        attachments: files || []
+        attachments: uploadedFiles.map(file => file.id) // Используем ID загруженных файлов
       };
 
       const requestConfig = {
@@ -26,20 +33,37 @@ export const createPost = createAsyncThunk(
         }
       };
 
-      console.log('Отправляем запрос на создание поста:', {
+      console.log('📤 Отправляем запрос на создание поста:', {
         url: '/api/v1/posts',
         data: requestData,
-        params: requestConfig.params
+        params: requestConfig.params,
+        attachments_count: uploadedFiles.length
       });
 
       // Используем новый endpoint
       const res = await axios.post('/api/v1/posts', requestData, requestConfig);
 
       console.log('✅ Пост успешно создан:', res.data);
-      return res.data;
+      
+      // Дополняем ответ информацией о файлах для удобства
+      return {
+        ...res.data,
+        uploaded_files: uploadedFiles
+      };
     } catch (err) {
       console.error('🔥 Ошибка создания поста:', err?.response?.data || err.message);
-      return rejectWithValue(err?.response?.data?.detail || err?.response?.data?.error || 'Ошибка создания поста');
+      
+      // Детальная обработка ошибок валидации
+      if (err?.response?.data?.error?.details) {
+        console.error('📋 Детали ошибок валидации:', err.response.data.error.details);
+      }
+      
+      return rejectWithValue(
+        err?.response?.data?.error?.message || 
+        err?.response?.data?.detail || 
+        err?.response?.data?.error || 
+        'Ошибка создания поста'
+      );
     }
   }
 );
@@ -110,17 +134,24 @@ export const fetchPostById = createAsyncThunk(
     }
   }
 );
-
+// Создание комментария - исправленная версия с загрузкой файлов
 export const createComment = createAsyncThunk(
   'post/createComment',
-  async ({ post_id, message_text, section_key, theme_id, files = [] }, { rejectWithValue }) => {
+  async ({ post_id, message_text, section_key, theme_id, files = [] }, { rejectWithValue, dispatch }) => {
     try {
+      // Сначала загружаем файлы, если они есть
+      let uploadedFiles = [];
+      if (files && files.length > 0) {
+        const uploadResult = await dispatch(uploadFiles(files)).unwrap();
+        uploadedFiles = uploadResult;
+      }
+
       console.log('📤 Создание комментария:', {
         text: message_text,
         content_id: post_id,
         section_key: section_key,
         theme_id,
-        files_count: files.length
+        files_count: uploadedFiles.length
       });
 
       // Готовим данные согласно новому API
@@ -129,9 +160,8 @@ export const createComment = createAsyncThunk(
           text: message_text,
           type: 'comment',
           content_id: post_id,
-          // reply_to_id: 0 // Добавить при необходимости для ответов на комментарии
         },
-        attachments: files || []
+        attachments: uploadedFiles.map(file => file.id) // Используем ID загруженных файлов
       };
 
       const requestConfig = {
@@ -158,6 +188,7 @@ export const createComment = createAsyncThunk(
       return {
         ...res.data,
         post_id: post_id, // Добавляем для совместимости с существующим кодом
+        uploaded_files: uploadedFiles
       };
     } catch (err) {
       console.error('🔥 Ошибка создания комментария:', {
@@ -180,7 +211,7 @@ export const createComment = createAsyncThunk(
   }
 );
 
-// Получение комментариев - используем новый endpoint /api/v1/comments
+// Получение комментариев - исправленная версия
 export const fetchPostComments = createAsyncThunk(
   'post/fetchComments',
   async ({ post_id, section_key, theme_id }, { rejectWithValue, getState }) => {
@@ -218,6 +249,7 @@ export const fetchPostComments = createAsyncThunk(
     }
   }
 );
+
 // Реакция на пост - endpoint правильный, но убираем лишний параметр
 export const reactToPost = createAsyncThunk(
   'post/reactToPost',
@@ -280,6 +312,36 @@ export const fetchDownloadUrl = createAsyncThunk(
   }
 );
 
+export const uploadFiles = createAsyncThunk(
+  'post/uploadFiles',
+  async (files, { rejectWithValue }) => {
+    try {
+      if (!files || files.length === 0) {
+        return [];
+      }
+
+      console.log('📤 Загружаем файлы:', files.length);
+      
+      const formData = new FormData();
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
+
+      const res = await axios.post('/api/v1/files', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      console.log('✅ Файлы загружены:', res.data);
+      return res.data; // Массив объектов с id, stored_path и т.д.
+    } catch (err) {
+      console.error('🔥 Ошибка загрузки файлов:', err?.response?.data || err.message);
+      return rejectWithValue(err?.response?.data?.detail || 'Ошибка загрузки файлов');
+    }
+  }
+);
+
 const postSlice = createSlice({
   name: 'post',
   initialState: {
@@ -294,6 +356,7 @@ const postSlice = createSlice({
     commentError: null,
     commentsLoadingFlags: {},
     postsLoaded: false,
+    uploadedFiles: [],
   },
   reducers: {
     clearError: (state) => {
@@ -324,27 +387,41 @@ const postSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Создание поста
-      .addCase(createPost.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(createPost.fulfilled, (state, action) => {
-        state.loading = false;
-        // Добавляем новый пост в начало списка
-        const newPost = {
-          ...action.payload,
-          likes: action.payload.reactions?.count_likes || 0,
-          dislikes: action.payload.reactions?.count_dislikes || 0,
-          user_reaction: action.payload.reactions?.user_reaction || null
-        };
-        state.posts.unshift(newPost);
-        state.preview = null; // Очищаем превью после публикации
-      })
-      .addCase(createPost.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+    .addCase(uploadFiles.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(uploadFiles.fulfilled, (state, action) => {
+      state.loading = false;
+      state.uploadedFiles = action.payload;
+    })
+    .addCase(uploadFiles.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
+
+    // Создание поста
+    .addCase(createPost.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(createPost.fulfilled, (state, action) => {
+      state.loading = false;
+      // Добавляем новый пост в начало списка
+      const newPost = {
+        ...action.payload,
+        likes: action.payload.reactions?.count_likes || 0,
+        dislikes: action.payload.reactions?.count_dislikes || 0,
+        user_reaction: action.payload.reactions?.user_reaction || null
+      };
+      state.posts.unshift(newPost);
+      state.preview = null; // Очищаем превью после публикации
+      state.uploadedFiles = []; // Очищаем загруженные файлы
+    })
+    .addCase(createPost.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
 
       // Создание превью
       .addCase(createPostPreview.pending, (state) => {
@@ -540,6 +617,6 @@ const postSlice = createSlice({
   }
 });
 
-export const { clearError, clearPosts, clearComments, clearPreview, setCommentsLoadingFlag } = postSlice.actions;
+export const { clearError, clearPosts, clearComments, clearPreview, setCommentsLoadingFlag, clearUploadedFiles  } = postSlice.actions;
 
 export default postSlice.reducer;
