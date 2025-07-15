@@ -52,7 +52,7 @@ export const createPost = createAsyncThunk(
           type: 'post',
           publishing_method: publishing_method
         },
-        attachments: uploadedFiles.map(file => file.id) // Используем только ID файлов
+        attachments: uploadedFiles || [] // Используем весь объект файла, а не только ID
       };
 
       const requestConfig = {
@@ -193,7 +193,7 @@ export const createComment = createAsyncThunk(
           type: 'comment',
           content_id: post_id,
         },
-        attachments: uploadedFiles.map(file => file.id) // Используем ID загруженных файлов
+        attachments: uploadedFiles || [] // Используем весь объект файла, а не только ID
       };
 
       const requestConfig = {
