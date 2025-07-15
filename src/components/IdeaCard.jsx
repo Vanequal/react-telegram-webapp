@@ -1,7 +1,7 @@
 // components/IdeaCard.jsx
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { reactToPost } from '../store/slices/postSlice';
+import { reactToPost, fetchDownloadUrl } from '../store/slices/postSlice';
 import { getViewedIdeas, markIdeaAsViewed } from '../utils/utils';
 
 // Components
@@ -37,6 +37,7 @@ const IdeaCard = React.memo(function IdeaCard({
   const dispatch = useDispatch();
   const posts = useSelector(state => state.post.posts);
   const comments = useSelector(state => state.post.comments[idea.id] || []);
+  const fileLinks = useSelector(state => state.post.fileLinks);
   
   // Local state
   const [expanded, setExpanded] = useState(isExpanded);
@@ -63,8 +64,39 @@ const IdeaCard = React.memo(function IdeaCard({
                              currentPost?.user_reaction ?? 
                              idea.userReaction ?? null;
 
-  // Получаем файлы из разных источников
-  const ideaFiles = idea.files || currentPost?.attachments || currentPost?.files || [];
+  // Правильно извлекаем файлы из новой структуры API
+  const ideaFiles = useMemo(() => {
+    // Проверяем разные источники файлов для совместимости
+    const rawFiles = idea.attachments || 
+                     currentPost?.attachments || 
+                     idea.files || 
+                     currentPost?.files || 
+                     [];
+
+    console.log('📁 Обработка файлов для поста:', {
+      postId: idea.id,
+      rawFiles: rawFiles,
+      rawFilesLength: rawFiles.length
+    });
+
+    if (!rawFiles || rawFiles.length === 0) {
+      return [];
+    }
+
+    // Возвращаем файлы в том формате, который ожидает FileAttachments
+    return rawFiles.map((file, index) => ({
+      // Сохраняем оригинальную структуру
+      ...file,
+      // Добавляем поля для совместимости со старым FileAttachments
+      url: file.stored_path || file.url,
+      relative_path: file.stored_path || file.relative_path,
+      original_name: file.original_name || file.name,
+      extension: file.extension || (file.original_name ? 
+        file.original_name.split('.').pop().toLowerCase() : ''),
+      // Индекс для ключей
+      index: index
+    }));
+  }, [idea.attachments, currentPost?.attachments, idea.files, currentPost?.files, idea.id]);
 
   // Check if text needs "Read more" button
   useEffect(() => {
@@ -145,7 +177,9 @@ const IdeaCard = React.memo(function IdeaCard({
         <div className="idea-card__top">
           <div className="idea-card__user">
             <img src={userIcon} alt="User" className="idea-card__user-icon" />
-            <span className="idea-card__username">{idea.username}</span>
+            <span className="idea-card__username">
+              {idea.author?.username || idea.username || 'Аноним'}
+            </span>
           </div>
           {idea.pinned && <img src={pinIcon} alt="Pin" className="idea-card__pin" />}
         </div>
@@ -156,7 +190,9 @@ const IdeaCard = React.memo(function IdeaCard({
           className={`idea-card__text-wrapper ${expanded ? 'expanded' : ''}`}
         >
           <div className="idea-card__text-row">
-            <div className="idea-card__text">{idea.preview}</div>
+            <div className="idea-card__text">
+              {idea.text || idea.preview || idea.content || 'Нет текста'}
+            </div>
           </div>
         </div>
 
@@ -168,10 +204,12 @@ const IdeaCard = React.memo(function IdeaCard({
 
         {/* File Attachments */}
         {ideaFiles?.length > 0 && (
-          <FileAttachments 
-            files={ideaFiles} 
-            onImageClick={handleImageClick}
-          />
+          <div className="idea-card__files">
+            <FileAttachments 
+              files={ideaFiles} 
+              onImageClick={handleImageClick}
+            />
+          </div>
         )}
 
         {/* Reactions */}
@@ -183,7 +221,7 @@ const IdeaCard = React.memo(function IdeaCard({
             onReaction={handleReaction}
           />
           <span className="idea-card__timestamp">
-            {formatTimestamp(idea.timestamp)}
+            {formatTimestamp(idea.created_at || idea.timestamp)}
           </span>
         </div>
 
