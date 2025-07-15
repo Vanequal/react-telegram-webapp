@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../api/axios';
 
+// Загрузка файлов через правильный endpoint
 export const uploadFiles = createAsyncThunk(
   'post/uploadFiles',
   async (files, { rejectWithValue }) => {
@@ -13,10 +14,11 @@ export const uploadFiles = createAsyncThunk(
       
       const formData = new FormData();
       files.forEach((file) => {
-        formData.append('files', file);
+        formData.append('attachments', file); // Изменено с 'files' на 'attachments'
       });
 
-      const res = await axios.post('/api/v1/files', formData, {
+      // Используем правильный endpoint
+      const res = await axios.post('/api/v1/attachments', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -31,7 +33,7 @@ export const uploadFiles = createAsyncThunk(
   }
 );
 
-// Создание поста - обновленная версия с поддержкой файлов
+// Создание поста - исправленная версия с поддержкой файлов
 export const createPost = createAsyncThunk(
   'post/create',
   async ({ message_text, section_key, theme_id, publishing_method = 'original', files = [] }, { rejectWithValue, dispatch }) => {
@@ -43,14 +45,14 @@ export const createPost = createAsyncThunk(
         uploadedFiles = uploadResult;
       }
 
-      // Готовим данные согласно новому API
+      // Готовим данные согласно API
       const requestData = {
         data: {
           text: message_text,
           type: 'post',
           publishing_method: publishing_method
         },
-        attachments: uploadedFiles || [] // Всегда массив, даже если пустой
+        attachments: uploadedFiles.map(file => file.id) // Используем только ID файлов
       };
 
       const requestConfig = {
@@ -70,7 +72,6 @@ export const createPost = createAsyncThunk(
         attachments_count: uploadedFiles.length
       });
 
-      // Используем новый endpoint
       const res = await axios.post('/api/v1/posts', requestData, requestConfig);
 
       console.log('✅ Пост успешно создан:', res.data);
@@ -123,7 +124,7 @@ export const createPostPreview = createAsyncThunk(
   }
 );
 
-// Получение постов в секции - endpoint остался тот же
+// Получение постов в секции
 export const fetchPostsInSection = createAsyncThunk(
   'post/fetchPostsInSection',
   async ({ section_key, theme_id, limit = 100, offset = 0 }, { rejectWithValue }) => {
@@ -145,7 +146,7 @@ export const fetchPostsInSection = createAsyncThunk(
   }
 );
 
-// Получение конкретного поста - endpoint изменился на /api/v1/posts/{message_id}
+// Получение конкретного поста
 export const fetchPostById = createAsyncThunk(
   'post/fetchPostById',
   async ({ message_id, section_key, theme_id }, { rejectWithValue }) => {
@@ -164,6 +165,7 @@ export const fetchPostById = createAsyncThunk(
     }
   }
 );
+
 // Создание комментария - исправленная версия с загрузкой файлов
 export const createComment = createAsyncThunk(
   'post/createComment',
@@ -184,7 +186,7 @@ export const createComment = createAsyncThunk(
         files_count: uploadedFiles.length
       });
 
-      // Готовим данные согласно новому API
+      // Готовим данные согласно API
       const requestData = {
         data: {
           text: message_text,
@@ -210,7 +212,6 @@ export const createComment = createAsyncThunk(
         params: requestConfig.params
       });
 
-      // Используем новый endpoint для комментариев
       const res = await axios.post('/api/v1/comments', requestData, requestConfig);
 
       console.log('✅ Комментарий создан:', res.data);
@@ -241,7 +242,7 @@ export const createComment = createAsyncThunk(
   }
 );
 
-// Получение комментариев - исправленная версия
+// Получение комментариев
 export const fetchPostComments = createAsyncThunk(
   'post/fetchComments',
   async ({ post_id, section_key, theme_id }, { rejectWithValue, getState }) => {
@@ -254,13 +255,12 @@ export const fetchPostComments = createAsyncThunk(
         return { postId: post_id, comments: hasComments || [] };
       }
 
-      console.log('📥 Загрузка комментариев через новый endpoint:', {
+      console.log('📥 Загрузка комментариев:', {
         message_id: post_id,
         section_key: section_key,
         theme_id
       });
 
-      // Используем новый endpoint для получения комментариев
       const res = await axios.get('/api/v1/comments', {
         params: {
           message_id: post_id,
@@ -280,7 +280,7 @@ export const fetchPostComments = createAsyncThunk(
   }
 );
 
-// Реакция на пост - endpoint правильный, но убираем лишний параметр
+// Реакция на пост
 export const reactToPost = createAsyncThunk(
   'post/reactToPost',
   async ({ post_id, reaction, section_key, theme_id }, { rejectWithValue }) => {
@@ -292,10 +292,9 @@ export const reactToPost = createAsyncThunk(
         theme_id
       });
 
-      // Убираем дублирование reaction в URL и body
       const res = await axios.post(
         `/api/v1/messages/${post_id}/${reaction}`,
-        { reaction }, // Оставляем body для совместимости, хотя реакция уже в URL
+        { reaction },
         {
           params: {
             section_key,
@@ -317,24 +316,24 @@ export const reactToPost = createAsyncThunk(
   }
 );
 
-// Получение ссылки на файл - оставляем без изменений
+// Получение ссылки на файл - обновленная версия для attachments
 export const fetchDownloadUrl = createAsyncThunk(
   'post/fetchDownloadUrl',
-  async ({ filePath, mimeType = 'application/octet-stream' }, { rejectWithValue }) => {
+  async ({ attachmentUrl }, { rejectWithValue }) => {
     try {
-      const encodedUrl = encodeURIComponent(filePath);
-      const downloadUrl = `${axios.defaults.baseURL}/api/v1/files/download/${encodedUrl}?url=${encodeURIComponent(filePath)}&mime_type=${encodeURIComponent(mimeType)}`;
+      // Используем новый endpoint для скачивания файлов
+      const downloadUrl = `${axios.defaults.baseURL}/api/v1/attachments/${encodeURIComponent(attachmentUrl)}`;
 
       console.log(`✅ Сформирован URL для файла:`, {
-        original: filePath,
+        original: attachmentUrl,
         downloadUrl: downloadUrl
       });
 
-      return { filePath, url: downloadUrl };
+      return { attachmentUrl, url: downloadUrl };
     } catch (err) {
       console.error('🔥 Ошибка формирования URL файла:', {
         error: err?.response?.data || err.message,
-        filePath,
+        attachmentUrl,
         status: err?.response?.status
       });
       return rejectWithValue(err?.response?.data?.detail || 'Ошибка загрузки ссылки');
@@ -379,6 +378,9 @@ const postSlice = createSlice({
     },
     clearPreview: (state) => {
       state.preview = null;
+    },
+    clearUploadedFiles: (state) => {
+      state.uploadedFiles = [];
     },
     setCommentsLoadingFlag: (state, action) => {
       const { postId, loading } = action.payload;
@@ -605,10 +607,10 @@ const postSlice = createSlice({
 
       // Загрузка файлов
       .addCase(fetchDownloadUrl.fulfilled, (state, action) => {
-        const { filePath, url } = action.payload;
+        const { attachmentUrl, url } = action.payload;
         state.fileLinks = {
           ...state.fileLinks,
-          [filePath]: url
+          [attachmentUrl]: url
         };
       })
       .addCase(fetchDownloadUrl.rejected, (state, action) => {
@@ -617,6 +619,6 @@ const postSlice = createSlice({
   }
 });
 
-export const { clearError, clearPosts, clearComments, clearPreview, setCommentsLoadingFlag, clearUploadedFiles  } = postSlice.actions;
+export const { clearError, clearPosts, clearComments, clearPreview, clearUploadedFiles, setCommentsLoadingFlag } = postSlice.actions;
 
 export default postSlice.reducer;

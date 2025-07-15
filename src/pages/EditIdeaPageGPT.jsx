@@ -1,8 +1,8 @@
 // EditIdeaPageGPT.jsx
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { createPostPreview, createPost } from '../store/slices/postSlice';
+import { createPostPreview, createPost, clearError } from '../store/slices/postSlice';
 
 // Components
 import MindVaultHeader from '../components/UI/MindVaultHeader';
@@ -42,6 +42,11 @@ const EditIdeaPageGPT = () => {
   const sectionKey = searchParams.get('section_key') || DEFAULT_SECTION_KEY;
   const themeId = Number(searchParams.get('theme_id')) || DEFAULT_THEME_ID;
 
+  // Очищаем ошибки при монтировании компонента
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch]);
+
   // Handlers
   const handleSend = useCallback(() => {
     if (postData.text.trim()) {
@@ -54,7 +59,7 @@ const EditIdeaPageGPT = () => {
   }, [postData.text, dispatch, sectionKey, themeId]);
 
   const handlePublish = useCallback(async (text, publishing_method = 'original') => {
-    if (!text) {
+    if (!text || !text.trim()) {
       alert('Текст для публикации не может быть пустым');
       return;
     }
@@ -72,13 +77,8 @@ const EditIdeaPageGPT = () => {
       theme_id: themeId
     });
 
-    // Выбираем правильную функцию в зависимости от наличия файлов
-    const createFunction = (filesToUpload && filesToUpload.length > 0) 
-      ? createPost 
-      : createPost; // Пока используем ту же функцию
-
     const payload = {
-      message_text: text,
+      message_text: text.trim(),
       section_key: sectionKey,
       theme_id: themeId,
       files: filesToUpload || [],
@@ -86,10 +86,10 @@ const EditIdeaPageGPT = () => {
     };
 
     try {
-      const actionResult = await dispatch(createFunction(payload));
+      const actionResult = await dispatch(createPost(payload));
       
       if (actionResult.meta.requestStatus === 'fulfilled') {
-        console.log('✅ Пост успешно опубликован');
+        console.log('✅ Пост успешно опубликован:', actionResult.payload);
         navigate('/mindvault');
       } else {
         // Обработка ошибок
@@ -163,6 +163,12 @@ const EditIdeaPageGPT = () => {
         {displayError && (
           <div className="edit-idea-page-gpt__error">
             <p className="error-message">❌ {displayError}</p>
+            <button 
+              className="error-dismiss"
+              onClick={() => dispatch(clearError())}
+            >
+              ✕
+            </button>
           </div>
         )}
 
@@ -208,6 +214,11 @@ const EmptyPreview = ({ sectionKey }) => (
     <p className="edit-idea-page-gpt__empty-hint">
       Напишите текст ниже, чтобы создать превью с помощью ИИ.
     </p>
+    {sectionKey && (
+      <p className="edit-idea-page-gpt__section-info">
+        Секция: <strong>{sectionKey}</strong>
+      </p>
+    )}
   </div>
 );
 
