@@ -1,9 +1,44 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import '../styles/components/file-attachments.scss';
 
 const FileAttachments = ({ files, onImageClick }) => {
   const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://cd37168a51c2.ngrok-free.app';
+  const [imageCache, setImageCache] = useState({});
+
+  // Функция для загрузки изображения через fetch с обходом ngrok
+  const loadImageAsBase64 = async (url, fileId) => {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+          'Accept': 'image/*',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const base64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+
+      setImageCache(prev => ({
+        ...prev,
+        [fileId]: base64
+      }));
+
+      return base64;
+    } catch (error) {
+      console.error('❌ Ошибка загрузки изображения через fetch:', error);
+      return null;
+    }
+  };
 
   const { images, otherFiles } = useMemo(() => {
     const imgs = [];
@@ -75,7 +110,8 @@ const FileAttachments = ({ files, onImageClick }) => {
         alt: fileName,
         extension: ext,
         original_name: fileName,
-        mime_type: mimeType
+        mime_type: mimeType,
+        fileId: file.id || `${index}-${fileName}`
       };
 
       console.log(`📄 Обработан файл ${index}:`, {
@@ -114,38 +150,13 @@ const FileAttachments = ({ files, onImageClick }) => {
       {images.length > 0 && (
         <div className="file-attachments__images">
           {images.map((image) => (
-            <div
-              key={image.id || image.index}
-              className="file-attachments__image-wrapper"
-              onClick={() => onImageClick(image)}
-            >
-              <img
-                src={image.downloadUrl}
-                alt={image.alt}
-                className="file-attachments__image"
-                onLoad={() => {
-                  console.log('✅ Изображение загружено:', image.downloadUrl);
-                }}
-                onError={(e) => {
-                  console.error('❌ Ошибка загрузки изображения:', {
-                    url: image.downloadUrl,
-                    fileName: image.original_name,
-                    error: e
-                  });
-                  // Можно попробовать fallback URL
-                  if (image.stored_path && !e.target.src.includes('/api/v1/files/download/')) {
-                    const fallbackUrl = `${BACKEND_BASE_URL}/api/v1/files/download/{file_url}?url=${encodeURIComponent(image.stored_path)}`;
-                    console.log('🔄 Пробуем fallback URL:', fallbackUrl);
-                    e.target.src = fallbackUrl;
-                  }
-                }}
-              />
-              <div className="file-attachments__image-info">
-                <span className="file-attachments__image-name">
-                  {image.original_name}
-                </span>
-              </div>
-            </div>
+            <ImageWithFetch
+              key={image.fileId}
+              image={image}
+              onImageClick={onImageClick}
+              imageCache={imageCache}
+              loadImageAsBase64={loadImageAsBase64}
+            />
           ))}
         </div>
       )}
@@ -154,17 +165,24 @@ const FileAttachments = ({ files, onImageClick }) => {
         <div className="file-attachments__files">
           {otherFiles.map((file) => (
             <a
-              key={file.id || file.index}
+              key={file.fileId}
               href={file.downloadUrl}
               target="_blank"
               rel="noopener noreferrer"
               download={file.original_name}
               className="file-attachments__file-link"
-              onClick={() => {
+              onClick={(e) => {
                 console.log('📥 Скачивание файла:', {
                   fileName: file.original_name,
                   url: file.downloadUrl
                 });
+                
+                // Добавляем обход ngrok для скачивания
+                e.preventDefault();
+                const urlWithBypass = file.downloadUrl + 
+                  (file.downloadUrl.includes('?') ? '&' : '?') + 
+                  'ngrok-skip-browser-warning=true';
+                window.open(urlWithBypass, '_blank');
               }}
             >
               {file.isVideo ? '🎥' : getFileIcon(file.ext, file.mime_type)} 
@@ -178,6 +196,93 @@ const FileAttachments = ({ files, onImageClick }) => {
           ))}
         </div>
       )}
+    </div>
+  );
+};
+
+// Компонент для изображения с загрузкой через fetch
+const ImageWithFetch = ({ image, onImageClick, imageCache, loadImageAsBase64 }) => {
+  const [imageSrc, setImageSrc] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    // Проверяем кэш
+    if (imageCache[image.fileId]) {
+      setImageSrc(imageCache[image.fileId]);
+      setLoading(false);
+      return;
+    }
+
+    // Загружаем изображение через fetch
+    const loadImage = async () => {
+      const base64 = await loadImageAsBase64(image.downloadUrl, image.fileId);
+      if (base64) {
+        setImageSrc(base64);
+      } else {
+        setError(true);
+      }
+      setLoading(false);
+    };
+
+    loadImage();
+  }, [image, imageCache, loadImageAsBase64]);
+
+  if (loading) {
+    return (
+      <div className="file-attachments__image-wrapper">
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100px',
+          background: '#f5f5f5',
+          borderRadius: '4px'
+        }}>
+          Загрузка...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="file-attachments__image-wrapper">
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100px',
+          background: '#ffeaea',
+          borderRadius: '4px',
+          padding: '10px'
+        }}>
+          🖼️
+          <small>Ошибка загрузки</small>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="file-attachments__image-wrapper"
+      onClick={() => onImageClick(image)}
+    >
+      <img
+        src={imageSrc}
+        alt={image.alt}
+        className="file-attachments__image"
+        onLoad={() => {
+          console.log('✅ Изображение отображено:', image.original_name);
+        }}
+      />
+      <div className="file-attachments__image-info">
+        <span className="file-attachments__image-name">
+          {image.original_name}
+        </span>
+      </div>
     </div>
   );
 };
