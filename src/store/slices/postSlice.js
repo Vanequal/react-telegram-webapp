@@ -45,14 +45,17 @@ export const createPost = createAsyncThunk(
         uploadedFiles = uploadResult;
       }
 
+      // FIX: Преобразуем 'gpt' в 'openai' для соответствия API
+      const apiPublishingMethod = publishing_method === 'gpt' ? 'openai' : publishing_method;
+
       // Готовим данные согласно API
       const requestData = {
         data: {
           text: message_text,
           type: 'post',
-          publishing_method: publishing_method
+          publishing_method: apiPublishingMethod // Используем преобразованное значение
         },
-        attachments: uploadedFiles || [] // Используем весь объект файла, а не только ID
+        attachments: uploadedFiles || []
       };
 
       const requestConfig = {
@@ -69,7 +72,8 @@ export const createPost = createAsyncThunk(
         url: '/api/v1/posts',
         data: requestData,
         params: requestConfig.params,
-        attachments_count: uploadedFiles.length
+        attachments_count: uploadedFiles.length,
+        publishing_method: apiPublishingMethod
       });
 
       const res = await axios.post('/api/v1/posts', requestData, requestConfig);
@@ -98,7 +102,6 @@ export const createPost = createAsyncThunk(
     }
   }
 );
-
 // Создание превью поста - используем новый endpoint /api/v1/messages/openai
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
