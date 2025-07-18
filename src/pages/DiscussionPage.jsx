@@ -43,17 +43,23 @@ const DiscussionPage = () => {
   const comments = postComments;
 
   // Handlers
-  const handleSendComment = useCallback(async () => {
-    if (!commentText.trim() || isSubmitting) return;
+  const handleSendComment = useCallback(async (files = []) => {
+    if ((!commentText.trim() && files.length === 0) || isSubmitting) return;
 
     setIsSubmitting(true);
     try {
+      console.log('📤 Отправка комментария с файлами:', {
+        text: commentText.trim(),
+        filesCount: files.length,
+        files: files.map(f => f.name)
+      });
+
       await dispatch(createComment({
         post_id: +id,
         message_text: commentText.trim(),
         section_key: SECTION_KEY,
         theme_id: DEFAULT_THEME_ID,
-        files: [] 
+        files: files // Передаем файлы
       })).unwrap();
 
       setCommentText('');
