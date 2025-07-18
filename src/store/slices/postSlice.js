@@ -557,65 +557,7 @@ const postSlice = createSlice({
         state.commentError = action.payload;
       })
 
-      // Реакции на пост
-      .addCase(reactToPost.fulfilled, (state, action) => {
-        const { post_id, count_likes, count_dislikes, new_reaction } = action.payload;
-        console.log('📊 Обновляем реакции для поста:', {
-          post_id,
-          count_likes,
-          count_dislikes,
-          new_reaction
-        });
-
-        // Обновляем в списке постов
-        const postIndex = state.posts.findIndex(post => post.id === post_id);
-        if (postIndex !== -1) {
-          state.posts[postIndex] = {
-            ...state.posts[postIndex],
-            likes: count_likes,
-            dislikes: count_dislikes,
-            user_reaction: new_reaction,
-            reactions: {
-              ...state.posts[postIndex].reactions,
-              count_likes: count_likes,
-              count_dislikes: count_dislikes,
-              user_reaction: new_reaction
-            }
-          };
-        }
-
-        // Обновляем выбранный пост
-        if (state.selectedPost && state.selectedPost.id === post_id) {
-          state.selectedPost = {
-            ...state.selectedPost,
-            likes: count_likes,
-            dislikes: count_dislikes,
-            user_reaction: new_reaction,
-            reactions: {
-              ...state.selectedPost.reactions,
-              count_likes: count_likes,
-              count_dislikes: count_dislikes,
-              user_reaction: new_reaction
-            }
-          };
-        }
-      })
-      .addCase(reactToPost.rejected, (state, action) => {
-        console.error('❌ Ошибка при отправке реакции:', action.payload);
-        state.error = action.payload;
-      })
-
-      // Загрузка файлов
-      .addCase(fetchDownloadUrl.fulfilled, (state, action) => {
-        const { attachmentUrl, url } = action.payload;
-        state.fileLinks = {
-          ...state.fileLinks,
-          [attachmentUrl]: url
-        };
-      })
-      .addCase(fetchDownloadUrl.rejected, (state, action) => {
-        console.warn('Ошибка загрузки файла:', action.payload);
-      })
+      // Реакции на пост - ЕДИНСТВЕННЫЙ обработчик с поддержкой комментариев
       .addCase(reactToPost.fulfilled, (state, action) => {
         const { post_id, count_likes, count_dislikes, new_reaction } = action.payload;
         console.log('📊 Обновляем реакции для поста/комментария:', {
@@ -658,7 +600,7 @@ const postSlice = createSlice({
           };
         }
 
-        // НОВОЕ: Обновляем реакции в комментариях
+        // Обновляем реакции в комментариях
         Object.keys(state.comments).forEach(postKey => {
           const postComments = state.comments[postKey];
           if (postComments && Array.isArray(postComments)) {
@@ -696,6 +638,22 @@ const postSlice = createSlice({
           }
         });
       })
+      .addCase(reactToPost.rejected, (state, action) => {
+        console.error('❌ Ошибка при отправке реакции:', action.payload);
+        state.error = action.payload;
+      })
+
+      // Загрузка файлов
+      .addCase(fetchDownloadUrl.fulfilled, (state, action) => {
+        const { attachmentUrl, url } = action.payload;
+        state.fileLinks = {
+          ...state.fileLinks,
+          [attachmentUrl]: url
+        };
+      })
+      .addCase(fetchDownloadUrl.rejected, (state, action) => {
+        console.warn('Ошибка загрузки файла:', action.payload);
+      });
   }
 });
 
