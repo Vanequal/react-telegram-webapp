@@ -247,14 +247,6 @@ export const fetchPostComments = createAsyncThunk(
   'post/fetchComments',
   async ({ post_id, section_key, theme_id }, { rejectWithValue, getState }) => {
     try {
-      const state = getState();
-      const isLoading = state.post.commentsLoadingFlags[post_id];
-      const hasComments = state.post.comments[post_id];
-
-      if (isLoading || hasComments) {
-        return { postId: post_id, comments: hasComments || [] };
-      }
-
       console.log('📥 Загрузка комментариев:', {
         message_id: post_id,
         section_key: section_key,
@@ -279,6 +271,7 @@ export const fetchPostComments = createAsyncThunk(
     }
   }
 );
+
 
 // Реакция на пост
 export const reactToPost = createAsyncThunk(
@@ -492,38 +485,45 @@ const postSlice = createSlice({
       })
 
       // Получение комментариев
-      .addCase(fetchPostComments.pending, (state, action) => {
-        const postId = action.meta.arg.post_id;
-        state.commentsLoading = true;
-        state.commentError = null;
-        state.commentsLoadingFlags[postId] = true;
-      })
-      .addCase(fetchPostComments.fulfilled, (state, action) => {
-        const { postId, comments } = action.payload;
-        state.commentsLoading = false;
-        state.commentsLoadingFlags[postId] = false;
+      // И заменить обработчик в extraReducers:
+.addCase(fetchPostComments.pending, (state, action) => {
+  const postId = action.meta.arg.post_id;
+  state.commentsLoading = true;
+  state.commentError = null;
+  state.commentsLoadingFlags[postId] = true;
+})
+.addCase(fetchPostComments.fulfilled, (state, action) => {
+  const { postId, comments } = action.payload;
+  state.commentsLoading = false;
+  state.commentsLoadingFlags[postId] = false;
 
-        if (!state.comments[postId] || state.comments[postId].length !== comments.length) {
-          state.comments[postId] = comments || [];
+  // Всегда обновляем комментарии, убираем лишние проверки
+  state.comments[postId] = comments || [];
 
-          // Обновляем счетчик комментариев в посте
-          const postIndex = state.posts.findIndex(post => post.id === postId);
-          if (postIndex !== -1) {
-            state.posts[postIndex] = {
-              ...state.posts[postIndex],
-              comments_count: comments ? comments.length : 0
-            };
-          }
-        }
-      })
-      .addCase(fetchPostComments.rejected, (state, action) => {
-        const postId = action.meta.arg?.post_id;
-        state.commentsLoading = false;
-        state.commentError = action.payload;
-        if (postId) {
-          state.commentsLoadingFlags[postId] = false;
-        }
-      })
+  // Обновляем счетчик комментариев в посте
+  const postIndex = state.posts.findIndex(post => post.id === postId);
+  if (postIndex !== -1) {
+    state.posts[postIndex] = {
+      ...state.posts[postIndex],
+      comments_count: comments ? comments.length : 0
+    };
+  }
+
+  console.log('✅ Комментарии сохранены в store:', {
+    postId,
+    commentsCount: comments?.length || 0,
+    comments: comments
+  });
+})
+.addCase(fetchPostComments.rejected, (state, action) => {
+  const postId = action.meta.arg?.post_id;
+  state.commentsLoading = false;
+  state.commentError = action.payload;
+  if (postId) {
+    state.commentsLoadingFlags[postId] = false;
+  }
+})
+
 
       // Создание комментария
       .addCase(createComment.pending, (state) => {

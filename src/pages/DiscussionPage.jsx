@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { createComment, fetchPostComments, reactToPost } from '../store/slices/postSlice';
+import { createComment, fetchPostComments, reactToPost, fetchPostById } from '../store/slices/postSlice';
 
 // Components
 import MindVaultHeader from '../components/UI/MindVaultHeader';
@@ -24,17 +24,22 @@ const DiscussionPage = () => {
   const dispatch = useDispatch();
   
   // Redux selectors
-  const { posts } = useSelector(state => state.post);
+  const { posts, selectedPost } = useSelector(state => state.post);
   const postComments = useSelector(state => state.post.comments[+id] || []);
-  const { commentsLoading } = useSelector(state => state.post);
+  const { commentsLoading, loading } = useSelector(state => state.post);
 
   // Local state
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
   
-  // Derived data
+  // Derived data - более надежное получение данных о посте
   const ideaFromState = location.state?.idea;
-  const idea = useMemo(() => ideaFromState || posts.find(p => String(p.id) === id), [ideaFromState, posts, id]);
+  const ideaFromPosts = posts.find(p => String(p.id) === id);
+  const idea = useMemo(() => {
+    return ideaFromState || ideaFromPosts || selectedPost;
+  }, [ideaFromState, ideaFromPosts, selectedPost]);
+
   const comments = postComments;
 
   // Handlers
@@ -92,24 +97,33 @@ const DiscussionPage = () => {
     }
   }, [dispatch, idea?.id]);
 
-  // Effects
-  useEffect(() => {
-    if (idea?.id) {
-      console.log('🔄 Загружаем комментарии для поста:', idea.id);
-      dispatch(fetchPostComments({
-        post_id: idea.id,
-        section_key: SECTION_KEY,
-        theme_id: DEFAULT_THEME_ID,
-        type: 'post'
-      }));
-    }
-  }, [idea?.id, dispatch]);
-
-  // Автозагрузка комментариев при монтировании компонента (для случая перезагрузки страницы)
+  // Effect для загрузки поста, если его нет в состоянии
   useEffect(() => {
     const postId = +id;
-    if (postId && (!comments || comments.length === 0)) {
-      console.log('🔄 Автозагрузка комментариев при перезагрузке для поста:', postId);
+    if (postId && !idea && !loading) {
+      console.log('🔄 Загружаем пост по ID:', postId);
+      dispatch(fetchPostById({
+        message_id: postId,
+        section_key: SECTION_KEY,
+        theme_id: DEFAULT_THEME_ID
+      }));
+    }
+  }, [id, idea, loading, dispatch]);
+
+  // Effect для загрузки комментариев
+  useEffect(() => {
+    const postId = +id;
+    
+    // Проверяем, нужно ли загружать комментарии
+    const shouldLoadComments = postId && 
+      !commentsLoaded && 
+      !commentsLoading && 
+      (!comments || comments.length === 0);
+
+    if (shouldLoadComments) {
+      console.log('🔄 Загружаем комментарии для поста:', postId);
+      setCommentsLoaded(true);
+      
       dispatch(fetchPostComments({
         post_id: postId,
         section_key: SECTION_KEY,
@@ -117,8 +131,14 @@ const DiscussionPage = () => {
         type: 'post'
       }));
     }
-  }, [id, comments, dispatch]);
+  }, [id, comments, commentsLoading, commentsLoaded, dispatch]);
 
+  // Effect для сброса флага при смене поста
+  useEffect(() => {
+    setCommentsLoaded(false);
+  }, [id]);
+
+  // Effect для скролла к элементу
   useEffect(() => {
     const scrollTo = location.state?.scrollTo;
     if (scrollTo) {
@@ -131,6 +151,20 @@ const DiscussionPage = () => {
     }
   }, [location.state]);
 
+  // Debug логи
+  useEffect(() => {
+    console.log('🐛 DiscussionPage Debug:', {
+      postId: +id,
+      ideaExists: !!idea,
+      commentsCount: comments.length,
+      commentsLoading,
+      commentsLoaded,
+      postFromState: !!ideaFromState,
+      postFromPosts: !!ideaFromPosts,
+      selectedPost: !!selectedPost
+    });
+  }, [id, idea, comments, commentsLoading, commentsLoaded, ideaFromState, ideaFromPosts, selectedPost]);
+
   return (
     <div className="discussion-page">
       <MindVaultHeader
@@ -141,6 +175,11 @@ const DiscussionPage = () => {
       />
 
       <div className="discussion-page__container">
+        {/* Показываем лоадер, если пост загружается */}
+        {loading && !idea && (
+          <div className="loading-post">Загрузка поста...</div>
+        )}
+
         {idea && (
           <div className="discussion-page__idea-wrapper">
             <DiscussionIdeaCard 
@@ -155,7 +194,7 @@ const DiscussionPage = () => {
         </div>
 
         <div className="comment-list">
-          {commentsLoading && comments.length === 0 && (
+          {commentsLoading && (
             <p className="loading-comments">Загрузка комментариев...</p>
           )}
           
@@ -169,7 +208,7 @@ const DiscussionPage = () => {
                 themeId={DEFAULT_THEME_ID}
               />
             ))
-          ) : !commentsLoading && (
+          ) : !commentsLoading && commentsLoaded && (
             <p className="empty-comments">Комментариев пока нет</p>
           )}
         </div>
