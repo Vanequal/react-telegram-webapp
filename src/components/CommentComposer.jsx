@@ -49,7 +49,7 @@ const CommentComposer = ({ commentText, onCommentChange, onSubmit, isSubmitting 
   const isDisabled = !commentText.trim() && selectedFiles.length === 0 || isSubmitting;
 
   return (
-    <div className="discussion-footer">
+    <>
       <input
         ref={fileInputRef}
         type="file"
@@ -59,32 +59,45 @@ const CommentComposer = ({ commentText, onCommentChange, onSubmit, isSubmitting 
         onChange={handleFileSelect}
       />
       
-      <img 
-        src={skrepkaIcon} 
-        alt="Attach" 
-        className="discussion-footer__icon"
-        onClick={handleAttachClick}
-        style={{ cursor: 'pointer' }}
-      />
+      {/* Показываем прикрепленные файлы над футером */}
+      {selectedFiles.length > 0 && (
+        <div style={{
+          position: 'fixed',
+          bottom: '70px', // Над футером
+          left: '10px',
+          right: '10px',
+          background: 'white',
+          borderRadius: '8px',
+          padding: '8px',
+          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
+          zIndex: 99,
+          maxHeight: '120px',
+          overflowY: 'auto'
+        }}>
+          <FileAttachments 
+            files={selectedFiles.map((file, index) => ({
+              id: `temp-${index}`,
+              original_name: file.name,
+              name: file.name,
+              extension: file.name.split('.').pop().toLowerCase(),
+              size: file.size,
+              file: file, // Храним оригинальный файл
+              isTemp: true // Флаг для временных файлов
+            }))}
+            onRemove={handleRemoveFile}
+            showRemoveButton={true}
+          />
+        </div>
+      )}
       
-      <div className="discussion-footer__input-container">
-        {selectedFiles.length > 0 && (
-          <div className="discussion-footer__files">
-            <FileAttachments 
-              files={selectedFiles.map((file, index) => ({
-                id: `temp-${index}`,
-                original_name: file.name,
-                name: file.name,
-                extension: file.name.split('.').pop().toLowerCase(),
-                size: file.size,
-                file: file, // Храним оригинальный файл
-                isTemp: true // Флаг для временных файлов
-              }))}
-              onRemove={handleRemoveFile}
-              showRemoveButton={true}
-            />
-          </div>
-        )}
+      <div className="discussion-footer">
+        <img 
+          src={skrepkaIcon} 
+          alt="Attach" 
+          className="discussion-footer__icon"
+          onClick={handleAttachClick}
+          style={{ cursor: 'pointer' }}
+        />
         
         <input
           type="text"
@@ -95,19 +108,19 @@ const CommentComposer = ({ commentText, onCommentChange, onSubmit, isSubmitting 
           disabled={isSubmitting}
           onKeyPress={handleKeyPress}
         />
+        
+        <img
+          src={isDisabled ? sendIcon : sendIconActive}
+          alt="Send"
+          className="discussion-footer__send"
+          onClick={handleSubmit}
+          style={{
+            cursor: isDisabled ? 'not-allowed' : 'pointer',
+            opacity: isDisabled ? 0.5 : 1
+          }}
+        />
       </div>
-      
-      <img
-        src={isDisabled ? sendIcon : sendIconActive}
-        alt="Send"
-        className="discussion-footer__send"
-        onClick={handleSubmit}
-        style={{
-          cursor: isDisabled ? 'not-allowed' : 'pointer',
-          opacity: isDisabled ? 0.5 : 1
-        }}
-      />
-    </div>
+    </>
   );
 };
 
