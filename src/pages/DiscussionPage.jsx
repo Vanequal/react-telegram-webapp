@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { createComment, fetchPostComments } from '../store/slices/postSlice';
+import { createComment, fetchPostComments, reactToPost } from '../store/slices/postSlice';
 
 // Components
 import MindVaultHeader from '../components/UI/MindVaultHeader';
@@ -80,9 +80,22 @@ const DiscussionPage = () => {
     navigate('/aboutpage');
   }, [navigate]);
 
+  // Обработчик реакций на пост (для DiscussionIdeaCard)
+  const handlePostReaction = useCallback((reaction) => {
+    if (idea?.id) {
+      dispatch(reactToPost({
+        post_id: idea.id,
+        reaction,
+        section_key: SECTION_KEY,
+        theme_id: DEFAULT_THEME_ID
+      }));
+    }
+  }, [dispatch, idea?.id]);
+
   // Effects
   useEffect(() => {
     if (idea?.id) {
+      console.log('🔄 Загружаем комментарии для поста:', idea.id);
       dispatch(fetchPostComments({
         post_id: idea.id,
         section_key: SECTION_KEY,
@@ -91,6 +104,20 @@ const DiscussionPage = () => {
       }));
     }
   }, [idea?.id, dispatch]);
+
+  // Автозагрузка комментариев при монтировании компонента (для случая перезагрузки страницы)
+  useEffect(() => {
+    const postId = +id;
+    if (postId && (!comments || comments.length === 0)) {
+      console.log('🔄 Автозагрузка комментариев при перезагрузке для поста:', postId);
+      dispatch(fetchPostComments({
+        post_id: postId,
+        section_key: SECTION_KEY,
+        theme_id: DEFAULT_THEME_ID,
+        type: 'post'
+      }));
+    }
+  }, [id, comments, dispatch]);
 
   useEffect(() => {
     const scrollTo = location.state?.scrollTo;
@@ -116,7 +143,10 @@ const DiscussionPage = () => {
       <div className="discussion-page__container">
         {idea && (
           <div className="discussion-page__idea-wrapper">
-            <DiscussionIdeaCard idea={idea} />
+            <DiscussionIdeaCard 
+              idea={idea} 
+              onReaction={handlePostReaction}
+            />
           </div>
         )}
 
@@ -134,7 +164,9 @@ const DiscussionPage = () => {
               <CommentThread 
                 key={comment.id} 
                 comment={comment} 
-                isNew={location.state?.scrollTo === 'new-comment' && index === comments.length - 1} 
+                isNew={location.state?.scrollTo === 'new-comment' && index === comments.length - 1}
+                sectionKey={SECTION_KEY}
+                themeId={DEFAULT_THEME_ID}
               />
             ))
           ) : !commentsLoading && (

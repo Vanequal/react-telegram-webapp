@@ -11,7 +11,7 @@ export const uploadFiles = createAsyncThunk(
       }
 
       console.log('📤 Загружаем файлы:', files.length);
-      
+
       const formData = new FormData();
       files.forEach((file) => {
         formData.append('attachments', file); // Изменено с 'files' на 'attachments'
@@ -75,7 +75,7 @@ export const createPost = createAsyncThunk(
       const res = await axios.post('/api/v1/posts', requestData, requestConfig);
 
       console.log('✅ Пост успешно создан:', res.data);
-      
+
       // Дополняем ответ информацией о файлах для удобства
       return {
         ...res.data,
@@ -83,16 +83,16 @@ export const createPost = createAsyncThunk(
       };
     } catch (err) {
       console.error('🔥 Ошибка создания поста:', err?.response?.data || err.message);
-      
+
       // Детальная обработка ошибок валидации
       if (err?.response?.data?.error?.details) {
         console.error('📋 Детали ошибок валидации:', err.response.data.error.details);
       }
-      
+
       return rejectWithValue(
-        err?.response?.data?.error?.message || 
-        err?.response?.data?.detail || 
-        err?.response?.data?.error || 
+        err?.response?.data?.error?.message ||
+        err?.response?.data?.detail ||
+        err?.response?.data?.error ||
         'Ошибка создания поста'
       );
     }
@@ -111,7 +111,7 @@ export const createPostPreview = createAsyncThunk(
           params: { section_key, theme_id }
         }
       );
-      
+
       // API возвращает openai_text, а фронт ожидает gpt_text
       return {
         original_text: res.data.original_text,
@@ -389,41 +389,41 @@ const postSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-    .addCase(uploadFiles.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(uploadFiles.fulfilled, (state, action) => {
-      state.loading = false;
-      state.uploadedFiles = action.payload;
-    })
-    .addCase(uploadFiles.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    })
+      .addCase(uploadFiles.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(uploadFiles.fulfilled, (state, action) => {
+        state.loading = false;
+        state.uploadedFiles = action.payload;
+      })
+      .addCase(uploadFiles.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
 
-    // Создание поста
-    .addCase(createPost.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(createPost.fulfilled, (state, action) => {
-      state.loading = false;
-      // Добавляем новый пост в начало списка
-      const newPost = {
-        ...action.payload,
-        likes: action.payload.reactions?.count_likes || 0,
-        dislikes: action.payload.reactions?.count_dislikes || 0,
-        user_reaction: action.payload.reactions?.user_reaction || null
-      };
-      state.posts.unshift(newPost);
-      state.preview = null; // Очищаем превью после публикации
-      state.uploadedFiles = []; // Очищаем загруженные файлы
-    })
-    .addCase(createPost.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    })
+      // Создание поста
+      .addCase(createPost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createPost.fulfilled, (state, action) => {
+        state.loading = false;
+        // Добавляем новый пост в начало списка
+        const newPost = {
+          ...action.payload,
+          likes: action.payload.reactions?.count_likes || 0,
+          dislikes: action.payload.reactions?.count_dislikes || 0,
+          user_reaction: action.payload.reactions?.user_reaction || null
+        };
+        state.posts.unshift(newPost);
+        state.preview = null; // Очищаем превью после публикации
+        state.uploadedFiles = []; // Очищаем загруженные файлы
+      })
+      .addCase(createPost.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
 
       // Создание превью
       .addCase(createPostPreview.pending, (state) => {
@@ -615,7 +615,87 @@ const postSlice = createSlice({
       })
       .addCase(fetchDownloadUrl.rejected, (state, action) => {
         console.warn('Ошибка загрузки файла:', action.payload);
-      });
+      })
+      .addCase(reactToPost.fulfilled, (state, action) => {
+        const { post_id, count_likes, count_dislikes, new_reaction } = action.payload;
+        console.log('📊 Обновляем реакции для поста/комментария:', {
+          post_id,
+          count_likes,
+          count_dislikes,
+          new_reaction
+        });
+
+        // Обновляем в списке постов
+        const postIndex = state.posts.findIndex(post => post.id === post_id);
+        if (postIndex !== -1) {
+          state.posts[postIndex] = {
+            ...state.posts[postIndex],
+            likes: count_likes,
+            dislikes: count_dislikes,
+            user_reaction: new_reaction,
+            reactions: {
+              ...state.posts[postIndex].reactions,
+              count_likes: count_likes,
+              count_dislikes: count_dislikes,
+              user_reaction: new_reaction
+            }
+          };
+        }
+
+        // Обновляем выбранный пост
+        if (state.selectedPost && state.selectedPost.id === post_id) {
+          state.selectedPost = {
+            ...state.selectedPost,
+            likes: count_likes,
+            dislikes: count_dislikes,
+            user_reaction: new_reaction,
+            reactions: {
+              ...state.selectedPost.reactions,
+              count_likes: count_likes,
+              count_dislikes: count_dislikes,
+              user_reaction: new_reaction
+            }
+          };
+        }
+
+        // НОВОЕ: Обновляем реакции в комментариях
+        Object.keys(state.comments).forEach(postKey => {
+          const postComments = state.comments[postKey];
+          if (postComments && Array.isArray(postComments)) {
+            // Ищем комментарий для обновления
+            const commentIndex = postComments.findIndex(comment => comment.id === post_id);
+            if (commentIndex !== -1) {
+              state.comments[postKey][commentIndex] = {
+                ...state.comments[postKey][commentIndex],
+                reactions: {
+                  ...state.comments[postKey][commentIndex].reactions,
+                  count_likes: count_likes,
+                  count_dislikes: count_dislikes,
+                  user_reaction: new_reaction
+                }
+              };
+            }
+
+            // Также проверяем ответы (replies) в комментариях
+            postComments.forEach((comment, commentIdx) => {
+              if (comment.replies && Array.isArray(comment.replies)) {
+                const replyIndex = comment.replies.findIndex(reply => reply.id === post_id);
+                if (replyIndex !== -1) {
+                  state.comments[postKey][commentIdx].replies[replyIndex] = {
+                    ...state.comments[postKey][commentIdx].replies[replyIndex],
+                    reactions: {
+                      ...state.comments[postKey][commentIdx].replies[replyIndex].reactions,
+                      count_likes: count_likes,
+                      count_dislikes: count_dislikes,
+                      user_reaction: new_reaction
+                    }
+                  };
+                }
+              }
+            });
+          }
+        });
+      })
   }
 });
 
