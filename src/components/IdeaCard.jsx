@@ -42,7 +42,6 @@ const IdeaCard = React.memo(function IdeaCard({
   const [expanded, setExpanded] = useState(isExpanded);
   const [showReadMore, setShowReadMore] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [imageCache, setImageCache] = useState({}); // Добавляем кэш для изображений
   
   // Refs
   const textWrapperRef = useRef(null);
@@ -73,18 +72,23 @@ const IdeaCard = React.memo(function IdeaCard({
                      currentPost?.files || 
                      [];
 
-    console.log('📁 Обработка файлов для поста:', {
+    console.log('📁 IdeaCard - Обработка файлов для поста:', {
       postId: idea.id,
       rawFiles: rawFiles,
-      rawFilesLength: rawFiles.length
+      rawFilesLength: rawFiles.length,
+      ideaHasAttachments: !!idea.attachments,
+      currentPostHasAttachments: !!currentPost?.attachments,
+      ideaHasFiles: !!idea.files,
+      currentPostHasFiles: !!currentPost?.files
     });
 
     if (!rawFiles || rawFiles.length === 0) {
+      console.log('📁 IdeaCard - Нет файлов для обработки');
       return [];
     }
 
     // Возвращаем файлы в том формате, который ожидает FileAttachments
-    return rawFiles.map((file, index) => ({
+    const processedFiles = rawFiles.map((file, index) => ({
       // Сохраняем оригинальную структуру
       ...file,
       // Добавляем поля для совместимости со старым FileAttachments
@@ -96,6 +100,9 @@ const IdeaCard = React.memo(function IdeaCard({
       // Индекс для ключей
       index: index
     }));
+
+    console.log('📁 IdeaCard - Обработанные файлы:', processedFiles);
+    return processedFiles;
   }, [idea.attachments, currentPost?.attachments, idea.files, currentPost?.files, idea.id]);
 
   // Check if text needs "Read more" button
@@ -136,38 +143,6 @@ const IdeaCard = React.memo(function IdeaCard({
     };
   }, [idea.id]);
 
-  // Функция для загрузки изображения для модала
-  const loadImageForModal = async (imageUrl) => {
-    try {
-      console.log('🔄 Загружаем изображение для модала:', imageUrl);
-      
-      const response = await fetch(imageUrl, {
-        method: 'GET',
-        headers: {
-          'ngrok-skip-browser-warning': 'true',
-          'Accept': 'image/*',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const blob = await response.blob();
-      const base64 = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(blob);
-      });
-
-      console.log('✅ Изображение для модала загружено');
-      return base64;
-    } catch (error) {
-      console.error('❌ Ошибка загрузки изображения для модала:', error);
-      return null;
-    }
-  };
-
   // Handlers
   const handleReaction = useCallback((reaction) => {
     dispatch(reactToPost({
@@ -181,40 +156,11 @@ const IdeaCard = React.memo(function IdeaCard({
   const handleExpandClick = useCallback(() => setExpanded(true), []);
   const handleCardExpand = useCallback(() => onExpand(idea.id), [onExpand, idea.id]);
   
-  const handleImageClick = useCallback(async (image) => {
+  // Упрощаем обработку клика по изображению - используем уже загруженный src
+  const handleImageClick = useCallback((image) => {
     console.log('🖼️ Клик по изображению:', image);
-    
-    // Проверяем кэш
-    const cacheKey = image.fileId || image.id || image.downloadUrl;
-    if (imageCache[cacheKey]) {
-      setSelectedImage({
-        ...image,
-        modalSrc: imageCache[cacheKey]
-      });
-      return;
-    }
-
-    // Если в кэше нет, загружаем
-    const modalSrc = await loadImageForModal(image.downloadUrl);
-    if (modalSrc) {
-      // Сохраняем в кэш
-      setImageCache(prev => ({
-        ...prev,
-        [cacheKey]: modalSrc
-      }));
-      
-      setSelectedImage({
-        ...image,
-        modalSrc: modalSrc
-      });
-    } else {
-      // Если загрузка не удалась, используем оригинальный URL
-      setSelectedImage({
-        ...image,
-        modalSrc: image.downloadUrl
-      });
-    }
-  }, [imageCache]);
+    setSelectedImage(image);
+  }, []);
   
   const handleImageModalClose = useCallback(() => setSelectedImage(null), []);
 
@@ -326,13 +272,12 @@ const IdeaCard = React.memo(function IdeaCard({
         )}
       </div>
 
-      {/* Image Modal */}
+      {/* Image Modal - используем тот же src что был в миниатюре */}
       {selectedImage && (
         <ImageModal
-          src={selectedImage.modalSrc || selectedImage.downloadUrl || selectedImage.url}
+          src={selectedImage.src || selectedImage.downloadUrl || selectedImage.url}
           alt={selectedImage.alt || selectedImage.original_name || selectedImage.name}
           onClose={handleImageModalClose}
-          loading={!selectedImage.modalSrc}
         />
       )}
     </>

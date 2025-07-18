@@ -268,7 +268,10 @@ const ImageWithFetch = ({ image, onImageClick, imageCache, loadImageAsBase64 }) 
   return (
     <div
       className="file-attachments__image-wrapper"
-      onClick={() => onImageClick(image)}
+      onClick={() => onImageClick({
+        ...image,
+        src: imageSrc // Передаем загруженный base64 URL
+      })}
     >
       <img
         src={imageSrc}
