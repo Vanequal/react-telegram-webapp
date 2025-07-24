@@ -17,45 +17,42 @@ const MindVaultHeader = ({
   const localeTexts = section?.locale_texts;
 
   return (
-    <section className="mind-vault-header" style={{ backgroundColor: bgColor || 'white' }}>
-      <div style={{ width: '100%', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        {/* Верхняя часть хедера */}
-        <div style={{ width: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50px' }}>
-          <div className="mind-vault-header__left" onClick={onBackClick}>
-            <i className="mind-vault-header__icon">
-              <RiArrowLeftSLine color={"#1E88D3"} size={36} />
-            </i>
-            <span className="mind-vault-header__back-text">
-              {localeTexts?.buttons?.back || 'Назад'}
-            </span>
-          </div>
-          
-          <h1
-            className="mind-vault-header__title"
-            style={{ color: textColor, fontSize }}
-          >
-            {title || localeTexts?.messages?.title || 'Копилка идей'}
-          </h1>
+    <>
+      <section className="mind-vault-header" style={{ backgroundColor: bgColor || 'white' }}>
+        <div className="mind-vault-headerleft" onClick={onBackClick}>
+          <i className="mind-vault-headericon">
+            <RiArrowLeftSLine color={"#1E88D3"} size={36} />
+          </i>
+          <span className="mind-vault-headerback-text" >
+            {localeTexts?.buttons?.back || 'Назад'}
+          </span>
         </div>
-
-        {/* Заголовок раздела */}
+        <h1
+          className="mind-vault-headertitle"
+          style={{ color: textColor, fontSize }}
+        >
+          {title || localeTexts?.messages?.title || 'Копилка идей'}
+        </h1>
         {!hideSectionTitle && (
-          <p style={{ margin: 0, padding: '4px 0', color: '#1E88D3' }}>
-            {section?.theme?.title || 'Заголовок раздела'}
+          <p style={{
+            margin: 0, padding: 0, color: '#1E88D3' }}>
+            { section?.theme?.title || 'Заголовок раздела'
+          }
           </p>
         )}
+    </section >
 
-        {/* Описание - теперь часть хедера */}
-        {!hideDescription && (
-          <p
-            className="mind-vault-header__description"
-            onClick={onDescriptionClick}
-          >
-            {localeTexts?.buttons?.about_tab || 'Подробнее об этой вкладке'}
-          </p>
-        )}
-      </div>
-    </section>
+      {!hideDescription && (
+        <p
+          className="mind-vault-header__description"
+          onClick={onDescriptionClick}
+          style={{ cursor: 'pointer' }}
+        >
+          {localeTexts?.buttons?.about_tab || 'Подробнее об этой вкладке'}
+        </p>
+      )
+}
+    </>
   );
 };
 

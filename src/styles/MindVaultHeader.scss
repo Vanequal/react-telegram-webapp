@@ -8,28 +8,21 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  position: fixed; // Фиксированный
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
+  position: relative;
   padding: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
   &__description {
     font-family: 'Roboto', sans-serif;
     font-size: 18px;
     font-weight: 400;
-    color: #1E88D3;
+    color: 
+#1E88D3;
     margin-top: 12px;
     margin-left: 12px;
     text-decoration: none;
     text-align: left;
-    background-color: transparent;
-    width: 100%; // Занимает всю ширину
-    cursor: pointer;
   }
-  
+
   &__left {
     position: absolute;
     left: 0px;
@@ -59,5 +52,3 @@
     margin: 0;
   }
 }
-
-// Убираем отдельный стиль для описания - оно теперь часть хедера
