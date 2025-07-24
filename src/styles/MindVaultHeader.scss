@@ -1,22 +1,5 @@
 @import './font.scss';
 
-.mind-vault-header-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-.mind-vault-header-sticky {
-  position: sticky;
-  top: 0;
-  z-index: 100; // Чтобы хедер был поверх остального контента
-  background-color: white; // Фоновый цвет для всего липкого блока
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // Добавляем тень для визуального отделения
-}
-
-.mind-vault-header-spacer {
-
-}
-
 .mind-vault-header {
   width: 100%;
   background-color: rgba(238, 239, 241, 1);
@@ -25,9 +8,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  position: relative;
+  position: sticky; // Делаем хедер липким
+  top: 0; // Прилипает к верху экрана
+  z-index: 100; // Поверх остального контента
   padding: 5px;
-  min-height: 60px; // Минимальная высота для хедера
+  min-height: 60px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // Добавляем тень
 
   &__description {
     font-family: 'Roboto', sans-serif;
@@ -36,11 +22,15 @@
     color: #1E88D3;
     margin-top: 12px;
     margin-left: 12px;
-    margin-bottom: 12px; // Добавляем нижний отступ
+    margin-bottom: 12px;
     text-decoration: none;
     text-align: left;
-    background-color: white; // Фон для описания
-    padding: 0 12px; // Горизонтальные отступы для описания
+    position: sticky; // Делаем описание тоже липким
+    top: 65px; // Позиционируем сразу под хедером
+    background-color: white;
+    z-index: 99;
+    padding: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
   
   &__left {
@@ -50,10 +40,10 @@
     transform: translateY(-50%);
     display: flex;
     align-items: center;
-    cursor: pointer; // Курсор для всего блока "Назад"
+    cursor: pointer;
     
     &:hover {
-      opacity: 0.8; // Эффект при наведении
+      opacity: 0.8;
     }
   }
 
