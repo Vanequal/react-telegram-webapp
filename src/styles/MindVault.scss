@@ -3,9 +3,10 @@
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding-bottom: 60px;
+  padding-bottom: 60px; // Возвращаем оригинальное значение
 }
 
+// Остальные стили остаются без изменений...
 .idea-card {
   background-color: rgba(252, 252, 254, 1);
   border: 1px solid rgba(252, 252, 254, 1);
@@ -194,7 +195,6 @@
   flex-direction: column;
   padding-bottom: 80px; 
 }
-
 
 .idea-fullscreen__content {
   padding: 16px;

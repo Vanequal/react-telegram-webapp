@@ -19,28 +19,26 @@ const MindVaultHeader = ({
   return (
     <>
       <section className="mind-vault-header" style={{ backgroundColor: bgColor || 'white' }}>
-        <div className="mind-vault-headerleft" onClick={onBackClick}>
-          <i className="mind-vault-headericon">
+        <div className="mind-vault-header__left" onClick={onBackClick}>
+          <i className="mind-vault-header__icon">
             <RiArrowLeftSLine color={"#1E88D3"} size={36} />
           </i>
-          <span className="mind-vault-headerback-text" >
+          <span className="mind-vault-header__back-text" >
             {localeTexts?.buttons?.back || 'Назад'}
           </span>
         </div>
         <h1
-          className="mind-vault-headertitle"
+          className="mind-vault-header__title"
           style={{ color: textColor, fontSize }}
         >
           {title || localeTexts?.messages?.title || 'Копилка идей'}
         </h1>
         {!hideSectionTitle && (
-          <p style={{
-            margin: 0, padding: 0, color: '#1E88D3' }}>
-            { section?.theme?.title || 'Заголовок раздела'
-          }
+          <p style={{ margin: 0, padding: 0, color: '#1E88D3' }}>
+            {section?.theme?.title || 'Заголовок раздела'}
           </p>
         )}
-    </section >
+      </section>
 
       {!hideDescription && (
         <p
@@ -50,8 +48,7 @@ const MindVaultHeader = ({
         >
           {localeTexts?.buttons?.about_tab || 'Подробнее об этой вкладке'}
         </p>
-      )
-}
+      )}
     </>
   );
 };
