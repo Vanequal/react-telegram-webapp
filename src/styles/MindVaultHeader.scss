@@ -8,12 +8,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  position: sticky; // Делаем хедер липким
-  top: 0; // Прилипает к верху экрана
-  z-index: 100; // Поверх остального контента
+  position: relative; // Возвращаем relative
   padding: 5px;
-  min-height: 60px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // Добавляем тень
 
   &__description {
     font-family: 'Roboto', sans-serif;
@@ -22,15 +18,8 @@
     color: #1E88D3;
     margin-top: 12px;
     margin-left: 12px;
-    margin-bottom: 12px;
     text-decoration: none;
     text-align: left;
-    position: sticky; // Делаем описание тоже липким
-    top: 65px; // Позиционируем сразу под хедером
-    background-color: white;
-    z-index: 99;
-    padding: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
   
   &__left {
@@ -40,18 +29,10 @@
     transform: translateY(-50%);
     display: flex;
     align-items: center;
-    cursor: pointer;
-    
-    &:hover {
-      opacity: 0.8;
-    }
   }
 
   &__icon {
     width: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   &__back-text {
@@ -59,6 +40,7 @@
     color: rgba(30, 136, 211, 1);
     font-size: 18px;
     font-weight: 600;
+    cursor: pointer;
   }
 
   &__title {
