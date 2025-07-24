@@ -8,13 +8,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  position: fixed; // Изменили с relative на fixed
-  top: 0;          // Добавили
-  left: 0;         // Добавили
-  right: 0;        // Добавили
-  z-index: 1000;   // Добавили
+  position: fixed; // Фиксированный
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
   padding: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); // Добавили тень
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
   &__description {
     font-family: 'Roboto', sans-serif;
@@ -25,6 +25,8 @@
     margin-left: 12px;
     text-decoration: none;
     text-align: left;
+    width: 100%; // Занимает всю ширину
+    cursor: pointer;
   }
   
   &__left {
@@ -57,20 +59,4 @@
   }
 }
 
-// Отдельный стиль для описания под хедером (если оно есть)
-.mind-vault-header__description {
-  position: fixed;
-  top: 70px; // Под хедером
-  left: 0;
-  right: 0;
-  z-index: 999;
-  background: rgba(238, 239, 241, 1);
-  padding: 8px 16px;
-  margin: 0 !important;
-  font-family: 'Roboto', sans-serif;
-  font-size: 18px;
-  font-weight: 400;
-  color: #1E88D3;
-  text-align: left;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
+// Убираем отдельный стиль для описания - оно теперь часть хедера

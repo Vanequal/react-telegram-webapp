@@ -3,7 +3,9 @@
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding-bottom: 60px;
+  padding-top: 120px; // Добавили отступ под фиксированный хедер (хедер + описание)
+  padding-bottom: 80px; // Увеличили отступ под футер
+  min-height: 100vh; // Добавили минимальную высоту
 }
 
 .idea-card {
@@ -192,9 +194,9 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  padding-top: 120px; // Добавили отступ под хедер
   padding-bottom: 80px; 
 }
-
 
 .idea-fullscreen__content {
   padding: 16px;
