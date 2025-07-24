@@ -8,7 +8,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  position: relative; // Возвращаем relative
+  position: sticky; // Делаем хедер липким
+  top: 0; // Прикрепляем к верху экрана
+  z-index: 100; // Обеспечиваем отображение поверх других элементов
   padding: 5px;
 
   &__description {
