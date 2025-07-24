@@ -13,7 +13,11 @@ const MindVaultHeader = ({
   textColor = '#1E88D3',
   fontSize = '24px'
 }) => {
-  const section = useSelector(state => state.section.data);
+  // Исправляем селекторы для получения данных из правильных слайсов
+  const section = useSelector(state => state.section?.data);
+  const theme = useSelector(state => state.theme?.theme);
+  
+  // Получаем локализацию из секции (если есть) или используем fallback
   const localeTexts = section?.locale_texts;
 
   return (
@@ -37,7 +41,8 @@ const MindVaultHeader = ({
           </h1>
           {!hideSectionTitle && (
             <p style={{ margin: 0, padding: 0, color: '#1E88D3' }}>
-              {section?.theme?.title || 'Заголовок раздела'}
+              {/* Используем заголовок из theme API */}
+              {theme?.title || 'Заголовок раздела'}
             </p>
           )}
         </div>
