@@ -16,9 +16,20 @@ const MindVaultHeader = ({
   // Исправляем селекторы для получения данных из правильных слайсов
   const section = useSelector(state => state.section?.data);
   const theme = useSelector(state => state.theme?.theme);
+  const themeLoading = useSelector(state => state.theme?.loading);
+  const themeError = useSelector(state => state.theme?.error);
   
   // Получаем локализацию из секции (если есть) или используем fallback
   const localeTexts = section?.locale_texts;
+
+  // Отладочная информация
+  console.log('🔍 MindVaultHeader Debug:', {
+    theme,
+    themeLoading,
+    themeError,
+    section,
+    localeTexts
+  });
 
   return (
     <>
@@ -42,7 +53,12 @@ const MindVaultHeader = ({
           {!hideSectionTitle && (
             <p style={{ margin: 0, padding: 0, color: '#1E88D3' }}>
               {/* Используем заголовок из theme API */}
-              {theme?.title || 'Заголовок раздела'}
+              {themeLoading 
+                ? 'Загрузка...' 
+                : themeError 
+                  ? 'Ошибка загрузки' 
+                  : theme?.title || 'Заголовок раздела'
+              }
             </p>
           )}
         </div>
