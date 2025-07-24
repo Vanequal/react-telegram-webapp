@@ -7,7 +7,6 @@ import { createPostPreview, createPost, clearError } from '../store/slices/postS
 // Components
 import MindVaultHeader from '../components/UI/MindVaultHeader';
 import IdeaPreviewCard from '../components/IdeaPreviewCard';
-import PostComposer from '../components/PostComposer';
 
 // Styles
 import '../styles/components/edit-idea-gpt.scss';
@@ -26,12 +25,6 @@ const EditIdeaPageGPT = () => {
   const attachedFiles = location.state?.attachedFiles || [];
   const navigationPreview = location.state?.preview || null;
   
-  // Local state
-  const [postData, setPostData] = useState({
-    text: '',
-    files: attachedFiles // Инициализируем файлами из навигации
-  });
-  
   // Redux state - используем превью из Redux или из навигации
   const reduxPreview = useSelector(state => state.post.preview);
   const preview = reduxPreview || navigationPreview;
@@ -48,31 +41,16 @@ const EditIdeaPageGPT = () => {
   }, [dispatch]);
 
   // Handlers
-  const handleSend = useCallback(() => {
-    if (postData.text.trim()) {
-      dispatch(createPostPreview({
-        section_key: sectionKey,
-        theme_id: themeId,
-        text: postData.text,
-      }));      
-    }
-  }, [postData.text, dispatch, sectionKey, themeId]);
-
   const handlePublish = useCallback(async (text, publishing_method = 'original') => {
     if (!text || !text.trim()) {
       alert('Текст для публикации не может быть пустым');
       return;
     }
 
-    // Используем файлы из postData, которые могли быть обновлены пользователем
-    const filesToUpload = postData.files && postData.files.length > 0 
-      ? postData.files 
-      : attachedFiles;
-
     console.log('📤 Публикуем пост:', {
       text: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
       publishing_method,
-      files_count: filesToUpload?.length || 0,
+      files_count: attachedFiles?.length || 0,
       section_key: sectionKey,
       theme_id: themeId
     });
@@ -81,7 +59,7 @@ const EditIdeaPageGPT = () => {
       message_text: text.trim(),
       section_key: sectionKey,
       theme_id: themeId,
-      files: filesToUpload || [],
+      files: attachedFiles || [],
       publishing_method
     };
 
@@ -104,7 +82,7 @@ const EditIdeaPageGPT = () => {
       console.error('❌ Исключение при публикации:', error);
       alert('Произошла ошибка при публикации поста');
     }
-  }, [dispatch, sectionKey, themeId, postData.files, attachedFiles, navigate]);
+  }, [dispatch, sectionKey, themeId, attachedFiles, navigate]);
 
   const handlePublishOriginal = useCallback(() => {
     if (!preview?.original_text) {
@@ -130,20 +108,15 @@ const EditIdeaPageGPT = () => {
     navigate('/textgpteditpage', { 
       state: { 
         gptText: preview.gpt_text,
-        attachedFiles: postData.files || attachedFiles
+        attachedFiles: attachedFiles,
+        section_key: sectionKey,
+        theme_id: themeId
       } 
     });
-  }, [navigate, preview, postData.files, attachedFiles]);
+  }, [navigate, preview, attachedFiles, sectionKey, themeId]);
 
   const handleNavigateBack = useCallback(() => {
     window.history.back();
-  }, []);
-
-  const handlePostDataChange = useCallback((newData) => {
-    setPostData(prev => ({
-      ...prev,
-      ...newData
-    }));
   }, []);
 
   // Показываем ошибки пользователю
@@ -155,6 +128,7 @@ const EditIdeaPageGPT = () => {
         onBackClick={handleNavigateBack}
         onDescriptionClick={() => {}}
         hideSectionTitle={true}
+        hideDescription={true}
         textColor="black"
         bgColor="#EEEFF1"
       />
@@ -178,7 +152,7 @@ const EditIdeaPageGPT = () => {
           <>
             <IdeaPreviewCard
               preview={preview}
-              attachedFiles={postData.files || attachedFiles}
+              attachedFiles={attachedFiles}
             />
             
             <PreviewActions
@@ -193,14 +167,7 @@ const EditIdeaPageGPT = () => {
         )}
       </div>
 
-      <PostComposer
-        postData={postData}
-        onPostDataChange={handlePostDataChange}
-        onSubmit={handleSend}
-        placeholder="Написать заново"
-        disabled={loading}
-        showFileCount={true}
-      />
+      {/* Убираем PostComposer - больше нет футера! */}
     </div>
   );
 };
@@ -212,7 +179,7 @@ const EmptyPreview = ({ sectionKey }) => (
       Превью поста пока не создано.
     </p>
     <p className="edit-idea-page-gpt__empty-hint">
-      Напишите текст ниже, чтобы создать превью с помощью ИИ.
+      Вернитесь назад, чтобы создать превью.
     </p>
     {sectionKey && (
       <p className="edit-idea-page-gpt__section-info">

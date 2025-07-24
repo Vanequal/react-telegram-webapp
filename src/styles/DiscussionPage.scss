@@ -314,6 +314,10 @@
   gap: 12px;
   box-sizing: border-box;
   z-index: 100;
+  transition: bottom 0.3s ease; // Добавили плавный переход
+  
+  // Поддержка viewport для мобильных устройств
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
 }
 
 .discussion-footer__icon {
@@ -338,4 +342,19 @@
   width: 28px;
   height: 28px;
   flex-shrink: 0;
+}
+
+@supports (height: 100dvh) {
+  .discussion-page {
+    min-height: 100dvh; // Динамическая высота viewport
+  }
+}
+
+// Стили для iOS Safari viewport fix
+@supports (-webkit-touch-callout: none) {
+  .discussion-footer {
+    // Для iOS: используем visual viewport
+    position: fixed;
+    bottom: env(keyboard-inset-height, 0px);
+  }
 }
