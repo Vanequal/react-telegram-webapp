@@ -246,17 +246,16 @@ const IdeaCard = React.memo(function IdeaCard({
           onClick={handleCardExpand}
           style={{ cursor: 'pointer' }}
         >
-          <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
+          {/* Показываем avatar stack только если есть комментарии */}
+          {displayCommentCount > 0 && (
+            <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
+          )}
           <span className="idea-card__comments">
             {displayCommentCount > 0
               ? `${displayCommentCount} комментариев`
               : 'Прокомментировать'}
           </span>
           <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
-          <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
-          <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>
-            {idea.views || 0}
-          </p>
         </div>
 
         {/* Comments List (when expanded) */}
