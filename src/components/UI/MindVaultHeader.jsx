@@ -23,21 +23,24 @@ const MindVaultHeader = ({
           <i className="mind-vault-header__icon">
             <RiArrowLeftSLine color={"#1E88D3"} size={36} />
           </i>
-          <span className="mind-vault-header__back-text" >
+          <span className="mind-vault-header__back-text">
             {localeTexts?.buttons?.back || 'Назад'}
           </span>
         </div>
-        <h1
-          className="mind-vault-header__title"
-          style={{ color: textColor, fontSize }}
-        >
-          {title || localeTexts?.messages?.title || 'Копилка идей'}
-        </h1>
-        {!hideSectionTitle && (
-          <p style={{ margin: 0, padding: 0, color: '#1E88D3' }}>
-            {section?.theme?.title || 'Заголовок раздела'}
-          </p>
-        )}
+        
+        <div style={{ textAlign: 'center' }}>
+          <h1
+            className="mind-vault-header__title"
+            style={{ color: textColor, fontSize }}
+          >
+            {title || localeTexts?.messages?.title || 'Копилка идей'}
+          </h1>
+          {!hideSectionTitle && (
+            <p style={{ margin: 0, padding: 0, color: '#1E88D3' }}>
+              {section?.theme?.title || 'Заголовок раздела'}
+            </p>
+          )}
+        </div>
       </section>
 
       {!hideDescription && (
