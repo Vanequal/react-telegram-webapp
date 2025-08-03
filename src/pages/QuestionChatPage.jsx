@@ -1,41 +1,207 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+// QuestionChatPage.jsx
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  fetchPostComments,
+  fetchPostsInSection,
+  createPost
+} from '../store/slices/postSlice';
+import { getViewedIdeas, markIdeaAsViewed } from '../utils/utils.js';
+
+// Components
 import MindVaultHeader from '../components/UI/MindVaultHeader';
+import QuestionCard from '../components/QuestionCard';
+import QuestionComposer from '../components/QuestionComposer';
 
-import userIcon from '../assets/img/userIcon.webp';
-import likeIcon from '../assets/img/likeIcon.webp';
-import dislikeIcon from '../assets/img/dislikeIcon.webp';
-import avatarStack from '../assets/img/avatarStack.webp';
-import donatIcon from '../assets/img/donatIcon.webp';
-import eyeIcon from '../assets/img/eyeIcon.webp';
-
+// Styles
 import '../styles/QuestionAnswerPage.scss';
 
-const mockQuestion = {
-  id: 1,
-  text: 'Как правильно расположить инсектарий относительно сторон света?',
-  created_at: '2025-05-01 12:34:56',
-  likes: 12,
-  dislikes: 2,
-  views: 45,
-  author: { first_name: 'Имя Пользователя' },
-  comments: [{ id: 1, text: 'Фронт на юг.', likes: 3, dislikes: 0 }],
-};
-
-const additionalQuestion = {
-  text: 'Как разработать новый вид опылителей-насекомых для теплиц?',
-  author: { first_name: 'Имя Пользователя' },
-  views: 18,
-};
+// Constants
+const SECTION_KEY = 'chat_questions'; // Отдельная секция для вопросов
+const DEFAULT_THEME_ID = 1;
 
 const QuestionChatPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+
+  // State
+  const [questionData, setQuestionData] = useState({
+    text: '',
+    files: []
+  });
+
+  // Redux selectors
+  const { posts, loading, error, postsLoaded } = useSelector(state => state.post);
+  const postComments = useSelector(state => state.post.comments);
+  const commentsLoadingFlags = useSelector(state => state.post.commentsLoadingFlags);
+
+  // Derived values
+  const themeId = Number(searchParams.get('id')) || DEFAULT_THEME_ID;
+
+  const fetchParams = useMemo(() => ({
+    section_key: SECTION_KEY,
+    theme_id: themeId,
+    limit: 100,
+    offset: 0
+  }), [themeId]);
+
+  // Transform posts to questions format
+  const questions = useMemo(() => {
+    return (Array.isArray(posts) ? posts : []).map(post => {
+      const actualAnswers = postComments[post.id]?.length || 
+                           post.comments?.length || 
+                           post.comments_count || 0;
+      
+      const reactions = post.reactions || {};
+      
+      return {
+        id: post.id,
+        username: post.author?.first_name || post.author?.username || 'Пользователь',
+        text: post.text,
+        likes: reactions.count_likes || post.likes || 0,
+        dislikes: reactions.count_dislikes || post.dislikes || 0,
+        answers: actualAnswers,
+        views: post.views ?? 0,
+        timestamp: post.created_at ?? '',
+        files: post.attachments || post.files || [],
+        userReaction: reactions.user_reaction || post.user_reaction || null,
+        author: post.author
+      };
+    });
+  }, [posts, postComments]);
+
+  // Initialize Telegram WebApp
+  useEffect(() => {
+    const initTelegram = () => {
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        try {
+          tg.ready();
+          tg.expand();
+          tg.requestWriteAccess?.();
+        } catch (err) {
+          console.warn('[Telegram WebApp] initialization error:', err.message);
+        }
+      }
+    };
+
+    initTelegram();
+  }, []);
+
+  // Fetch questions if not loaded
+  useEffect(() => {
+    if (!postsLoaded && !loading) {
+      dispatch(fetchPostsInSection(fetchParams));
+    }
+  }, [dispatch, fetchParams, postsLoaded, loading]);
+
+  // Load answers for questions
+  useEffect(() => {
+    if (!posts || posts.length === 0) return;
+
+    posts.forEach(post => {
+      const isLoading = commentsLoadingFlags[post.id];
+      const hasAnswers = postComments[post.id];
+
+      if (!isLoading && !hasAnswers) {
+        dispatch(fetchPostComments({
+          post_id: post.id,
+          section_key: SECTION_KEY,
+          theme_id: themeId,
+        }));
+      }
+    });
+  }, [posts?.length, dispatch, themeId, commentsLoadingFlags, postComments]);
+
+  // Handlers
+  const handleQuestionExpand = useCallback((id) => {
+    const viewed = getViewedIdeas();
+    if (!viewed[id]) {
+      markIdeaAsViewed(id);
+    }
+
+    const selected = questions.find(q => q.id === id);
+    const post = posts.find(p => p.id === id);
+    const questionWithText = {
+      ...selected,
+      message_text: post?.text || selected.text
+    };
+
+    navigate(`/questionanswerpage/${id}`, { state: { question: questionWithText } });
+  }, [questions, posts, navigate]);
+
+  const handleQuestionSubmit = useCallback(async () => {
+    if (!questionData.text.trim()) return;
+  
+    try {
+      // Сразу создаем вопрос без превью GPT
+      await dispatch(createPost({
+        message_text: questionData.text.trim(),
+        section_key: SECTION_KEY,
+        theme_id: themeId,
+        publishing_method: 'original', // Оригинал без обработки
+        files: questionData.files
+      })).unwrap();
+  
+      setQuestionData({ text: '', files: [] });
+    } catch (error) {
+      console.error('Error creating question:', error);
+      alert(`Ошибка создания вопроса: ${error}`);
+    }
+  }, [questionData, dispatch, themeId]);
+
+  const handleQuestionDataChange = useCallback((newData) => {
+    setQuestionData(newData);
+  }, []);
+
+  const handleNavigateToAbout = useCallback(() => navigate('/aboutpage'), [navigate]);
+  const handleNavigateBack = useCallback(() => navigate('/'), [navigate]);
+
+  // Render content based on state
+  const renderContent = () => {
+    if (loading && questions.length === 0) {
+      return (
+        <div className="question-loading">
+          <p>Загрузка вопросов...</p>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="question-error">
+          <p>Ошибка загрузки: {error}</p>
+        </div>
+      );
+    }
+
+    if (!loading && questions.length === 0) {
+      return (
+        <div className="question-empty-state">
+          <p>Вопросов пока нет. Задайте первый вопрос!</p>
+        </div>
+      );
+    }
+
+    return questions.map(question => (
+      <QuestionCard
+        key={question.id}
+        question={question}
+        onExpand={handleQuestionExpand}
+        answerCount={question.answers}
+        sectionKey={SECTION_KEY}
+        themeId={themeId}
+      />
+    ));
+  };
 
   return (
     <div className="question-page">
       <MindVaultHeader
-        onBackClick={() => navigate('/')}
-        onDescriptionClick={() => navigate('/aboutpage')}
+        onBackClick={handleNavigateBack}
+        onDescriptionClick={handleNavigateToAbout}
         bgColor="#EEEFF1"
         textColor="black"
         hideSectionTitle
@@ -43,73 +209,15 @@ const QuestionChatPage = () => {
       />
 
       <div className="question-page__container">
-        {/* Первая карточка */}
-        <div className="question-card">
-          <div className="question-card__header">
-            <img src={userIcon} alt="User" className="question-card__avatar" />
-            <span className="question-card__username">{mockQuestion.author.first_name}</span>
-          </div>
-          <div className="question-card__text-wrapper">
-            <div className="question-card__text"><strong>Вопрос:</strong> {mockQuestion.text}</div>
-          </div>
-          <div className="question-card__actions-container">
-            <div className="question-card__reaction-badges">
-              <div className="question-card__reaction-badge">
-                <img src={likeIcon} alt="Like" />
-                <span>{mockQuestion.likes}</span>
-              </div>
-              <div className="question-card__reaction-badge">
-                <img src={dislikeIcon} alt="Dislike" />
-                <span>{mockQuestion.dislikes}</span>
-              </div>
-            </div>
-            <div className="question-card__timestamp">
-              {mockQuestion.created_at.split(' ')[1]}
-            </div>
-          </div>
-          <div className="question-card__divider" style={{ marginTop: '20px' }}></div>
-          <div
-            className="question-card__footer"
-            onClick={() => navigate('/questionanswerpage')}
-            style={{ cursor: 'pointer' }}
-          >
-            <img src={avatarStack} alt="Avatars" className="question-card__avatar-stack" />
-            <span className="question-card__comments">
-              {mockQuestion.comments.length > 0
-                ? `${mockQuestion.comments.length} комментария`
-                : 'Прокомментировать'}
-            </span>
-            <img src={donatIcon} alt="Donate" className="question-card__icon-donat" />
-            <img src={eyeIcon} alt="Views" className="question-card__icon-eye" />
-            <p className="question-card__views">{mockQuestion.views}</p>
-          </div>
-        </div>
-
-        {/* Вторая карточка */}
-        <div className="question-card" style={{ marginTop: '20px' }}>
-          <div className="question-card__header">
-            <img src={userIcon} alt="User" className="question-card__avatar" />
-            <span className="question-card__username">{additionalQuestion.author.first_name}</span>
-          </div>
-          <div className="question-card__text-wrapper">
-            <div className="question-card__text">
-              <strong>Вопрос:</strong> {additionalQuestion.text}
-            </div>
-          </div>
-          <div className="question-card__divider" style={{ marginTop: '20px' }}></div>
-          <div
-            className="question-card__footer"
-            onClick={() => navigate('/questionanswerpage')}
-            style={{ cursor: 'pointer' }}
-          >
-            <img src={avatarStack} alt="Avatars" className="question-card__avatar-stack" />
-            <span className="question-card__comments">Ответить на вопрос</span>
-            <img src={donatIcon} alt="Donate" className="question-card__icon-donat" />
-            <img src={eyeIcon} alt="Views" className="question-card__icon-eye" />
-            <p className="question-card__views">{additionalQuestion.views}</p>
-          </div>
-        </div>
+        {renderContent()}
       </div>
+
+      <QuestionComposer
+        questionData={questionData}
+        onQuestionDataChange={handleQuestionDataChange}
+        onSubmit={handleQuestionSubmit}
+        disabled={loading}
+      />
     </div>
   );
 };
