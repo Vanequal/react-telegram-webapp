@@ -14,7 +14,7 @@ import AnswerComposer from '../components/AnswerComposer';
 import '../styles/QuestionAnswerPage.scss';
 
 // Constants
-const SECTION_KEY = 'chat_questions';
+const SECTION_KEY = 'chat_ideas';
 const DEFAULT_THEME_ID = 1;
 
 const QuestionAnswerPage = () => {
