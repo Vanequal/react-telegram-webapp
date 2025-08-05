@@ -90,7 +90,7 @@ function App() {
         <Route path="/debatepage" element={<DebatePage />} />
         <Route path="/discussion/:id" element={<DiscussionPage />} />
         <Route path="/questionanswerpage/:id" element={<QuestionAnswerPage />} />
-        <Route path="/questionchat" element={<QuestionChatPage />} />
+        <Route path="/questionchatpage" element={<QuestionChatPage />} />
         <Route path="/reload" element={<ReloadPage />} />
         <Route path="/publicationchatpage" element={<PublicationChatPage />} />
         <Route path="/publicationpage" element={<PublicationPage />} />
