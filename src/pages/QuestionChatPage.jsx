@@ -18,7 +18,7 @@ import QuestionComposer from '../components/QuestionComposer';
 import '../styles/QuestionAnswerPage.scss';
 
 // Constants
-const SECTION_KEY = 'chat_ideas'; // Отдельная секция для вопросов
+const SECTION_KEY = 'chat_qa'; // Отдельная секция для вопросов
 const DEFAULT_THEME_ID = 1;
 
 const QuestionChatPage = () => {
