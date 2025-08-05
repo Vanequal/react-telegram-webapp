@@ -49,6 +49,7 @@
     font-size: 14px;
     border: 1px solid $border-color;
     transition: all 0.2s ease;
+    word-break: break-word;
 
     &:hover {
       background-color: #e0e0e0;
