@@ -12,6 +12,11 @@
     max-width: 1000px;
     margin: 20px auto;
     padding: 16px;
+    
+    // Добавляем отступы между карточками
+    display: flex;
+    flex-direction: column;
+    gap: 16px; // Расстояние между карточками
   }
 
   &__wrapper {
