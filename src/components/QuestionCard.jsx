@@ -159,7 +159,7 @@ const QuestionCard = React.memo(function QuestionCard({
 
   return (
     <>
-      <div className="idea-card question-card" ref={cardRef}>
+      <div className="question-card" ref={cardRef}>
         {/* Header */}
         <div className="idea-card__top">
           <div className="idea-card__user">
