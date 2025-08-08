@@ -84,7 +84,7 @@ const QuestionAnswerPage = () => {
   }, []);
 
   const handleNavigateBack = useCallback(() => {
-    navigate('/questionchat');
+    navigate('/questionchatpage');
   }, [navigate]);
 
   const handleNavigateToAbout = useCallback(() => {
