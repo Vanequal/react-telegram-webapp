@@ -97,8 +97,6 @@ const QuestionDisplayCard = ({ question, onReaction }) => {
             : 'Прокомментировать'}
         </span>
         <img src={donatIcon} alt="Donate" className="question-card__icon-donat" />
-        <img src={eyeIcon} alt="Views" className="question-card__icon-eye" />
-        <p className="question-card__views">{question.views || 0}</p>
       </div>
 
       <div className="question-card__divider" />

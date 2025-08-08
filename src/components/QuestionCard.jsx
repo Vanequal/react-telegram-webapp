@@ -159,7 +159,7 @@ const QuestionCard = React.memo(function QuestionCard({
 
   return (
     <>
-      <div className="question-card" ref={cardRef}>
+      <div className="idea-card question-card" ref={cardRef}>
         {/* Header */}
         <div className="idea-card__top">
           <div className="idea-card__user">
@@ -229,8 +229,6 @@ const QuestionCard = React.memo(function QuestionCard({
               : 'Ответить на вопрос'}
           </span>
           <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
-          <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
-          <p className="idea-card__views">{question.views || 0}</p>
         </div>
       </div>
 
