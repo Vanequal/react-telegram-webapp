@@ -85,21 +85,6 @@ const QuestionDisplayCard = ({ question, onReaction }) => {
           {formatTimestamp(question.created_at)}
         </div>
       </div>
-
-      <div className="question-card__divider" style={{ marginTop: '20px' }}></div>
-
-      {/* Футер карточки */}
-      <div className="question-card__footer" style={{ cursor: 'pointer' }}>
-        <img src={avatarStack} alt="Avatars" className="question-card__avatar-stack" />
-        <span className="question-card__comments">
-          {answers.length > 0
-            ? `${answers.length} ответов`
-            : 'Прокомментировать'}
-        </span>
-        <img src={donatIcon} alt="Donate" className="question-card__icon-donat" />
-      </div>
-
-      <div className="question-card__divider" />
     </div>
   );
 };
