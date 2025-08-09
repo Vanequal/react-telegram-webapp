@@ -31,12 +31,13 @@
   background-color: #9DABB6;
   color: white;
   font-size: 12px;
-  width: 122px;
+  width: auto;
   padding: 0px 14px;
   border-radius: 12px;
   margin: 16px auto;
   justify-content: center;
   align-items: center;
+  text-wrap: nowrap;
 }
 
 .question-comment-list {

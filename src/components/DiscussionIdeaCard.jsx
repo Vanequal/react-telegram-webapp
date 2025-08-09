@@ -72,22 +72,6 @@ const DiscussionIdeaCard = ({ idea, onReaction }) => {
           {formatTimestamp(idea.created_at)}
         </div>
       </div>
-
-      <div className="idea-card__divider" />
-
-      <div className="idea-card__footer">
-        <img src={avatarStack} alt="Avatars" className="idea-card__avatar-stack" />
-        <span className="idea-card__comments">
-          {comments.length || idea.comments || 0} Комментариев
-        </span>
-        <img src={donatIcon} alt="Donate" className="idea-card__icon-donat" />
-        <img src={eyeIcon} alt="Views" className="idea-card__icon-eye" />
-        <p style={{ margin: 0, color: 'rgba(193, 198, 201, 1)', fontSize: '14px' }}>
-          {idea.views || 0}
-        </p>
-      </div>
-
-      <div className="idea-card__divider" />
     </div>
   );
 };
