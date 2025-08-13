@@ -47,7 +47,7 @@ const FooterIcons = ({
         </a>
       )}
       {showTypewriter && (
-        <a href='/publicationchatpage'>
+        <a href='/publicationchat'>
           <img
             src={typewriterIcon}
             alt="Typewriter"
