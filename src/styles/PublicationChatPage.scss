@@ -174,3 +174,35 @@
         }
     }
 }
+
+.publications-list {
+    padding-bottom: 100px; // Отступ для футера
+  }
+  
+  .attached-files-info {
+    margin-top: 12px;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    font-size: 14px;
+    color: #666;
+  
+    ul {
+      margin: 8px 0 0 0;
+      padding-left: 20px;
+      
+      li {
+        margin: 4px 0;
+      }
+    }
+  }
+  
+  .publish-button.disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    
+    &:hover {
+      background: #ccc;
+    }
+  }

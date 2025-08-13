@@ -25,6 +25,7 @@ import QuestionChatPage from './pages/QuestionChatPage';
 import ReloadPage from './pages/ReloadPage';
 import PublicationChatPage from './pages/PublicationChatPage';
 import PublicationPage from './pages/PublicationPage';
+import PublicationPageList from './pages/PublicationPageList';
 import TaskChatPage from './pages/TaskChatPage';
 import LaboratoryPage from './pages/LaboratoryPage';
 
@@ -93,7 +94,8 @@ function App() {
         <Route path="/questionchatpage" element={<QuestionChatPage />} />
         <Route path="/reload" element={<ReloadPage />} />
         <Route path="/publicationchatpage" element={<PublicationChatPage />} />
-        <Route path="/publicationpage" element={<PublicationPage />} />
+        <Route path="/publicationlist" element={<PublicationPageList />} />
+        <Route path="/publicationpage/:id" element={<PublicationPage />} />
         <Route path="/taskchatpage" element={<TaskChatPage />} />
         <Route path="/laboratorypage" element={<LaboratoryPage />} />
       </Routes>
