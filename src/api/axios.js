@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'https://sixth-standard-method-murphy.trycloudflare.com',
+  baseURL: 'https://belong-satisfy-mouse-maintenance.trycloudflare.com',
   headers: {
     'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true'
