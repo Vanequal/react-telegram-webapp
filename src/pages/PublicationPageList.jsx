@@ -115,7 +115,7 @@ const PublicationPageList = () => {
         hideSectionTitle
         bgColor={'#EEEFF1'}
         textColor='black'
-        onBackClick={() => window.history.back()}
+        onBackClick={() => "/"}
       />
 
       {/* Показываем публикации или пустое состояние */}
