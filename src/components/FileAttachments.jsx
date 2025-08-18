@@ -57,15 +57,14 @@ const FileAttachments = ({ files, onImageClick }) => {
         return;
       }
 
-      // Формируем URL для скачивания в зависимости от структуры API
+      // Формируем URL для скачивания используя НОВЫЙ endpoint
       let downloadUrl;
       
       if (file.stored_path) {
-        // Новая структура API - используем endpoint /api/v1/attachments
-        const encodedPath = encodeURIComponent(file.stored_path);
-        downloadUrl = `${BACKEND_BASE_URL}/api/v1/attachments/${encodedPath}`;
+        // Новая структура API - используем обновленный endpoint
+        downloadUrl = `${BACKEND_BASE_URL}/api/v1/messages/attachments/${file.stored_path}`;
       } else {
-        // Старая структура API - используем старый endpoint
+        // Fallback для старой структуры
         const encodedFilePath = encodeURIComponent(filePath);
         downloadUrl = `${BACKEND_BASE_URL}/api/v1/files/download/{file_url}?url=${encodedFilePath}`;
       }
