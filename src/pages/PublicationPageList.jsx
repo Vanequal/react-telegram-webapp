@@ -13,7 +13,7 @@ import PublicationCard from '../components/PublicationCard';
 
 // Icons
 import skrepkaIcon from '../assets/img/skrepkaIcon.webp';
-import sendIcon from '../assets/img/sendIcon.webp';
+import sendIcon from '../assets/img/sendButtonActive.webp';
 
 // Styles
 import '../styles/PublicationPage.scss';
