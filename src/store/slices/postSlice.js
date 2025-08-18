@@ -316,8 +316,9 @@ export const fetchDownloadUrl = createAsyncThunk(
   'post/fetchDownloadUrl',
   async ({ attachmentUrl }, { rejectWithValue }) => {
     try {
-      // Используем новый endpoint для скачивания файлов
-      const downloadUrl = `${axios.defaults.baseURL}/api/v1/messages/attachments/${encodeURIComponent(attachmentUrl)}`;
+      // Согласно Swagger: GET /api/v1/messages/attachments/{attachment_url}
+      // attachment_url передается как path parameter без дополнительного encodeURIComponent
+      const downloadUrl = `${axios.defaults.baseURL}/api/v1/messages/attachments/${attachmentUrl}`;
 
       console.log(`✅ Сформирован URL для файла:`, {
         original: attachmentUrl,
