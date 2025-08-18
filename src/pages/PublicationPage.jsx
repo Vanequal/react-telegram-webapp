@@ -78,7 +78,7 @@ const PublicationPage = () => {
   }, []);
 
   const handleNavigateBack = useCallback(() => {
-    navigate('/publicationpagelist');
+    navigate('/publicationlist');
   }, [navigate]);
 
   const handleNavigateToAbout = useCallback(() => {
