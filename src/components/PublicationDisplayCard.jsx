@@ -1,5 +1,5 @@
 // components/PublicationDisplayCard.jsx
-import React from 'react';
+import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import ReactionBadges from './ReactionBadges';
