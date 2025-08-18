@@ -16,17 +16,17 @@ const PublicationDisplayCard = ({ publication, onReaction }) => {
   const comments = useSelector(state => state.post.comments[publication.id] || []);
 
   // Используем актуальные данные из Redux или fallback на переданные
-  const currentLikes = currentPost?.reactions?.count_likes ?? 
-                      currentPost?.likes ?? 
-                      publication.likes ?? 0;
-  
-  const currentDislikes = currentPost?.reactions?.count_dislikes ?? 
-                         currentPost?.dislikes ?? 
-                         publication.dislikes ?? 0;
-  
-  const currentUserReaction = currentPost?.reactions?.user_reaction ?? 
-                             currentPost?.user_reaction ?? 
-                             publication.userReaction ?? null;
+  const currentLikes = currentPost?.reactions?.count_likes ??
+    currentPost?.likes ??
+    publication.likes ?? 0;
+
+  const currentDislikes = currentPost?.reactions?.count_dislikes ??
+    currentPost?.dislikes ??
+    publication.dislikes ?? 0;
+
+  const currentUserReaction = currentPost?.reactions?.user_reaction ??
+    currentPost?.user_reaction ??
+    publication.userReaction ?? null;
 
   // Файлы (если есть)
   const publicationFiles = publication.attachments || currentPost?.attachments || [];
@@ -44,21 +44,14 @@ const PublicationDisplayCard = ({ publication, onReaction }) => {
       </div>
 
       {/* File Display - показываем только первый файл */}
-      {firstFile && (
-        <div className="publication-card__file-wrapper">
-          <div className="file-row">
-            <div className="file-box" />
-            <div className="file-info">
-              <span className="file-title">
-                {firstFile.original_name || firstFile.name || 'Файл'}
-              </span>
-              <span className="file-size">
-                {firstFile.size ? `${Math.round(firstFile.size / 1024)} Кб` : '73.7 Кб'}
-              </span>
-              <span className="file-link">Открыть файл</span>
-            </div>
-          </div>
-        </div>
+      {publicationFiles.length > 0 && (
+        <FileAttachments
+          files={publicationFiles}
+          onImageClick={(file) => {
+            // Обработка клика по файлу, если нужно
+            console.log('Клик по файлу:', file);
+          }}
+        />
       )}
 
       <strong className="publication-card__excerpt-title">Выдержка:</strong>
@@ -84,8 +77,6 @@ const PublicationDisplayCard = ({ publication, onReaction }) => {
           {comments.length || publication.comments || 0} Комментариев
         </span>
         <img src={donatIcon} alt="Donate" className="publication-card__icon-donat" />
-        <img src={eyeIcon} alt="Views" className="publication-card__icon-eye" />
-        <p className="publication-card__views">{publication.views || 45}</p>
       </div>
     </div>
   );

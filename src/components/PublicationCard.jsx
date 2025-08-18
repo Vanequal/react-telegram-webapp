@@ -32,35 +32,35 @@ const PublicationCard = React.memo(function PublicationCard({
   const dispatch = useDispatch();
   const posts = useSelector(state => state.post.posts);
   const comments = useSelector(state => state.post.comments[publication.id] || []);
-  
+
   // Local state
   const [selectedImage, setSelectedImage] = useState(null);
-  
+
   // Refs
   const cardRef = useRef(null);
 
   // Derived data
   const currentPost = useMemo(() => posts.find(p => p.id === publication.id), [posts, publication.id]);
-  
-  const currentLikes = currentPost?.reactions?.count_likes ?? 
-                      currentPost?.likes ?? 
-                      publication.likes ?? 0;
-  
-  const currentDislikes = currentPost?.reactions?.count_dislikes ?? 
-                         currentPost?.dislikes ?? 
-                         publication.dislikes ?? 0;
-  
-  const currentUserReaction = currentPost?.reactions?.user_reaction ?? 
-                             currentPost?.user_reaction ?? 
-                             publication.userReaction ?? null;
+
+  const currentLikes = currentPost?.reactions?.count_likes ??
+    currentPost?.likes ??
+    publication.likes ?? 0;
+
+  const currentDislikes = currentPost?.reactions?.count_dislikes ??
+    currentPost?.dislikes ??
+    publication.dislikes ?? 0;
+
+  const currentUserReaction = currentPost?.reactions?.user_reaction ??
+    currentPost?.user_reaction ??
+    publication.userReaction ?? null;
 
   // Files
   const publicationFiles = useMemo(() => {
-    const rawFiles = publication.attachments || 
-                     currentPost?.attachments || 
-                     publication.files || 
-                     currentPost?.files || 
-                     [];
+    const rawFiles = publication.attachments ||
+      currentPost?.attachments ||
+      publication.files ||
+      currentPost?.files ||
+      [];
 
     if (!rawFiles || rawFiles.length === 0) {
       return [];
@@ -71,7 +71,7 @@ const PublicationCard = React.memo(function PublicationCard({
       url: file.stored_path || file.url,
       relative_path: file.stored_path || file.relative_path,
       original_name: file.original_name || file.name,
-      extension: file.extension || (file.original_name ? 
+      extension: file.extension || (file.original_name ?
         file.original_name.split('.').pop().toLowerCase() : ''),
       index: index
     }));
@@ -119,11 +119,11 @@ const PublicationCard = React.memo(function PublicationCard({
   }, [dispatch, publication.id, sectionKey, themeId]);
 
   const handleCardExpand = useCallback(() => onExpand(publication.id), [onExpand, publication.id]);
-  
+
   const handleImageClick = useCallback((image) => {
     setSelectedImage(image);
   }, []);
-  
+
   const handleImageModalClose = useCallback(() => setSelectedImage(null), []);
 
   // Определяем количество комментариев
@@ -143,23 +143,12 @@ const PublicationCard = React.memo(function PublicationCard({
         </div>
 
         {/* File Display - показываем только первый файл */}
-        {firstFile && (
-          <div className="publication-card__file-wrapper">
-            <div className="file-row">
-              <div className="file-box" />
-              <div className="file-info">
-                <span className="file-title">
-                  {firstFile.original_name || firstFile.name || 'Файл'}
-                </span>
-                <span className="file-size">
-                  {firstFile.size ? `${Math.round(firstFile.size / 1024)} Кб` : '0 Кб'}
-                </span>
-                <span className="file-link" onClick={() => handleImageClick(firstFile)}>
-                  Открыть файл
-                </span>
-              </div>
-            </div>
-          </div>
+        // Заменить на:
+        {publicationFiles.length > 0 && (
+          <FileAttachments
+            files={publicationFiles}
+            onImageClick={handleImageClick}
+          />
         )}
 
         <strong className="publication-card__excerpt-title">Выдержка:</strong>
@@ -195,8 +184,6 @@ const PublicationCard = React.memo(function PublicationCard({
               : 'Комментировать'}
           </span>
           <img src={donatIcon} alt="Donate" className="publication-card__icon-donat" />
-          <img src={eyeIcon} alt="Views" className="publication-card__icon-eye" />
-          <p className="publication-card__views">{publication.views || 0}</p>
         </div>
       </div>
 

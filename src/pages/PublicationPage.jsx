@@ -78,7 +78,7 @@ const PublicationPage = () => {
   }, []);
 
   const handleNavigateBack = useCallback(() => {
-    navigate('/publicationchatpage');
+    navigate('/publicationpagelist');
   }, [navigate]);
 
   const handleNavigateToAbout = useCallback(() => {
@@ -149,7 +149,7 @@ const PublicationPage = () => {
   }, [location.state]);
 
   return (
-    <div>
+    <div style={{ height: '100vh', overflow: 'auto' }}> {/* ИСПРАВЛЕНО: добавлен скролл */}
       <MindVaultHeader
         title='Публикации'
         hideSectionTitle
@@ -157,28 +157,28 @@ const PublicationPage = () => {
         textColor='black'
         onBackClick={handleNavigateBack}
       />
-
+  
       {/* Показываем лоадер, если публикация загружается */}
       {loading && !publication && (
         <div style={{ padding: '20px', textAlign: 'center' }}>
           Загрузка публикации...
         </div>
       )}
-
+  
       {publication && (
         <PublicationDisplayCard 
           publication={publication} 
           onReaction={handlePublicationReaction}
         />
       )}
-
+  
       {/* Разделитель перед комментариями */}
       <div style={{ 
         margin: '20px 16px', 
         height: '1px', 
         backgroundColor: '#E2E6E9' 
       }}></div>
-
+  
       {/* Комментарии */}
       <div style={{ margin: '0 16px', marginBottom: '80px' }}>
         {commentsLoading && (
@@ -203,7 +203,7 @@ const PublicationPage = () => {
           </p>
         )}
       </div>
-
+  
       <CommentComposer
         commentText={commentText}
         onCommentChange={handleCommentChange}
