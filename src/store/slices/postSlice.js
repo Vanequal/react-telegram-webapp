@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../api/axios';
 
-// Загрузка файлов через правильный endpoint
+// Загрузка файлов через обновленный endpoint
 export const uploadFiles = createAsyncThunk(
   'post/uploadFiles',
   async (files, { rejectWithValue }) => {
@@ -14,18 +14,18 @@ export const uploadFiles = createAsyncThunk(
 
       const formData = new FormData();
       files.forEach((file) => {
-        formData.append('attachments', file); // Изменено с 'files' на 'attachments'
+        formData.append('attachments', file);
       });
 
-      // Используем правильный endpoint
-      const res = await axios.post('/api/v1/attachments', formData, {
+      // Используем обновленный endpoint
+      const res = await axios.post('/api/v1/messages/attachments', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
 
       console.log('✅ Файлы загружены:', res.data);
-      return res.data; // Массив объектов с id, stored_path и т.д.
+      return res.data;
     } catch (err) {
       console.error('🔥 Ошибка загрузки файлов:', err?.response?.data || err.message);
       return rejectWithValue(err?.response?.data?.detail || 'Ошибка загрузки файлов');
@@ -53,7 +53,7 @@ export const createPost = createAsyncThunk(
         data: {
           text: message_text,
           type: 'post',
-          publishing_method: apiPublishingMethod // Используем преобразованное значение
+          publishing_method: apiPublishingMethod
         },
         attachments: uploadedFiles || []
       };
@@ -80,7 +80,6 @@ export const createPost = createAsyncThunk(
 
       console.log('✅ Пост успешно создан:', res.data);
 
-      // Дополняем ответ информацией о файлах для удобства
       return {
         ...res.data,
         uploaded_files: uploadedFiles
@@ -88,7 +87,6 @@ export const createPost = createAsyncThunk(
     } catch (err) {
       console.error('🔥 Ошибка создания поста:', err?.response?.data || err.message);
 
-      // Детальная обработка ошибок валидации
       if (err?.response?.data?.error?.details) {
         console.error('📋 Детали ошибок валидации:', err.response.data.error.details);
       }
@@ -102,6 +100,7 @@ export const createPost = createAsyncThunk(
     }
   }
 );
+
 // Создание превью поста - используем новый endpoint /api/v1/messages/openai
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
@@ -196,7 +195,7 @@ export const createComment = createAsyncThunk(
           type: 'comment',
           content_id: post_id,
         },
-        attachments: uploadedFiles || [] // Используем весь объект файла, а не только ID
+        attachments: uploadedFiles || []
       };
 
       const requestConfig = {
@@ -221,7 +220,7 @@ export const createComment = createAsyncThunk(
 
       return {
         ...res.data,
-        post_id: post_id, // Добавляем для совместимости с существующим кодом
+        post_id: post_id,
         uploaded_files: uploadedFiles
       };
     } catch (err) {
@@ -275,8 +274,7 @@ export const fetchPostComments = createAsyncThunk(
   }
 );
 
-
-// Реакция на пост
+// Реакция на пост - обновлен endpoint на PATCH
 export const reactToPost = createAsyncThunk(
   'post/reactToPost',
   async ({ post_id, reaction, section_key, theme_id }, { rejectWithValue }) => {
@@ -288,8 +286,9 @@ export const reactToPost = createAsyncThunk(
         theme_id
       });
 
-      const res = await axios.post(
-        `/api/v1/messages/${post_id}/${reaction}`,
+      // Используем PATCH вместо POST и новый endpoint
+      const res = await axios.patch(
+        `/api/v1/messages/${post_id}/update_reaction`,
         { reaction },
         {
           params: {
@@ -312,13 +311,13 @@ export const reactToPost = createAsyncThunk(
   }
 );
 
-// Получение ссылки на файл - обновленная версия для attachments
+// Получение ссылки на файл - обновленная версия для нового endpoint
 export const fetchDownloadUrl = createAsyncThunk(
   'post/fetchDownloadUrl',
   async ({ attachmentUrl }, { rejectWithValue }) => {
     try {
       // Используем новый endpoint для скачивания файлов
-      const downloadUrl = `${axios.defaults.baseURL}/api/v1/attachments/${encodeURIComponent(attachmentUrl)}`;
+      const downloadUrl = `${axios.defaults.baseURL}/api/v1/messages/attachments/${encodeURIComponent(attachmentUrl)}`;
 
       console.log(`✅ Сформирован URL для файла:`, {
         original: attachmentUrl,
@@ -488,45 +487,43 @@ const postSlice = createSlice({
       })
 
       // Получение комментариев
-      // И заменить обработчик в extraReducers:
-.addCase(fetchPostComments.pending, (state, action) => {
-  const postId = action.meta.arg.post_id;
-  state.commentsLoading = true;
-  state.commentError = null;
-  state.commentsLoadingFlags[postId] = true;
-})
-.addCase(fetchPostComments.fulfilled, (state, action) => {
-  const { postId, comments } = action.payload;
-  state.commentsLoading = false;
-  state.commentsLoadingFlags[postId] = false;
+      .addCase(fetchPostComments.pending, (state, action) => {
+        const postId = action.meta.arg.post_id;
+        state.commentsLoading = true;
+        state.commentError = null;
+        state.commentsLoadingFlags[postId] = true;
+      })
+      .addCase(fetchPostComments.fulfilled, (state, action) => {
+        const { postId, comments } = action.payload;
+        state.commentsLoading = false;
+        state.commentsLoadingFlags[postId] = false;
 
-  // Всегда обновляем комментарии, убираем лишние проверки
-  state.comments[postId] = comments || [];
+        // Всегда обновляем комментарии, убираем лишние проверки
+        state.comments[postId] = comments || [];
 
-  // Обновляем счетчик комментариев в посте
-  const postIndex = state.posts.findIndex(post => post.id === postId);
-  if (postIndex !== -1) {
-    state.posts[postIndex] = {
-      ...state.posts[postIndex],
-      comments_count: comments ? comments.length : 0
-    };
-  }
+        // Обновляем счетчик комментариев в посте
+        const postIndex = state.posts.findIndex(post => post.id === postId);
+        if (postIndex !== -1) {
+          state.posts[postIndex] = {
+            ...state.posts[postIndex],
+            comments_count: comments ? comments.length : 0
+          };
+        }
 
-  console.log('✅ Комментарии сохранены в store:', {
-    postId,
-    commentsCount: comments?.length || 0,
-    comments: comments
-  });
-})
-.addCase(fetchPostComments.rejected, (state, action) => {
-  const postId = action.meta.arg?.post_id;
-  state.commentsLoading = false;
-  state.commentError = action.payload;
-  if (postId) {
-    state.commentsLoadingFlags[postId] = false;
-  }
-})
-
+        console.log('✅ Комментарии сохранены в store:', {
+          postId,
+          commentsCount: comments?.length || 0,
+          comments: comments
+        });
+      })
+      .addCase(fetchPostComments.rejected, (state, action) => {
+        const postId = action.meta.arg?.post_id;
+        state.commentsLoading = false;
+        state.commentError = action.payload;
+        if (postId) {
+          state.commentsLoadingFlags[postId] = false;
+        }
+      })
 
       // Создание комментария
       .addCase(createComment.pending, (state) => {
@@ -560,7 +557,7 @@ const postSlice = createSlice({
         state.commentError = action.payload;
       })
 
-      // Реакции на пост - ЕДИНСТВЕННЫЙ обработчик с поддержкой комментариев
+      // Реакции на пост - обновлен для работы с новым PATCH endpoint
       .addCase(reactToPost.fulfilled, (state, action) => {
         const { post_id, count_likes, count_dislikes, new_reaction } = action.payload;
         console.log('📊 Обновляем реакции для поста/комментария:', {
