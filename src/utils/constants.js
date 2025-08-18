@@ -4,7 +4,7 @@ export const CONSTANTS = {
     VIEW_THRESHOLD_MS: 30000,
     INTERSECTION_THRESHOLD: 0.75,
     TEXT_EXPAND_THRESHOLD: 160,
-    BACKEND_BASE_URL: process.env.REACT_APP_API_URL || 'https://trembl-quarterly-sector-t.trycloudflare.com',
+    BACKEND_BASE_URL: process.env.REACT_APP_API_URL || 'https://tight-guarantees-discs-announcement.trycloudflare.com/',
     
     FILE_ACCEPT: {
       MEDIA: 'image/*,video/*',
