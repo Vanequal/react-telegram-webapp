@@ -132,6 +132,25 @@ const PublicationCard = React.memo(function PublicationCard({
   // Получаем первый файл для отображения (если есть)
   const firstFile = publicationFiles[0];
 
+  const handleFileDownload = useCallback((file) => {
+    const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://tight-guarantees-discs-announcement.trycloudflare.com';
+
+    let downloadUrl;
+    if (file.stored_path) {
+      downloadUrl = `${BACKEND_BASE_URL}/api/v1/messages/attachments/${file.stored_path}`;
+    } else {
+      const encodedFilePath = encodeURIComponent(file.stored_path || file.url || file.relative_path);
+      downloadUrl = `${BACKEND_BASE_URL}/api/v1/files/download/{file_url}?url=${encodedFilePath}`;
+    }
+
+    // Добавляем обход ngrok для скачивания
+    const urlWithBypass = downloadUrl +
+      (downloadUrl.includes('?') ? '&' : '?') +
+      'ngrok-skip-browser-warning=true';
+
+    window.open(urlWithBypass, '_blank');
+  }, []);
+
   return (
     <>
       <div className="publication-card" ref={cardRef}>
@@ -143,12 +162,23 @@ const PublicationCard = React.memo(function PublicationCard({
         </div>
 
         {/* File Display - показываем только первый файл */}
-        // Заменить на:
-        {publicationFiles.length > 0 && (
-          <FileAttachments
-            files={publicationFiles}
-            onImageClick={handleImageClick}
-          />
+        {firstFile && (
+          <div className="publication-card__file-wrapper">
+            <div className="file-row">
+              <div className="file-box" />
+              <div className="file-info">
+                <span className="file-title">
+                  {firstFile.original_name || firstFile.name || 'Файл'}
+                </span>
+                <span className="file-size">
+                  {firstFile.size ? `${Math.round(firstFile.size / 1024)} Кб` : '73.7 Кб'}
+                </span>
+                <span className="file-link" onClick={() => handleFileDownload(firstFile)}>
+                  Открыть файл
+                </span>
+              </div>
+            </div>
+          </div>
         )}
 
         <strong className="publication-card__excerpt-title">Выдержка:</strong>

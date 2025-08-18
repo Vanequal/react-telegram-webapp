@@ -34,6 +34,25 @@ const PublicationDisplayCard = ({ publication, onReaction }) => {
   // Получаем первый файл для отображения
   const firstFile = publicationFiles[0];
 
+  const handleFileDownload = useCallback((file) => {
+    const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://tight-guarantees-discs-announcement.trycloudflare.com';
+
+    let downloadUrl;
+    if (file.stored_path) {
+      downloadUrl = `${BACKEND_BASE_URL}/api/v1/messages/attachments/${file.stored_path}`;
+    } else {
+      const encodedFilePath = encodeURIComponent(file.stored_path || file.url || file.relative_path);
+      downloadUrl = `${BACKEND_BASE_URL}/api/v1/files/download/{file_url}?url=${encodedFilePath}`;
+    }
+
+    // Добавляем обход ngrok для скачивания
+    const urlWithBypass = downloadUrl +
+      (downloadUrl.includes('?') ? '&' : '?') +
+      'ngrok-skip-browser-warning=true';
+
+    window.open(urlWithBypass, '_blank');
+  }, []);
+
   return (
     <div className="publication-card">
       <div className="publication-card__header">
@@ -44,14 +63,23 @@ const PublicationDisplayCard = ({ publication, onReaction }) => {
       </div>
 
       {/* File Display - показываем только первый файл */}
-      {publicationFiles.length > 0 && (
-        <FileAttachments
-          files={publicationFiles}
-          onImageClick={(file) => {
-            // Обработка клика по файлу, если нужно
-            console.log('Клик по файлу:', file);
-          }}
-        />
+      {firstFile && (
+        <div className="publication-card__file-wrapper">
+          <div className="file-row">
+            <div className="file-box" />
+            <div className="file-info">
+              <span className="file-title">
+                {firstFile.original_name || firstFile.name || 'Файл'}
+              </span>
+              <span className="file-size">
+                {firstFile.size ? `${Math.round(firstFile.size / 1024)} Кб` : '0 Кб'}
+              </span>
+              <span className="file-link" onClick={() => handleFileDownload(firstFile)}>
+                Открыть файл
+              </span>
+            </div>
+          </div>
+        </div>
       )}
 
       <strong className="publication-card__excerpt-title">Выдержка:</strong>
