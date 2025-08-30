@@ -17,7 +17,6 @@ export const uploadFiles = createAsyncThunk(
         formData.append('attachments', file);
       });
 
-      // Используем обновленный endpoint
       const res = await axios.post('/api/v1/messages/attachments', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -45,15 +44,12 @@ export const createPost = createAsyncThunk(
         uploadedFiles = uploadResult;
       }
 
-      // FIX: Преобразуем 'gpt' в 'openai' для соответствия API
-      const apiPublishingMethod = publishing_method === 'gpt' ? 'openai' : publishing_method;
-
-      // Готовим данные согласно API
+      // Готовим данные согласно API - убираем преобразование 'gpt' в 'openai'
       const requestData = {
         data: {
           text: message_text,
           type: 'post',
-          publishing_method: apiPublishingMethod
+          publishing_method: publishing_method // оставляем как есть
         },
         attachments: uploadedFiles || []
       };
@@ -73,7 +69,7 @@ export const createPost = createAsyncThunk(
         data: requestData,
         params: requestConfig.params,
         attachments_count: uploadedFiles.length,
-        publishing_method: apiPublishingMethod
+        publishing_method: publishing_method
       });
 
       const res = await axios.post('/api/v1/posts', requestData, requestConfig);
@@ -164,6 +160,106 @@ export const fetchPostById = createAsyncThunk(
     } catch (err) {
       console.error('🔥 Ошибка загрузки поста:', err?.response?.data || err.message);
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки поста');
+    }
+  }
+);
+
+// Создание публикации - новый action для публикаций
+export const createPublication = createAsyncThunk(
+  'post/createPublication',
+  async ({ message_text, section_key, theme_id, files = [] }, { rejectWithValue, dispatch }) => {
+    try {
+      // Сначала загружаем файлы, если они есть
+      let uploadedFiles = [];
+      if (files && files.length > 0) {
+        const uploadResult = await dispatch(uploadFiles(files)).unwrap();
+        uploadedFiles = uploadResult;
+      }
+
+      // Готовим данные согласно API для публикаций
+      const requestData = {
+        data: {
+          text: message_text,
+          type: 'publication'
+        },
+        attachments: uploadedFiles || []
+      };
+
+      const requestConfig = {
+        params: {
+          section_key: section_key,
+          theme_id: theme_id
+        },
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+
+      console.log('📤 Отправляем запрос на создание публикации:', {
+        url: '/api/v1/publications',
+        data: requestData,
+        params: requestConfig.params,
+        attachments_count: uploadedFiles.length
+      });
+
+      const res = await axios.post('/api/v1/publications', requestData, requestConfig);
+
+      console.log('✅ Публикация успешно создана:', res.data);
+
+      return {
+        ...res.data,
+        uploaded_files: uploadedFiles
+      };
+    } catch (err) {
+      console.error('🔥 Ошибка создания публикации:', err?.response?.data || err.message);
+      return rejectWithValue(
+        err?.response?.data?.error?.message ||
+        err?.response?.data?.detail ||
+        err?.response?.data?.error ||
+        'Ошибка создания публикации'
+      );
+    }
+  }
+);
+
+// Получение публикаций
+export const fetchPublications = createAsyncThunk(
+  'post/fetchPublications',
+  async ({ section_key, theme_id, limit = 100, offset = 0 }, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(`/api/v1/publications`, {
+        params: {
+          section_key: section_key,
+          theme_id: theme_id,
+          limit: limit,
+          offset: offset
+        }
+      });
+
+      return res.data;
+    } catch (err) {
+      console.error('🔥 Ошибка загрузки публикаций:', err?.response?.data || err.message);
+      return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки публикаций');
+    }
+  }
+);
+
+// Получение конкретной публикации
+export const fetchPublicationById = createAsyncThunk(
+  'post/fetchPublicationById',
+  async ({ message_id, section_key, theme_id }, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(`/api/v1/publications/${message_id}`, {
+        params: {
+          section_key: section_key,
+          theme_id: theme_id
+        }
+      });
+
+      return res.data;
+    } catch (err) {
+      console.error('🔥 Ошибка загрузки публикации:', err?.response?.data || err.message);
+      return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки публикации');
     }
   }
 );
@@ -317,7 +413,7 @@ export const fetchDownloadUrl = createAsyncThunk(
   async ({ attachmentUrl }, { rejectWithValue }) => {
     try {
       // Согласно Swagger: GET /api/v1/messages/attachments/{attachment_url}
-      // attachment_url передается как path parameter без дополнительного encodeURIComponent
+      // attachment_url передается как path parameter
       const downloadUrl = `${axios.defaults.baseURL}/api/v1/messages/attachments/${attachmentUrl}`;
 
       console.log(`✅ Сформирован URL для файла:`, {
@@ -345,12 +441,15 @@ const postSlice = createSlice({
     preview: null,
     comments: {},
     posts: [],
+    publications: [], // добавляем отдельный массив для публикаций
     fileLinks: {},
     selectedPost: null,
+    selectedPublication: null, // добавляем выбранную публикацию
     commentsLoading: false,
     commentError: null,
     commentsLoadingFlags: {},
     postsLoaded: false,
+    publicationsLoaded: false, // флаг для публикаций
     uploadedFiles: [],
   },
   reducers: {
@@ -362,6 +461,10 @@ const postSlice = createSlice({
       state.posts = [];
       state.postsLoaded = false;
       state.commentsLoadingFlags = {};
+    },
+    clearPublications: (state) => {
+      state.publications = [];
+      state.publicationsLoaded = false;
     },
     clearComments: (state, action) => {
       if (action.payload) {
@@ -405,7 +508,6 @@ const postSlice = createSlice({
       })
       .addCase(createPost.fulfilled, (state, action) => {
         state.loading = false;
-        // Добавляем новый пост в начало списка
         const newPost = {
           ...action.payload,
           likes: action.payload.reactions?.count_likes || 0,
@@ -413,10 +515,31 @@ const postSlice = createSlice({
           user_reaction: action.payload.reactions?.user_reaction || null
         };
         state.posts.unshift(newPost);
-        state.preview = null; // Очищаем превью после публикации
-        state.uploadedFiles = []; // Очищаем загруженные файлы
+        state.preview = null;
+        state.uploadedFiles = [];
       })
       .addCase(createPost.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Создание публикации
+      .addCase(createPublication.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createPublication.fulfilled, (state, action) => {
+        state.loading = false;
+        const newPublication = {
+          ...action.payload,
+          likes: action.payload.reactions?.count_likes || 0,
+          dislikes: action.payload.reactions?.count_dislikes || 0,
+          user_reaction: action.payload.reactions?.user_reaction || null
+        };
+        state.publications.unshift(newPublication);
+        state.uploadedFiles = [];
+      })
+      .addCase(createPublication.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -444,7 +567,6 @@ const postSlice = createSlice({
         state.loading = false;
         state.postsLoaded = true;
 
-        // Нормализуем данные для совместимости
         const newPosts = (action.payload || []).map(post => ({
           ...post,
           likes: post.reactions?.count_likes || 0,
@@ -464,6 +586,32 @@ const postSlice = createSlice({
         state.error = action.payload;
         state.posts = [];
         state.postsLoaded = false;
+      })
+
+      // Получение публикаций
+      .addCase(fetchPublications.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPublications.fulfilled, (state, action) => {
+        state.loading = false;
+        state.publicationsLoaded = true;
+
+        const newPublications = (action.payload || []).map(publication => ({
+          ...publication,
+          likes: publication.reactions?.count_likes || 0,
+          dislikes: publication.reactions?.count_dislikes || 0,
+          user_reaction: publication.reactions?.user_reaction || null,
+          comments_count: publication.comments?.length || 0
+        }));
+
+        state.publications = newPublications;
+      })
+      .addCase(fetchPublications.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.publications = [];
+        state.publicationsLoaded = false;
       })
 
       // Получение конкретного поста
@@ -487,6 +635,27 @@ const postSlice = createSlice({
         state.error = action.payload;
       })
 
+      // Получение конкретной публикации
+      .addCase(fetchPublicationById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPublicationById.fulfilled, (state, action) => {
+        state.loading = false;
+        const publication = action.payload;
+        state.selectedPublication = {
+          ...publication,
+          likes: publication.reactions?.count_likes || 0,
+          dislikes: publication.reactions?.count_dislikes || 0,
+          user_reaction: publication.reactions?.user_reaction || null,
+          comments_count: publication.comments?.length || 0
+        };
+      })
+      .addCase(fetchPublicationById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
       // Получение комментариев
       .addCase(fetchPostComments.pending, (state, action) => {
         const postId = action.meta.arg.post_id;
@@ -499,7 +668,6 @@ const postSlice = createSlice({
         state.commentsLoading = false;
         state.commentsLoadingFlags[postId] = false;
 
-        // Всегда обновляем комментарии, убираем лишние проверки
         state.comments[postId] = comments || [];
 
         // Обновляем счетчик комментариев в посте
@@ -507,6 +675,15 @@ const postSlice = createSlice({
         if (postIndex !== -1) {
           state.posts[postIndex] = {
             ...state.posts[postIndex],
+            comments_count: comments ? comments.length : 0
+          };
+        }
+
+        // Также проверяем в публикациях
+        const publicationIndex = state.publications.findIndex(pub => pub.id === postId);
+        if (publicationIndex !== -1) {
+          state.publications[publicationIndex] = {
+            ...state.publications[publicationIndex],
             comments_count: comments ? comments.length : 0
           };
         }
@@ -544,12 +721,21 @@ const postSlice = createSlice({
 
         state.comments[post_id].push(comment);
 
-        // Обновляем счетчик комментариев
+        // Обновляем счетчик комментариев в постах
         const postIndex = state.posts.findIndex(post => post.id === post_id);
         if (postIndex !== -1) {
           state.posts[postIndex] = {
             ...state.posts[postIndex],
             comments_count: (state.posts[postIndex].comments_count || 0) + 1
+          };
+        }
+
+        // Обновляем счетчик комментариев в публикациях
+        const publicationIndex = state.publications.findIndex(pub => pub.id === post_id);
+        if (publicationIndex !== -1) {
+          state.publications[publicationIndex] = {
+            ...state.publications[publicationIndex],
+            comments_count: (state.publications[publicationIndex].comments_count || 0) + 1
           };
         }
       })
@@ -585,6 +771,23 @@ const postSlice = createSlice({
           };
         }
 
+        // Обновляем в списке публикаций
+        const publicationIndex = state.publications.findIndex(pub => pub.id === post_id);
+        if (publicationIndex !== -1) {
+          state.publications[publicationIndex] = {
+            ...state.publications[publicationIndex],
+            likes: count_likes,
+            dislikes: count_dislikes,
+            user_reaction: new_reaction,
+            reactions: {
+              ...state.publications[publicationIndex].reactions,
+              count_likes: count_likes,
+              count_dislikes: count_dislikes,
+              user_reaction: new_reaction
+            }
+          };
+        }
+
         // Обновляем выбранный пост
         if (state.selectedPost && state.selectedPost.id === post_id) {
           state.selectedPost = {
@@ -601,11 +804,26 @@ const postSlice = createSlice({
           };
         }
 
+        // Обновляем выбранную публикацию
+        if (state.selectedPublication && state.selectedPublication.id === post_id) {
+          state.selectedPublication = {
+            ...state.selectedPublication,
+            likes: count_likes,
+            dislikes: count_dislikes,
+            user_reaction: new_reaction,
+            reactions: {
+              ...state.selectedPublication.reactions,
+              count_likes: count_likes,
+              count_dislikes: count_dislikes,
+              user_reaction: new_reaction
+            }
+          };
+        }
+
         // Обновляем реакции в комментариях
         Object.keys(state.comments).forEach(postKey => {
           const postComments = state.comments[postKey];
           if (postComments && Array.isArray(postComments)) {
-            // Ищем комментарий для обновления
             const commentIndex = postComments.findIndex(comment => comment.id === post_id);
             if (commentIndex !== -1) {
               state.comments[postKey][commentIndex] = {
@@ -658,6 +876,14 @@ const postSlice = createSlice({
   }
 });
 
-export const { clearError, clearPosts, clearComments, clearPreview, clearUploadedFiles, setCommentsLoadingFlag } = postSlice.actions;
+export const { 
+  clearError, 
+  clearPosts, 
+  clearPublications, 
+  clearComments, 
+  clearPreview, 
+  clearUploadedFiles, 
+  setCommentsLoadingFlag 
+} = postSlice.actions;
 
 export default postSlice.reducer;

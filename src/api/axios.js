@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'https://tight-guarantees-discs-announcement.trycloudflare.com',
+  baseURL: 'https://detail-armor-black-aids.trycloudflare.com/',
   headers: {
     'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true'
