@@ -35,7 +35,7 @@ const PublicationDisplayCard = ({ publication, onReaction }) => {
   const firstFile = publicationFiles[0];
 
   const handleFileDownload = useCallback((file) => {
-    const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://tight-guarantees-discs-announcement.trycloudflare.com';
+    const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://detail-armor-black-aids.trycloudflare.com';
 
     let downloadUrl;
     if (file.stored_path) {
