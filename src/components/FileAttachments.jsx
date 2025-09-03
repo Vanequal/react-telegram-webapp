@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import '../styles/components/file-attachments.scss';
 
 const FileAttachments = ({ files, onImageClick }) => {
-  const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://detail-armor-black-aids.trycloudflare.com';
+  const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://adjacent-forth-administrative-diseases.trycloudflare.com';
   const [imageCache, setImageCache] = useState({});
 
   // Функция для загрузки изображения через fetch с обходом ngrok
