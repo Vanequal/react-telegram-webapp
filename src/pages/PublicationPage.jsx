@@ -22,7 +22,7 @@ const PublicationPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-
+  
   // Redux selectors
   const { posts, selectedPost } = useSelector(state => state.post);
   const postComments = useSelector(state => state.post.comments[+id] || []);
@@ -32,7 +32,7 @@ const PublicationPage = () => {
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
-
+  
   // Derived data
   const publicationFromState = location.state?.publication;
   const publicationFromPosts = posts.find(p => String(p.id) === id);
@@ -57,7 +57,7 @@ const PublicationPage = () => {
       })).unwrap();
 
       setCommentText('');
-
+      
       // Scroll to bottom after adding comment
       setTimeout(() => {
         const commentsContainer = document.querySelector('.comment-list');
@@ -112,15 +112,15 @@ const PublicationPage = () => {
   // Effect для загрузки комментариев
   useEffect(() => {
     const publicationId = +id;
-
-    const shouldLoadComments = publicationId &&
-      !commentsLoaded &&
-      !commentsLoading &&
+    
+    const shouldLoadComments = publicationId && 
+      !commentsLoaded && 
+      !commentsLoading && 
       (!comments || comments.length === 0);
 
     if (shouldLoadComments) {
       setCommentsLoaded(true);
-
+      
       dispatch(fetchPostComments({
         post_id: publicationId,
         section_key: SECTION_KEY,
@@ -157,30 +157,28 @@ const PublicationPage = () => {
         textColor='black'
         onBackClick={handleNavigateBack}
       />
-
+  
       {/* Показываем лоадер, если публикация загружается */}
       {loading && !publication && (
         <div style={{ padding: '20px', textAlign: 'center' }}>
           Загрузка публикации...
         </div>
       )}
-
+  
       {publication && (
-        <div className='question-page__container'>
-          <PublicationDisplayCard
-            publication={publication}
-            onReaction={handlePublicationReaction}
-          />
-        </div>
+        <PublicationDisplayCard 
+          publication={publication} 
+          onReaction={handlePublicationReaction}
+        />
       )}
-
+  
       {/* Разделитель перед комментариями */}
-      <div style={{
-        margin: '20px 16px',
-        height: '1px',
-        backgroundColor: '#E2E6E9'
+      <div style={{ 
+        margin: '20px 16px', 
+        height: '1px', 
+        backgroundColor: '#E2E6E9' 
       }}></div>
-
+  
       {/* Комментарии */}
       <div style={{ margin: '0 16px', marginBottom: '80px' }}>
         {commentsLoading && (
@@ -188,12 +186,12 @@ const PublicationPage = () => {
             Загрузка комментариев...
           </p>
         )}
-
+        
         {!commentsLoading && comments.length > 0 ? (
           comments.map((comment, index) => (
-            <CommentThread
-              key={comment.id}
-              comment={comment}
+            <CommentThread 
+              key={comment.id} 
+              comment={comment} 
               isNew={location.state?.scrollTo === 'new-comment' && index === comments.length - 1}
               sectionKey={SECTION_KEY}
               themeId={DEFAULT_THEME_ID}
@@ -205,7 +203,7 @@ const PublicationPage = () => {
           </p>
         )}
       </div>
-
+  
       <CommentComposer
         commentText={commentText}
         onCommentChange={handleCommentChange}
