@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from '../../api/axios';
+import axios from '../../shared/api/axios';
 
 // Загрузка файлов через обновленный endpoint
 export const uploadFiles = createAsyncThunk(

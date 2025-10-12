@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from '../../api/axios';
+import axios from '../../shared/api/axios';
 
 export const fetchTheme = createAsyncThunk(
   'theme/fetchTheme',
