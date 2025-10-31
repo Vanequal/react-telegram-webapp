@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'https://adjacent-forth-administrative-diseases.trycloudflare.com',
+  baseURL: 'https://bedbug-smart-remarkably.ngrok-free.app',
   headers: {
     'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true'
