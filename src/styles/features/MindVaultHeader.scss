@@ -1,4 +1,4 @@
-@import './font.scss';
+﻿// @import '../font.scss';
 
 .mind-vault-header {
   width: 100%;
@@ -17,13 +17,13 @@
     font-family: 'Roboto', sans-serif;
     font-size: 18px;
     font-weight: 400;
-    color: #1E88D3;
+    color: #1e88d3;
     margin-top: 12px;
     margin-left: 12px;
     text-decoration: none;
     text-align: left;
   }
-  
+
   &__left {
     position: absolute;
     left: 0px;

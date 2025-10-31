@@ -1,17 +1,16 @@
-@import "./font.scss";
+﻿// @import "../font.scss";
 
 .debate-page {
-    padding-bottom: 80px;
+  padding-bottom: 80px;
+}
+
+.debate-content {
+  padding-top: 0 !important;
+  padding: 16px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px;
+  color: black;
+  p {
+    margin-bottom: 12px;
   }
-  
-  .debate-content {
-    padding-top: 0 !important;
-    padding: 16px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 20px;
-    color: black;
-    p {
-      margin-bottom: 12px;
-    }
-  }
-  
+}

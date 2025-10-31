@@ -1,14 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RiArrowLeftSLine } from 'react-icons/ri';
-import AudioPlayer from '../../shared/ui/AudioPlayer';
+import AudioPlayer from '@/shared/ui/AudioPlayer';
 
-import ecologyGif from '../assets/img/ecology.gif';
-import pencilIcon from '../assets/img/pencil.webp';
-import skrepkaIcon from '../assets/img/skrepkaIcon.webp';
-import sendIcon from '../assets/img/sendIcon.webp';
+import ecologyGif from '@/assets/images/ecology.gif';
+import pencilIcon from '@/assets/images/pencil.webp';
+import skrepkaIcon from '@/assets/images/skrepkaIcon.webp';
+import sendIcon from '@/assets/images/sendIcon.webp';
 
-import '../styles/AboutPage.scss';
+import '@/styles/shared/components/AboutPage.scss';
 
 const AboutPage = () => {
   const navigate = useNavigate();

@@ -1,4 +1,4 @@
-.mind-vault-page {
+﻿.mind-vault-page {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -6,7 +6,7 @@
   padding-bottom: 60px; // Возвращаем оригинальное значение
 }
 
-// Остальные стили остаются без изменений...
+// Остальные стили остаются без изменений@.
 .idea-card {
   background-color: rgba(252, 252, 254, 1);
   border: 1px solid rgba(252, 252, 254, 1);
@@ -153,7 +153,7 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  background-color: #EEEFF1;
+  background-color: #eeeff1;
   padding: 8px 12px;
   display: flex;
   align-items: center;
@@ -171,7 +171,7 @@
 .vault-footer__input {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #E2E6E9;
+  border: 1px solid #e2e6e9;
   border-radius: 20px;
   box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
   font-family: 'Roboto', sans-serif;
@@ -187,13 +187,13 @@
 
 .idea-fullscreen {
   position: relative;
-  min-height: 100vh;  
-  background: #FCFCFE;
+  min-height: 100vh;
+  background: #fcfcfe;
   z-index: 200;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  padding-bottom: 80px; 
+  padding-bottom: 80px;
 }
 
 .idea-fullscreen__content {
@@ -217,7 +217,7 @@
   background-color: rgb(252, 252, 254);
   padding: 16px;
   border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   max-width: 600px;
   margin: 0 auto;
 }
@@ -253,8 +253,14 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .idea-card__text-row {

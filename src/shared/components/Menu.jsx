@@ -1,25 +1,25 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { RiArrowRightSLine } from "react-icons/ri";
+import { RiArrowRightSLine } from 'react-icons/ri'
 
-import '../styles/Menu.scss';
+import '@/styles/shared/components/Menu.scss'
 
-import myAvatar from '../assets/img/myAvatar.webp';
-import maskedStar from '../assets/img/maskedStar.webp';
-import telegramLogo from '../assets/img/telegramLogo.webp';
-import personIcon from '../assets/img/personIcon.webp';
-import wallet from '../assets/img/wallet.webp';
-import languageIcon from '../assets/img/languageIcon.webp';
-import messageSquare from '../assets/img/messageSquare.webp';
-import alertCircle from '../assets/img/alertCircle.webp';
-import house from '../assets/img/house.webp';
-import personShield from '../assets/img/personShield.webp';
-import exitIcon from '../assets/img/exitIcon.webp';
+import myAvatar from '@/assets/images/myAvatar.webp'
+import maskedStar from '@/assets/images/maskedStar.webp'
+import telegramLogo from '@/assets/images/telegramLogo.webp'
+import personIcon from '@/assets/images/personIcon.webp'
+import wallet from '@/assets/images/wallet.webp'
+import languageIcon from '@/assets/images/languageIcon.webp'
+import messageSquare from '@/assets/images/messageSquare.webp'
+import alertCircle from '@/assets/images/alertCircle.webp'
+import house from '@/assets/images/house.webp'
+import personShield from '@/assets/images/personShield.webp'
+import exitIcon from '@/assets/images/exitIcon.webp'
 
 const Menu = () => {
-  const [isMobileVersion, setIsMobileVersion] = useState(true);
-  const navigate = useNavigate();
+  const [isMobileVersion, setIsMobileVersion] = useState(true)
+  const navigate = useNavigate()
 
   return (
     <div className="menu">
@@ -52,19 +52,13 @@ const Menu = () => {
 
       {/* Список */}
       <div className="menu__list">
-        <MenuItem icon={personIcon} label="Мой профиль" onClick={() => navigate('/myprofile')}/>
+        <MenuItem icon={personIcon} label="Мой профиль" onClick={() => navigate('/myprofile')} />
         <div className="menu__divider" />
         <MenuToggle icon={telegramLogo} label="Выкл уведомления в TG" />
         <div className="menu__divider" />
         <MenuItem icon={wallet} label="Кошелек" />
         <div className="menu__divider" />
-        <MenuItem
-          icon={languageIcon}
-          label="Язык / Language"
-          value="Русский"
-          isBlueValue
-          fontValue="Roboto"
-        />
+        <MenuItem icon={languageIcon} label="Язык / Language" value="Русский" isBlueValue fontValue="Roboto" />
         <div className="menu__divider" />
         <MenuItem icon={messageSquare} label="Написать нам" />
         <div className="menu__divider" />
@@ -97,8 +91,8 @@ const Menu = () => {
         <span className="menu__logout-text">Выход</span>
       </div>
     </div>
-  );
-};
+  )
+}
 
 const MenuItem = ({ icon, label, value, isBlueValue, fontValue, onClick }) => (
   <div className="menu__item" onClick={onClick}>
@@ -112,7 +106,7 @@ const MenuItem = ({ icon, label, value, isBlueValue, fontValue, onClick }) => (
           className="menu__item-value"
           style={{
             color: isBlueValue ? '#1976D2' : '#000',
-            fontFamily: fontValue || 'Montserrat'
+            fontFamily: fontValue || 'Montserrat',
           }}
         >
           {value}
@@ -121,7 +115,7 @@ const MenuItem = ({ icon, label, value, isBlueValue, fontValue, onClick }) => (
       <RiArrowRightSLine size={20} color="#3C3C434D" />
     </div>
   </div>
-);
+)
 
 const MenuToggle = ({ icon, label }) => (
   <div className="menu__item">
@@ -134,6 +128,6 @@ const MenuToggle = ({ icon, label }) => (
       <span className="menu__switch-round" />
     </label>
   </div>
-);
+)
 
-export default Menu;
+export default Menu

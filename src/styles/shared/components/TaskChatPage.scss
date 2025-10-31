@@ -1,60 +1,60 @@
-@import "./font.scss";
+﻿// @import "../font.scss";
 
 .task-chat-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
+  &__top-text {
+    font-size: 20px;
+    color: black;
+    text-align: left;
+    font-family: 'Space Grotesk', sans-serif;
+    padding: 16px;
+  }
+
+  &__bottom-text {
+    margin-top: 60%;
+    font-size: 20px;
+    color: black;
+    text-align: left;
+    padding: 16px;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .task-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #eeeff1;
+    padding: 8px 12px;
     display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+    z-index: 100;
 
-    &__top-text {
-        font-size: 20px;
-        color: black;
-        text-align: left;
-        font-family: 'Space Grotesk', sans-serif;
-        padding: 16px;
+    &__icon {
+      width: 24px;
+      height: 24px;
     }
 
-    &__bottom-text {
-        margin-top: 60%;
-        font-size: 20px;
-        color: black;
-        text-align: left;
-        padding: 16px;
-        font-family: 'Space Grotesk', sans-serif;
+    &__input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #e2e6e9;
+      border-radius: 20px;
+      box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
+      font-family: 'Roboto', sans-serif;
+      font-size: 16px;
+      color: #00000099;
+      background-color: #fff;
     }
 
-    .task-footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background-color: #EEEFF1;
-        padding: 8px 12px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        box-sizing: border-box;
-        z-index: 100;
-
-        &__icon {
-            width: 24px;
-            height: 24px;
-        }
-
-        &__input {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1px solid #E2E6E9;
-            border-radius: 20px;
-            box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
-            font-family: 'Roboto', sans-serif;
-            font-size: 16px;
-            color: #00000099;
-            background-color: #fff;
-        }
-
-        &__send {
-            width: 28px;
-            height: 28px;
-        }
+    &__send {
+      width: 28px;
+      height: 28px;
     }
+  }
 }

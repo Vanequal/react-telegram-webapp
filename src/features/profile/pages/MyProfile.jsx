@@ -1,45 +1,38 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchCurrentUser } from '../../../store/slices/meSlice';
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchCurrentUser } from '@/store/slices/meSlice'
 
-import MindVaultHeader from '../../mindvault/components/MindVaultHeader';
-import '../styles/MyProfile.scss';
+import MindVaultHeader from '@/features/mindvault/components/MindVaultHeader'
+import '@/styles/features/MyProfile.scss'
 
-import myProfilePhoto from '../assets/img/myProfilePhoto.webp';
-import myProfileWallet from '../assets/img/myProfileWallet.webp';
-import myProfilePen from '../assets/img/myProfilePen.webp';
-import maskedStar from '../assets/img/maskedStar.webp';
-import myProfileMedal from '../assets/img/myProfileMedal.webp';
-import myProfileQR from '../assets/img/myProfileQR.webp';
+import myProfilePhoto from '@/assets/images/myProfilePhoto.webp'
+import myProfileWallet from '@/assets/images/myProfileWallet.webp'
+import myProfilePen from '@/assets/images/myProfilePen.webp'
+import maskedStar from '@/assets/images/maskedStar.webp'
+import myProfileMedal from '@/assets/images/myProfileMedal.webp'
+import myProfileQR from '@/assets/images/myProfileQR.webp'
 
 const MyProfile = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
-  const { currentUser, loading } = useSelector((state) => state.me);
+  const { currentUser, loading } = useSelector(state => state.me)
 
   useEffect(() => {
     if (!currentUser) {
-      dispatch(fetchCurrentUser());
+      dispatch(fetchCurrentUser())
     }
-  }, [currentUser, dispatch]);
+  }, [currentUser, dispatch])
 
   if (loading || !currentUser) {
-    return <div className="my-profile__loading">Загрузка...</div>;
+    return <div className="my-profile__loading">Загрузка...</div>
   }
 
   return (
     <div className="my-profile">
-      <MindVaultHeader
-        onBackClick={() => window.history.back()}
-        hideSectionTitle
-        hideDescription
-        title="Мой профиль"
-        bgColor="#182330"
-        textColor="#FFFFFF"
-      />
+      <MindVaultHeader onBackClick={() => window.history.back()} hideSectionTitle hideDescription title="Мой профиль" bgColor="#182330" textColor="#FFFFFF" />
 
       <div className="my-profile__photo">
         <img src={myProfilePhoto} alt="Profile" />
@@ -70,7 +63,8 @@ const MyProfile = () => {
           <div className="label">О себе</div>
           <div className="value_about">
             {/* Можно подтянуть из отдельного поля, если оно появится */}
-            Пишу Telegram-ботов на Python с нуля: API, базы, логика. Увлекаюсь кулинарией и строительством.<br />
+            Пишу Telegram-ботов на Python с нуля: API, базы, логика. Увлекаюсь кулинарией и строительством.
+            <br />
             <br />
             Мечтаю жить исключительно среди добрых, целеустремлённых и отзывчивых людей.
           </div>
@@ -104,7 +98,7 @@ const MyProfile = () => {
         </button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default MyProfile;
+export default MyProfile

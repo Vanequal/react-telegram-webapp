@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
-import '../styles/HomeSimplified.scss';
+import React, { useState } from 'react'
+import '@/styles/shared/components/HomeSimplified.scss'
 
-import backIcon from '../assets/img/back.webp';
-import timeIcon from '../assets/img/time.webp';
-import pautineIcon from '../assets/img/pautineSimple.webp';
-import messengerIcon from '../assets/img/messangerSimple.webp';
-import resumeIcon from '../assets/img/resume.webp';
+import backIcon from '@/assets/images/back.webp'
+import timeIcon from '@/assets/images/time.webp'
+import pautineIcon from '@/assets/images/pautineSimple.webp'
+import messengerIcon from '@/assets/images/messangerSimple.webp'
+import resumeIcon from '@/assets/images/resume.webp'
 
-import pigIcon from '../assets/img/pigSimple.webp';
-import typewriterIcon from '../assets/img/typewriterSimple.webp';
-import microscopeIcon from '../assets/img/microscopeSimple.webp';
-import gearIcon from '../assets/img/gearSimple.webp';
-import headIcon from '../assets/img/headSimple.webp';
+import pigIcon from '@/assets/images/pigSimple.webp'
+import typewriterIcon from '@/assets/images/typewriterSimple.webp'
+import microscopeIcon from '@/assets/images/microscopeSimple.webp'
+import gearIcon from '@/assets/images/gearSimple.webp'
+import headIcon from '@/assets/images/headSimple.webp'
 
 function HomeSimplified() {
-  const [animate, setAnimate] = useState(false);
+  const [animate, setAnimate] = useState(false)
 
   const handleClick = () => {
-    setAnimate(true);
+    setAnimate(true)
     setTimeout(() => {
-      setAnimate(false);
-    }, 300);
-  };
+      setAnimate(false)
+    }, 300)
+  }
 
   return (
     <div className="home-simplified">
@@ -37,20 +37,12 @@ function HomeSimplified() {
       </div>
 
       <div className="home-simplified__buttons">
-        <button
-          className={`home-simplified__button home-simplified__button--primary ${animate ? 'animate' : ''}`}
-          onClick={handleClick}>
+        <button className={`home-simplified__button home-simplified__button--primary ${animate ? 'animate' : ''}`} onClick={handleClick}>
           Обмен &nbsp; опытом
         </button>
-        <button className="home-simplified__button home-simplified__button--secondary">
-          Описание
-        </button>
-        <button className="home-simplified__button home-simplified__button--tertiary">
-          Идеальный результат
-        </button>
-        <button className="home-simplified__button home-simplified__button--quaternary">
-          Модули проекта
-        </button>
+        <button className="home-simplified__button home-simplified__button--secondary">Описание</button>
+        <button className="home-simplified__button home-simplified__button--tertiary">Идеальный результат</button>
+        <button className="home-simplified__button home-simplified__button--quaternary">Модули проекта</button>
       </div>
 
       <div className="home-simplified__footerIcons">
@@ -61,7 +53,7 @@ function HomeSimplified() {
         <img src={microscopeIcon} alt="Microscope" className="home-simplified__icon" />
       </div>
     </div>
-  );
+  )
 }
 
-export default HomeSimplified;
+export default HomeSimplified

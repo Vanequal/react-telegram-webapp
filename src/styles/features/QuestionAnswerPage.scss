@@ -1,9 +1,9 @@
-@import './font.scss';
+﻿// @import '../font.scss';
 @import url('https://fonts.googleapis.com/css2?family=Inter&family=Montserrat&family=Space+Grotesk&display=swap');
 
 .question-page {
   font-family: 'Inter', sans-serif;
-  background-color: #FCFCFE;
+  background-color: #fcfcfe;
   min-height: 100vh;
   padding-bottom: 60px;
   position: relative;
@@ -12,7 +12,7 @@
     max-width: 1000px;
     margin: 20px auto;
     padding: 16px;
-    
+
     // Добавляем отступы между карточками
     display: flex;
     flex-direction: column;
@@ -28,7 +28,7 @@
 
 .question-pill {
   display: flex;
-  background-color: #9DABB6;
+  background-color: #9dabb6;
   color: white;
   font-size: 12px;
   width: auto;
@@ -80,7 +80,7 @@
 }
 
 .question-comment-timestamp {
-  color: #98A0A6;
+  color: #98a0a6;
   font-size: 12px;
 }
 
@@ -109,7 +109,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  background-color: #E1EFFF;
+  background-color: #e1efff;
   border-radius: 33px;
   padding: 4px 10px;
 
@@ -128,7 +128,7 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   font-weight: 600;
-  color: #1976D2;
+  color: #1976d2;
   background: none;
   border: none;
   cursor: pointer;
@@ -181,13 +181,13 @@
   }
 
   &__timestamp {
-    color: #98A0A6;
+    color: #98a0a6;
     font-size: 14px;
   }
 
   &__divider {
     height: 1px;
-    background-color: #E2E6E9;
+    background-color: #e2e6e9;
     width: 100%;
     margin: 0;
   }
@@ -198,7 +198,7 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  background-color: #EEEFF1;
+  background-color: #eeeff1;
   padding: 8px 12px;
   display: flex;
   align-items: center;
@@ -214,7 +214,7 @@
   &__input {
     flex: 1;
     padding: 8px 12px;
-    border: 1px solid #E2E6E9;
+    border: 1px solid #e2e6e9;
     border-radius: 20px;
     box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
     font-family: 'Roboto', sans-serif;
@@ -334,7 +334,7 @@
 .question-action-button {
   background: none;
   border: none;
-  color: #1976D2;
+  color: #1976d2;
   font-size: 14px;
   font-family: 'Montserrat', sans-serif;
   font-weight: 500;
@@ -379,7 +379,7 @@
 .question-subcomment-reply-to {
   font-size: 14px;
   font-weight: 600;
-  color: #D23219;
+  color: #d23219;
   font-family: 'Montserrat', sans-serif;
 }
 
@@ -398,7 +398,7 @@
 .question-subcomment-reaction {
   display: flex;
   align-items: center;
-  background-color: #E1EFFF;
+  background-color: #e1efff;
   padding: 4px 10px;
   border-radius: 33px;
 
@@ -416,7 +416,7 @@
 .question-comment-thread.first-comment {
   .question-comment-item {
     background-color: white;
-    border: 1px solid #FCFCFE;
+    border: 1px solid #fcfcfe;
     box-shadow: 0px 4px 4px 0px #00000040;
     border-radius: 10px;
     padding: 12px;
@@ -432,7 +432,7 @@
   .comment-action-button {
     background: none;
     border: none;
-    color: #1976D2;
+    color: #1976d2;
     font-family: 'Montserrat', sans-serif;
     font-size: 14px;
     font-weight: 600;
@@ -442,7 +442,7 @@
 }
 
 .reply-quote-wrapper {
-  background-color: #EAF4FA;
+  background-color: #eaf4fa;
   padding: 0 8px;
   margin-top: 4px;
   margin-bottom: 4px;
@@ -451,7 +451,7 @@
 }
 
 .replied-user-name {
-  color: #FC4C53;
+  color: #fc4c53;
   font-size: 13px;
   font-weight: 500;
   margin-bottom: 4px;

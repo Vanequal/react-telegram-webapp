@@ -1,4 +1,4 @@
-@import '../variables';
+﻿@import '../variables';
 
 .discussion-page {
   font-family: $font-inter;
@@ -22,7 +22,7 @@
 
 .discussion-pill {
   @include flex-center;
-  background-color: #9DABB6;
+  background-color: #9dabb6;
   color: white;
   font-size: 12px;
   padding: 6px 14px;
@@ -35,7 +35,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  
+
   .loading-comments,
   .empty-comments {
     text-align: center;
@@ -174,7 +174,7 @@
     cursor: pointer;
     transition: transform 0.2s ease;
 
-    &:hover:not([style*="not-allowed"]) {
+    &:hover:not([style*='not-allowed']) {
       transform: scale(1.1);
     }
   }

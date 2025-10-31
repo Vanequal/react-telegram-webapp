@@ -1,59 +1,51 @@
 // components/QuestionDisplayCard.jsx
-import React from 'react';
-import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
-import ReactionBadges from '../../../shared/components/ReactionBadges';
-import FileAttachments from '../../../shared/components/FileAttachments';
-import userIcon from '../assets/img/userIcon.webp';
-import avatarStack from '../assets/img/avatarStack.webp';
-import donatIcon from '../assets/img/donatIcon.webp';
-import eyeIcon from '../assets/img/eyeIcon.webp';
+import React from 'react'
+import PropTypes from 'prop-types'
+import { useSelector } from 'react-redux'
+import ReactionBadges from '@/shared/components/ReactionBadges'
+import FileAttachments from '@/shared/components/FileAttachments'
+import userIcon from '@/assets/images/userIcon.webp'
+import avatarStack from '@/assets/images/avatarStack.webp'
+import donatIcon from '@/assets/images/donatIcon.webp'
+import eyeIcon from '@/assets/images/eyeIcon.webp'
 
 const QuestionDisplayCard = ({ question, onReaction }) => {
   // Получаем актуальные данные из Redux
-  const posts = useSelector(state => state.post.posts);
-  const currentPost = posts.find(p => p.id === question.id);
-  const answers = useSelector(state => state.post.comments[question.id] || []);
+  const posts = useSelector(state => state.post.posts)
+  const currentPost = posts.find(p => p.id === question.id)
+  const answers = useSelector(state => state.post.comments[question.id] || [])
 
   // Используем актуальные данные из Redux или fallback на переданные
-  const currentLikes = currentPost?.reactions?.count_likes ?? 
-                      currentPost?.likes ?? 
-                      question.likes ?? 0;
-  
-  const currentDislikes = currentPost?.reactions?.count_dislikes ?? 
-                         currentPost?.dislikes ?? 
-                         question.dislikes ?? 0;
-  
-  const currentUserReaction = currentPost?.reactions?.user_reaction ?? 
-                             currentPost?.user_reaction ?? 
-                             question.userReaction ?? null;
+  const currentLikes = currentPost?.reactions?.count_likes ?? currentPost?.likes ?? question.likes ?? 0
+
+  const currentDislikes = currentPost?.reactions?.count_dislikes ?? currentPost?.dislikes ?? question.dislikes ?? 0
+
+  const currentUserReaction = currentPost?.reactions?.user_reaction ?? currentPost?.user_reaction ?? question.userReaction ?? null
 
   // Файлы (если есть)
-  const questionFiles = question.attachments || currentPost?.attachments || [];
+  const questionFiles = question.attachments || currentPost?.attachments || []
 
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return '';
+  const formatTimestamp = timestamp => {
+    if (!timestamp) return ''
     try {
       return new Date(timestamp).toLocaleString('ru-RU', {
         day: '2-digit',
         month: '2-digit',
         hour: '2-digit',
-        minute: '2-digit'
-      });
+        minute: '2-digit',
+      })
     } catch (error) {
-      console.warn('Error formatting timestamp:', timestamp);
-      return '';
+      console.warn('Error formatting timestamp:', timestamp)
+      return ''
     }
-  };
+  }
 
   return (
     <div className="question-card">
       {/* Верхняя часть: аватар и имя */}
       <div className="question-card__header">
         <img src={userIcon} alt="User" className="question-card__avatar" />
-        <span className="question-card__username">
-          {question.author?.first_name || question.username || 'Имя Пользователя'}
-        </span>
+        <span className="question-card__username">{question.author?.first_name || question.username || 'Имя Пользователя'}</span>
       </div>
 
       {/* Текст вопроса */}
@@ -73,21 +65,13 @@ const QuestionDisplayCard = ({ question, onReaction }) => {
       {/* Лайки и дизлайки */}
       <div className="question-card__actions-container">
         <div className="question-card__reaction-badges">
-          <ReactionBadges
-            likes={currentLikes}
-            dislikes={currentDislikes}
-            userReaction={currentUserReaction}
-            onReaction={onReaction}
-            readOnly={false}
-          />
+          <ReactionBadges likes={currentLikes} dislikes={currentDislikes} userReaction={currentUserReaction} onReaction={onReaction} readOnly={false} />
         </div>
-        <div className="question-card__timestamp">
-          {formatTimestamp(question.created_at)}
-        </div>
+        <div className="question-card__timestamp">{formatTimestamp(question.created_at)}</div>
       </div>
     </div>
-  );
-};
+  )
+}
 
 QuestionDisplayCard.propTypes = {
   question: PropTypes.shape({
@@ -101,9 +85,9 @@ QuestionDisplayCard.propTypes = {
     views: PropTypes.number,
     attachments: PropTypes.array,
     author: PropTypes.object,
-    username: PropTypes.string
+    username: PropTypes.string,
   }).isRequired,
-  onReaction: PropTypes.func.isRequired
-};
+  onReaction: PropTypes.func.isRequired,
+}
 
-export default QuestionDisplayCard;
+export default QuestionDisplayCard

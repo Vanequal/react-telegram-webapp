@@ -1,11 +1,11 @@
-import React from 'react';
-import '../../styles/FooterIcons.scss';
+import React from 'react'
+import '@/styles/shared/ui/FooterIcons.scss'
 
-import DefaultPigIcon from '../../assets/img/pig.webp';
-import DefaultHeadIcon from '../../assets/img/head.webp';
-import DefaultTypewriterIcon from '../../assets/img/typewriter.webp';
-import DefaultGearIcon from '../../assets/img/gear.webp';
-import DefaultMicroscopeIcon from '../../assets/img/microscope.webp';
+import DefaultPigIcon from '@/assets/images/pig.webp'
+import DefaultHeadIcon from '@/assets/images/head.webp'
+import DefaultTypewriterIcon from '@/assets/images/typewriter.webp'
+import DefaultGearIcon from '@/assets/images/gear.webp'
+import DefaultMicroscopeIcon from '@/assets/images/microscope.webp'
 
 const FooterIcons = ({
   showPig = true,
@@ -28,56 +28,31 @@ const FooterIcons = ({
     <div className="footer-icons">
       {showPig && (
         <a href="/mindvault">
-          <img
-            src={pigIcon}
-            alt="Pig"
-            className="footer-icons__icon footer-icons__icon--pig"
-            onClick={onPigClick}
-          />
+          <img src={pigIcon} alt="Pig" className="footer-icons__icon footer-icons__icon--pig" onClick={onPigClick} />
         </a>
       )}
       {showHead && (
-        <a href='/questionchatpage'>
-          <img
-            src={headIcon}
-            alt="Head"
-            className="footer-icons__icon"
-            onClick={onHeadClick}
-          />
+        <a href="/questionchatpage">
+          <img src={headIcon} alt="Head" className="footer-icons__icon" onClick={onHeadClick} />
         </a>
       )}
       {showTypewriter && (
-        <a href='/publicationlist'>
-          <img
-            src={typewriterIcon}
-            alt="Typewriter"
-            className="footer-icons__icon"
-            onClick={onTypewriterClick}
-          />
+        <a href="/publicationlist">
+          <img src={typewriterIcon} alt="Typewriter" className="footer-icons__icon" onClick={onTypewriterClick} />
         </a>
       )}
       {showGear && (
-        <a href='/taskchatpage'>
-          <img
-            src={gearIcon}
-            alt="Gear"
-            className="footer-icons__icon"
-            onClick={onGearClick}
-          />
+        <a href="/taskchatpage">
+          <img src={gearIcon} alt="Gear" className="footer-icons__icon" onClick={onGearClick} />
         </a>
       )}
       {showMicroscope && (
-        <a href='/laboratorypage'>
-          <img
-            src={microscopeIcon}
-            alt="Microscope"
-            className="footer-icons__icon"
-            onClick={onMicroscopeClick}
-          />
+        <a href="/laboratorypage">
+          <img src={microscopeIcon} alt="Microscope" className="footer-icons__icon" onClick={onMicroscopeClick} />
         </a>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default FooterIcons;
+export default FooterIcons

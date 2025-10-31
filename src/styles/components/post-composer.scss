@@ -1,4 +1,4 @@
-@import '../variables';
+﻿@import '../variables';
 
 .vault-footer {
   position: fixed;
@@ -46,7 +46,7 @@
     cursor: pointer;
     transition: transform 0.2s ease;
 
-    &:hover:not([style*="not-allowed"]) {
+    &:hover:not([style*='not-allowed']) {
       transform: scale(1.1);
     }
   }

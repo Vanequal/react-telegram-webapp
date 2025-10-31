@@ -1,7 +1,7 @@
-@import './font.scss';
+﻿// @import "../font.scss";
 
 .edit-idea-page {
-  background-color: #FCFCFE;
+  background-color: #fcfcfe;
   min-height: 100vh;
   box-sizing: border-box;
   padding-bottom: 80px;
@@ -9,9 +9,9 @@
 }
 
 .edit-idea-page__content {
-    padding: 0 18px;
-  }
-  
+  padding: 0 18px;
+}
+
 .edit-idea-page__empty-message {
   font-size: 20px;
   font-weight: 400;
@@ -26,7 +26,7 @@
 }
 
 .edit-idea-description {
-  color: #1E88D3;
+  color: #1e88d3;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   cursor: pointer;
