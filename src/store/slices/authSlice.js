@@ -4,7 +4,7 @@ import axios from '@/shared/api/axios'
 export const authWithTelegram = createAsyncThunk('auth/telegram', async (initData, { rejectWithValue }) => {
   try {
     const response = await axios.post(
-      '/api/v1/auth/telegram',
+      '/api/v1/auth/telegram/login', // ✅ Исправлен путь
       { init_data: initData },
       {
         headers: {
@@ -13,18 +13,20 @@ export const authWithTelegram = createAsyncThunk('auth/telegram', async (initDat
       }
     )
 
-    const token = response.headers['new-access-token']
-    const userData = response.data
+    // ✅ Согласно Swagger API возвращает token в теле ответа, а не в headers
+    const { token, message, status } = response.data
+    
+    console.log('✅ Авторизация успешна:', { message, status })
 
-    if (!token) throw new Error('Токен не найден в заголовках')
+    if (!token) throw new Error('Токен не найден в ответе')
 
     sessionStorage.setItem('token', token)
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    console.log('📦 Заголовки ответа:', response.headers)
 
-    return { user: userData, token }
+    // ✅ API возвращает весь объект response.data, включая token
+    return { token, message, status }
   } catch (err) {
-    console.error('Auth error:', err)
+    console.error('❌ Auth error:', err?.response?.data || err.message)
     return rejectWithValue(err.response?.data?.detail || 'Auth error')
   }
 })
@@ -32,15 +34,17 @@ export const authWithTelegram = createAsyncThunk('auth/telegram', async (initDat
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    user: null,
     token: null,
+    message: null,
+    status: null,
     loading: false,
     error: null,
   },
   reducers: {
     logout: state => {
-      state.user = null
       state.token = null
+      state.message = null
+      state.status = null
       sessionStorage.removeItem('token')
       delete axios.defaults.headers.common['Authorization']
     },
@@ -52,8 +56,9 @@ const authSlice = createSlice({
         state.error = null
       })
       .addCase(authWithTelegram.fulfilled, (state, action) => {
-        state.user = action.payload.user
         state.token = action.payload.token
+        state.message = action.payload.message
+        state.status = action.payload.status
         state.loading = false
       })
       .addCase(authWithTelegram.rejected, (state, action) => {
@@ -64,7 +69,9 @@ const authSlice = createSlice({
 })
 
 export const { logout } = authSlice.actions
-export const selectUser = state => state.auth.user
+export const selectToken = state => state.auth.token
+export const selectAuthMessage = state => state.auth.message
+export const selectAuthStatus = state => state.auth.status
 export const selectAuthLoading = state => state.auth.loading
 export const selectAuthError = state => state.auth.error
 

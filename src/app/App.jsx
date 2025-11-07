@@ -34,13 +34,15 @@ import '@/styles/global.scss'
 function App() {
   const dispatch = useDispatch()
   const [authReady, setAuthReady] = useState(false)
-  const user = useSelector(state => state.auth.user)
+  const token = useSelector(state => state.auth.token) // ✅ Изменено с user на token
+  const currentUser = useSelector(state => state.me.currentUser) // ✅ Берем юзера из meSlice
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp
     const initData = tg?.initData
-    const token = sessionStorage.getItem('token')
+    const savedToken = sessionStorage.getItem('token')
 
+    // Локальная разработка
     if (window.location.hostname === 'localhost') {
       const mockToken = 'mock-token'
       sessionStorage.setItem('token', mockToken)
@@ -49,28 +51,53 @@ function App() {
       return
     }
 
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      setAuthReady(true)
+    // Если токен уже есть в sessionStorage
+    if (savedToken) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
+      // ✅ Загружаем данные пользователя
+      dispatch(fetchCurrentUser()).finally(() => {
+        setAuthReady(true)
+      })
       return
     }
 
+    // Авторизация через Telegram
     if (initData && tg?.initDataUnsafe?.user) {
-      dispatch(authWithTelegram(initData)).finally(() => {
-        setAuthReady(true)
-      })
+      dispatch(authWithTelegram(initData))
+        .unwrap()
+        .then((result) => {
+          console.log('✅ Авторизация успешна:', result)
+          // ✅ После успешной авторизации загружаем данные пользователя
+          return dispatch(fetchCurrentUser()).unwrap()
+        })
+        .then((userData) => {
+          console.log('✅ Данные пользователя загружены:', userData)
+        })
+        .catch((error) => {
+          console.error('❌ Ошибка авторизации:', error)
+        })
+        .finally(() => {
+          setAuthReady(true)
+        })
     } else {
+      console.warn('⚠️ initData не найден')
       setAuthReady(true)
     }
   }, [dispatch])
 
-  useEffect(() => {
-    if (sessionStorage.getItem('token')) {
-      dispatch(fetchCurrentUser())
-    }
-  }, [dispatch])
-
-  if (!authReady) return <div>Загрузка...</div>
+  if (!authReady) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '18px'
+      }}>
+        Загрузка...
+      </div>
+    )
+  }
 
   return (
     <Router>
