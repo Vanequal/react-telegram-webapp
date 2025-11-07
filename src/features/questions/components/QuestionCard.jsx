@@ -23,7 +23,7 @@ const VIEW_THRESHOLD_MS = 30000
 const INTERSECTION_THRESHOLD = 0.75
 const TEXT_EXPAND_THRESHOLD = 160
 
-const QuestionCard = React.memo(function QuestionCard({ question, onExpand, answerCount = 0, sectionKey, themeId }) {
+const QuestionCard = React.memo(function QuestionCard({ question, onExpand, answerCount = 0, sectionCode, themeId }) {
   const dispatch = useDispatch()
   const posts = useSelector(state => state.post.posts)
   const answers = useSelector(state => state.post.comments[question.id] || [])
@@ -109,12 +109,12 @@ const QuestionCard = React.memo(function QuestionCard({ question, onExpand, answ
         reactToPost({
           post_id: question.id,
           reaction,
-          section_key: sectionKey,
+          section_key: sectionCode,
           theme_id: themeId,
         })
       )
     },
-    [dispatch, question.id, sectionKey, themeId]
+    [dispatch, question.id, sectionCode, themeId]
   )
 
   const handleExpandClick = useCallback(() => setExpanded(true), [])

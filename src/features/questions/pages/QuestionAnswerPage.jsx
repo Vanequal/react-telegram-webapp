@@ -14,7 +14,7 @@ import AnswerComposer from '@/features/discussion/components/AnswerComposer'
 import '@/styles/features/QuestionAnswerPage.scss'
 
 // Constants
-const SECTION_KEY = 'chat_qa'
+const SECTION_CODE = 'chat_qa' // ✅ Переименовано
 const DEFAULT_THEME_ID = 1
 
 const QuestionAnswerPage = () => {
@@ -49,22 +49,24 @@ const QuestionAnswerPage = () => {
 
       setIsSubmitting(true)
       try {
-        console.log('📤 Отправка ответа с файлами:', {
+        console.log('📤 Отправка ответа:', {
           text: answerText.trim(),
           filesCount: files.length,
-          files: files.map(f => f.name),
+          post_id: +id,
+          section_code: SECTION_CODE,
         })
 
         await dispatch(
           createComment({
             post_id: +id,
             message_text: answerText.trim(),
-            section_key: SECTION_KEY,
+            section_code: SECTION_CODE, // ✅ Изменено
             theme_id: DEFAULT_THEME_ID,
             files: files,
           })
         ).unwrap()
 
+        console.log('✅ Ответ добавлен')
         setAnswerText('')
 
         // Scroll to bottom after adding answer
@@ -75,7 +77,8 @@ const QuestionAnswerPage = () => {
           }
         }, 100)
       } catch (error) {
-        console.error('Error adding answer:', error)
+        console.error('❌ Error adding answer:', error)
+        alert(`Ошибка добавления ответа: ${error}`)
       } finally {
         setIsSubmitting(false)
       }
@@ -103,7 +106,7 @@ const QuestionAnswerPage = () => {
           reactToPost({
             post_id: question.id,
             reaction,
-            section_key: SECTION_KEY,
+            section_code: SECTION_CODE, // ✅ Изменено
             theme_id: DEFAULT_THEME_ID,
           })
         )
@@ -120,7 +123,7 @@ const QuestionAnswerPage = () => {
       dispatch(
         fetchPostById({
           message_id: questionId,
-          section_key: SECTION_KEY,
+          section_code: SECTION_CODE, // ✅ Изменено
           theme_id: DEFAULT_THEME_ID,
         })
       )
@@ -140,9 +143,8 @@ const QuestionAnswerPage = () => {
       dispatch(
         fetchPostComments({
           post_id: questionId,
-          section_key: SECTION_KEY,
+          section_code: SECTION_CODE, // ✅ Изменено
           theme_id: DEFAULT_THEME_ID,
-          type: 'post',
         })
       )
     }
@@ -168,7 +170,14 @@ const QuestionAnswerPage = () => {
 
   return (
     <div className="question-page">
-      <MindVaultHeader onBackClick={handleNavigateBack} onDescriptionClick={handleNavigateToAbout} bgColor="#EEEFF1" textColor="black" hideSectionTitle title="Ответы" />
+      <MindVaultHeader
+        onBackClick={handleNavigateBack}
+        onDescriptionClick={handleNavigateToAbout}
+        bgColor="#EEEFF1"
+        textColor="black"
+        hideSectionTitle
+        title="Ответы"
+      />
 
       <div className="question-page__container">
         {/* Показываем лоадер, если вопрос загружается */}
@@ -187,13 +196,28 @@ const QuestionAnswerPage = () => {
         <div className="question-comment-list answer-list">
           {commentsLoading && <p className="loading-comments">Загрузка ответов...</p>}
 
-          {!commentsLoading && answers.length > 0
-            ? answers.map((answer, index) => <AnswerThread key={answer.id} answer={answer} isNew={location.state?.scrollTo === 'new-answer' && index === answers.length - 1} sectionKey={SECTION_KEY} themeId={DEFAULT_THEME_ID} />)
-            : !commentsLoading && answersLoaded && <p className="question-empty-comments">Ответов пока нет</p>}
+          {!commentsLoading && answers.length > 0 ? (
+            answers.map((answer, index) => (
+              <AnswerThread
+                key={answer.id}
+                answer={answer}
+                isNew={location.state?.scrollTo === 'new-answer' && index === answers.length - 1}
+                sectionCode={SECTION_CODE} // ✅ Изменено
+                themeId={DEFAULT_THEME_ID}
+              />
+            ))
+          ) : (
+            !commentsLoading && answersLoaded && <p className="question-empty-comments">Ответов пока нет</p>
+          )}
         </div>
       </div>
 
-      <AnswerComposer answerText={answerText} onAnswerChange={handleAnswerChange} onSubmit={handleSendAnswer} isSubmitting={isSubmitting} />
+      <AnswerComposer
+        answerText={answerText}
+        onAnswerChange={handleAnswerChange}
+        onSubmit={handleSendAnswer}
+        isSubmitting={isSubmitting}
+      />
     </div>
   )
 }

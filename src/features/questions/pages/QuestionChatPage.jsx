@@ -3,6 +3,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchPostComments, fetchPostsInSection, createPost } from '@/store/slices/postSlice.js'
+import { fetchTheme } from '@/store/slices/themeSlice' // ✅ Добавлено
 import { getViewedIdeas, markIdeaAsViewed } from '@/shared/utils/utils.js'
 
 // Components
@@ -14,7 +15,7 @@ import QuestionComposer from '@/features/questions/components/QuestionComposer.j
 import '@/styles/features/QuestionAnswerPage.scss'
 
 // Constants
-const SECTION_KEY = 'chat_qa' // Отдельная секция для вопросов
+const SECTION_CODE = 'chat_qa' // ✅ Переименовано
 const DEFAULT_THEME_ID = 1
 
 const QuestionChatPage = () => {
@@ -38,7 +39,7 @@ const QuestionChatPage = () => {
 
   const fetchParams = useMemo(
     () => ({
-      section_key: SECTION_KEY,
+      section_code: SECTION_CODE, // ✅ Изменено
       theme_id: themeId,
       limit: 100,
       offset: 0,
@@ -49,22 +50,22 @@ const QuestionChatPage = () => {
   // Transform posts to questions format
   const questions = useMemo(() => {
     return (Array.isArray(posts) ? posts : []).map(post => {
-      const actualAnswers = postComments[post.id]?.length || post.comments?.length || post.comments_count || 0
-
-      const reactions = post.reactions || {}
+      const actualAnswers = postComments[post.id]?.length || 0
 
       return {
         id: post.id,
         username: post.author?.first_name || post.author?.username || 'Пользователь',
         text: post.text,
-        likes: reactions.count_likes || post.likes || 0,
-        dislikes: reactions.count_dislikes || post.dislikes || 0,
+        likes: post.likes || 0,
+        dislikes: post.dislikes || 0,
         answers: actualAnswers,
         views: post.views ?? 0,
         timestamp: post.created_at ?? '',
-        files: post.attachments || post.files || [],
-        userReaction: reactions.user_reaction || post.user_reaction || null,
-        author: post.author,
+        created_at: post.created_at, // ✅ Добавлено
+        files: post.media_files_ids || [], // ✅ Исправлено
+        attachments: post.media_files_ids || [], // ✅ Добавлено для совместимости
+        userReaction: post.user_reaction || null,
+        author: post.author, // ✅ Добавлено
       }
     })
   }, [posts, postComments])
@@ -87,9 +88,15 @@ const QuestionChatPage = () => {
     initTelegram()
   }, [])
 
+  // ✅ Загружаем тему при монтировании
+  useEffect(() => {
+    dispatch(fetchTheme(themeId))
+  }, [dispatch, themeId])
+
   // Fetch questions if not loaded
   useEffect(() => {
     if (!postsLoaded && !loading) {
+      console.log('📥 Загружаем вопросы:', fetchParams)
       dispatch(fetchPostsInSection(fetchParams))
     }
   }, [dispatch, fetchParams, postsLoaded, loading])
@@ -106,7 +113,7 @@ const QuestionChatPage = () => {
         dispatch(
           fetchPostComments({
             post_id: post.id,
-            section_key: SECTION_KEY,
+            section_code: SECTION_CODE, // ✅ Изменено
             theme_id: themeId,
           })
         )
@@ -138,20 +145,29 @@ const QuestionChatPage = () => {
     if (!questionData.text.trim()) return
 
     try {
-      // Сразу создаем вопрос без превью GPT
+      console.log('📤 Создаем вопрос:', {
+        text: questionData.text.substring(0, 50),
+        section_code: SECTION_CODE,
+        theme_id: themeId,
+      })
+
+      // ✅ Создаем вопрос с новыми параметрами
       await dispatch(
         createPost({
           message_text: questionData.text.trim(),
-          section_key: SECTION_KEY,
+          section_code: SECTION_CODE, // ✅ Изменено
           theme_id: themeId,
-          publishing_method: 'original', // Оригинал без обработки
+          type: 'post', // ✅ Добавлено
+          is_openai_generated: false, // ✅ Добавлено
+          ratio: 99, // ✅ Добавлено
           files: questionData.files,
         })
       ).unwrap()
 
+      console.log('✅ Вопрос создан успешно')
       setQuestionData({ text: '', files: [] })
     } catch (error) {
-      console.error('Error creating question:', error)
+      console.error('❌ Error creating question:', error)
       alert(`Ошибка создания вопроса: ${error}`)
     }
   }, [questionData, dispatch, themeId])
@@ -189,16 +205,37 @@ const QuestionChatPage = () => {
       )
     }
 
-    return questions.map(question => <QuestionCard key={question.id} question={question} onExpand={handleQuestionExpand} answerCount={question.answers} sectionKey={SECTION_KEY} themeId={themeId} />)
+    return questions.map(question => (
+      <QuestionCard
+        key={question.id}
+        question={question}
+        onExpand={handleQuestionExpand}
+        answerCount={question.answers}
+        sectionCode={SECTION_CODE} // ✅ Изменено
+        themeId={themeId}
+      />
+    ))
   }
 
   return (
     <div className="question-page">
-      <MindVaultHeader onBackClick={handleNavigateBack} onDescriptionClick={handleNavigateToAbout} bgColor="#EEEFF1" textColor="black" hideSectionTitle title="Чат вопросов" />
+      <MindVaultHeader
+        onBackClick={handleNavigateBack}
+        onDescriptionClick={handleNavigateToAbout}
+        bgColor="#EEEFF1"
+        textColor="black"
+        hideSectionTitle
+        title="Чат вопросов"
+      />
 
       <div className="question-page__container">{renderContent()}</div>
 
-      <QuestionComposer questionData={questionData} onQuestionDataChange={handleQuestionDataChange} onSubmit={handleQuestionSubmit} disabled={loading} />
+      <QuestionComposer
+        questionData={questionData}
+        onQuestionDataChange={handleQuestionDataChange}
+        onSubmit={handleQuestionSubmit}
+        disabled={loading}
+      />
     </div>
   )
 }
