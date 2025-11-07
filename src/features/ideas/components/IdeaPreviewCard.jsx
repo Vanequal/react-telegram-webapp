@@ -38,7 +38,7 @@ const IdeaPreviewCard = ({ preview, attachedFiles }) => {
       return (
         <FileAttachments
           files={attachedFiles}
-          onImageClick={() => {}} // Пустая функция, так как в превью не нужен модал
+          onImageClick={() => { }} // Пустая функция, так как в превью не нужен модал
         />
       )
     } else {
@@ -57,7 +57,7 @@ const IdeaPreviewCard = ({ preview, attachedFiles }) => {
 
       <div className="idea-card-gpt__section">
         <p className="idea-card-gpt__label">Улучшенная версия от ИИ:</p>
-        <p className="idea-card-gpt__text">{preview.gpt_text}</p>
+        <p className="idea-card-gpt__text">{preview.openai_text || preview.gpt_text}</p>
         {attachedFiles.length > 0 && <div className="idea-card-gpt__files">{renderFiles()}</div>}
       </div>
     </div>

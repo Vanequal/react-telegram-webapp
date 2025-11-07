@@ -25,7 +25,7 @@ const VIEW_THRESHOLD_MS = 30000
 const INTERSECTION_THRESHOLD = 0.75
 const TEXT_EXPAND_THRESHOLD = 160
 
-const IdeaCard = React.memo(function IdeaCard({ idea, onExpand, isExpanded = false, onCollapse, commentCount = 0, sectionKey, themeId }) {
+const IdeaCard = React.memo(function IdeaCard({ idea, onExpand, isExpanded = false, onCollapse, commentCount = 0, sectionCode, themeId }) {
   const dispatch = useDispatch()
   const posts = useSelector(state => state.post.posts)
   const comments = useSelector(state => state.post.comments[idea.id] || [])
@@ -131,12 +131,12 @@ const IdeaCard = React.memo(function IdeaCard({ idea, onExpand, isExpanded = fal
         reactToPost({
           post_id: idea.id,
           reaction,
-          section_key: sectionKey,
+          section_code: sectionCode,
           theme_id: themeId,
         })
       )
     },
-    [dispatch, idea.id, sectionKey, themeId]
+    [dispatch, idea.id, sectionCode, themeId]
   )
 
   const handleExpandClick = useCallback(() => setExpanded(true), [])

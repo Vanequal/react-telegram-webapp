@@ -3,6 +3,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { createPostPreview, fetchPostComments, fetchPostsInSection, createPost } from '@/store/slices/postSlice.js'
+import { fetchTheme } from '@/store/slices/themeSlice' // ✅ Добавлено
 import { getViewedIdeas, markIdeaAsViewed } from '@/shared/utils/utils.js'
 
 // Components
@@ -17,7 +18,7 @@ import ErrorState from '@/shared/components/ErrorState.jsx'
 import '@/styles/features/mind-vault.scss'
 
 // Constants
-const SECTION_KEY = 'chat_ideas'
+const SECTION_CODE = 'chat_ideas' // ✅ Переименовано
 const DEFAULT_THEME_ID = 1
 
 const MindVaultPage = () => {
@@ -42,7 +43,7 @@ const MindVaultPage = () => {
 
   const fetchParams = useMemo(
     () => ({
-      section_key: SECTION_KEY,
+      section_code: SECTION_CODE, // ✅ Изменено
       theme_id: themeId,
       limit: 100,
       offset: 0,
@@ -50,27 +51,27 @@ const MindVaultPage = () => {
     [themeId]
   )
 
-  // Transform posts to ideas format с учетом новой структуры API
+  // Transform posts to ideas format
   const ideas = useMemo(() => {
     return (Array.isArray(posts) ? posts : []).map(post => {
-      // Комментарии могут быть в разных местах
-      const actualComments = postComments[post.id]?.length || post.comments?.length || post.comments_count || 0
-
-      // Реакции из новой структуры API
-      const reactions = post.reactions || {}
+      const actualComments = postComments[post.id]?.length || 0
 
       return {
         id: post.id,
         username: post.author?.first_name || post.author?.username || 'Пользователь',
+        text: post.text, // ✅ Добавлено для IdeaCard
         preview: post.text,
-        likes: reactions.count_likes || post.likes || 0,
-        dislikes: reactions.count_dislikes || post.dislikes || 0,
+        likes: post.likes || 0,
+        dislikes: post.dislikes || 0,
         comments: actualComments,
         views: post.views ?? 0,
         pinned: post.pinned ?? false,
         timestamp: post.created_at ?? '',
-        files: post.attachments || post.files || [], // API может возвращать attachments
-        userReaction: reactions.user_reaction || post.user_reaction || null,
+        created_at: post.created_at, // ✅ Добавлено
+        files: post.media_files_ids || [], // ✅ Исправлено
+        attachments: post.media_files_ids || [], // ✅ Добавлено для совместимости
+        userReaction: post.user_reaction || null,
+        author: post.author, // ✅ Добавлено
       }
     })
   }, [posts, postComments])
@@ -93,9 +94,15 @@ const MindVaultPage = () => {
     initTelegram()
   }, [])
 
+  // ✅ Загружаем тему при монтировании
+  useEffect(() => {
+    dispatch(fetchTheme(themeId))
+  }, [dispatch, themeId])
+
   // Fetch posts if not loaded
   useEffect(() => {
     if (!postsLoaded && !loading) {
+      console.log('📥 Загружаем посты:', fetchParams)
       dispatch(fetchPostsInSection(fetchParams))
     }
   }, [dispatch, fetchParams, postsLoaded, loading])
@@ -108,12 +115,11 @@ const MindVaultPage = () => {
       const isLoading = commentsLoadingFlags[post.id]
       const hasComments = postComments[post.id]
 
-      // Загружаем комментарии только если их еще нет и они не загружаются
       if (!isLoading && !hasComments) {
         dispatch(
           fetchPostComments({
             post_id: post.id,
-            section_key: SECTION_KEY,
+            section_code: SECTION_CODE, // ✅ Изменено
             theme_id: themeId,
           })
         )
@@ -145,26 +151,59 @@ const MindVaultPage = () => {
     if (!postData.text.trim()) return
 
     try {
+      console.log('📤 Создаем превью поста:', {
+        section_code: SECTION_CODE,
+        theme_id: themeId,
+        text: postData.text.substring(0, 50),
+      })
+
       const previewResult = await dispatch(
         createPostPreview({
-          section_key: SECTION_KEY,
+          section_code: SECTION_CODE, // ✅ Изменено
           theme_id: themeId,
           text: postData.text.trim(),
         })
       ).unwrap()
 
+      console.log('✅ Превью создано:', previewResult)
+
       navigate('/editideapagegpt', {
         state: {
           attachedFiles: postData.files,
           preview: previewResult,
+          section_code: SECTION_CODE, // ✅ Добавлено
+          theme_id: themeId, // ✅ Добавлено
         },
       })
 
       setPostData({ text: '', files: [] })
     } catch (error) {
-      console.error('Error creating post preview:', error)
-      // Показываем ошибку пользователю
-      alert(`Ошибка создания превью: ${error}`)
+      console.error('❌ Error creating post preview:', error)
+      
+      // ✅ Обработка ошибки 403 (OpenAI отключен)
+      if (error === 'OpenAI временно недоступен') {
+        // Публикуем без GPT версии
+        try {
+          await dispatch(
+            createPost({
+              message_text: postData.text.trim(),
+              section_code: SECTION_CODE,
+              theme_id: themeId,
+              type: 'post',
+              is_openai_generated: false,
+              ratio: 99,
+              files: postData.files,
+            })
+          ).unwrap()
+          
+          alert('Пост опубликован без AI обработки')
+          setPostData({ text: '', files: [] })
+        } catch (postError) {
+          alert(`Ошибка публикации: ${postError}`)
+        }
+      } else {
+        alert(`Ошибка создания превью: ${error}`)
+      }
     }
   }, [postData, dispatch, themeId, navigate])
 
@@ -191,19 +230,51 @@ const MindVaultPage = () => {
 
     if (expandedIdeaId) {
       const expandedIdea = ideas.find(i => i.id === expandedIdeaId)
-      return <IdeaCard idea={expandedIdea} onExpand={handleIdeaExpand} commentCount={expandedIdea?.comments || 0} isExpanded={true} onCollapse={() => setExpandedIdeaId(null)} sectionKey={SECTION_KEY} themeId={themeId} />
+      return (
+        <IdeaCard
+          idea={expandedIdea}
+          onExpand={handleIdeaExpand}
+          commentCount={expandedIdea?.comments || 0}
+          isExpanded={true}
+          onCollapse={() => setExpandedIdeaId(null)}
+          sectionCode={SECTION_CODE} // ✅ Изменено
+          themeId={themeId}
+        />
+      )
     }
 
-    return ideas.map(idea => <IdeaCard key={idea.id} idea={idea} commentCount={idea.comments} onExpand={handleIdeaExpand} isExpanded={false} sectionKey={SECTION_KEY} themeId={themeId} />)
+    return ideas.map(idea => (
+      <IdeaCard
+        key={idea.id}
+        idea={idea}
+        commentCount={idea.comments}
+        onExpand={handleIdeaExpand}
+        isExpanded={false}
+        sectionCode={SECTION_CODE} // ✅ Изменено
+        themeId={themeId}
+      />
+    ))
   }
 
   return (
     <>
-      <MindVaultHeader onDescriptionClick={handleNavigateToAbout} onBackClick={handleNavigateBack} textColor="black" bgColor="#EEEFF1" />
+      <MindVaultHeader
+        onDescriptionClick={handleNavigateToAbout}
+        onBackClick={handleNavigateBack}
+        textColor="black"
+        bgColor="#EEEFF1"
+      />
 
       <div className="mind-vault-page">{renderContent()}</div>
 
-      {!expandedIdeaId && <PostComposer postData={postData} onPostDataChange={handlePostDataChange} onSubmit={handlePostSubmit} disabled={loading} />}
+      {!expandedIdeaId && (
+        <PostComposer
+          postData={postData}
+          onPostDataChange={handlePostDataChange}
+          onSubmit={handlePostSubmit}
+          disabled={loading}
+        />
+      )}
     </>
   )
 }
