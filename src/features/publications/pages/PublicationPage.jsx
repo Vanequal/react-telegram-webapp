@@ -14,7 +14,7 @@ import CommentComposer from '@/features/discussion/components/CommentComposer'
 import '@/styles/features/PublicationPage.scss'
 
 // Constants
-const SECTION_KEY = 'chat_publications'
+const SECTION_CODE = 'chat_publications' // ✅ Переименовано
 const DEFAULT_THEME_ID = 1
 
 const PublicationPage = () => {
@@ -49,16 +49,24 @@ const PublicationPage = () => {
 
       setIsSubmitting(true)
       try {
+        console.log('📤 Отправка комментария:', {
+          text: commentText.trim(),
+          filesCount: files.length,
+          post_id: +id,
+          section_code: SECTION_CODE,
+        })
+
         await dispatch(
           createComment({
             post_id: +id,
             message_text: commentText.trim(),
-            section_key: SECTION_KEY,
+            section_code: SECTION_CODE, // ✅ Изменено
             theme_id: DEFAULT_THEME_ID,
             files: files,
           })
         ).unwrap()
 
+        console.log('✅ Комментарий добавлен')
         setCommentText('')
 
         // Scroll to bottom after adding comment
@@ -69,7 +77,8 @@ const PublicationPage = () => {
           }
         }, 100)
       } catch (error) {
-        console.error('Error adding comment:', error)
+        console.error('❌ Error adding comment:', error)
+        alert(`Ошибка добавления комментария: ${error}`)
       } finally {
         setIsSubmitting(false)
       }
@@ -97,7 +106,7 @@ const PublicationPage = () => {
           reactToPost({
             post_id: publication.id,
             reaction,
-            section_key: SECTION_KEY,
+            section_code: SECTION_CODE, // ✅ Изменено
             theme_id: DEFAULT_THEME_ID,
           })
         )
@@ -110,10 +119,11 @@ const PublicationPage = () => {
   useEffect(() => {
     const publicationId = +id
     if (publicationId && !publication && !loading) {
+      console.log('🔄 Загружаем публикацию по ID:', publicationId)
       dispatch(
         fetchPostById({
           message_id: publicationId,
-          section_key: SECTION_KEY,
+          section_code: SECTION_CODE, // ✅ Изменено
           theme_id: DEFAULT_THEME_ID,
         })
       )
@@ -127,14 +137,14 @@ const PublicationPage = () => {
     const shouldLoadComments = publicationId && !commentsLoaded && !commentsLoading && (!comments || comments.length === 0)
 
     if (shouldLoadComments) {
+      console.log('🔄 Загружаем комментарии для публикации:', publicationId)
       setCommentsLoaded(true)
 
       dispatch(
         fetchPostComments({
           post_id: publicationId,
-          section_key: SECTION_KEY,
+          section_code: SECTION_CODE, // ✅ Изменено
           theme_id: DEFAULT_THEME_ID,
-          type: 'post',
         })
       )
     }
@@ -160,13 +170,18 @@ const PublicationPage = () => {
 
   return (
     <div style={{ height: '100vh', overflow: 'auto' }}>
-      {' '}
-      {/* ИСПРАВЛЕНО: добавлен скролл */}
-      <MindVaultHeader title="Публикации" hideSectionTitle bgColor={'#EEEFF1'} textColor="black" onBackClick={handleNavigateBack} />
-      {/* Показываем лоадер, если публикация загружается */}
+      <MindVaultHeader
+        title="Публикации"
+        hideSectionTitle
+        bgColor={'#EEEFF1'}
+        textColor="black"
+        onBackClick={handleNavigateBack}
+      />
+
       {loading && !publication && <div style={{ padding: '20px', textAlign: 'center' }}>Загрузка публикации...</div>}
+
       {publication && <PublicationDisplayCard publication={publication} onReaction={handlePublicationReaction} />}
-      {/* Разделитель перед комментариями */}
+
       <div
         style={{
           margin: '20px 16px',
@@ -174,15 +189,31 @@ const PublicationPage = () => {
           backgroundColor: '#E2E6E9',
         }}
       ></div>
-      {/* Комментарии */}
+
       <div style={{ margin: '0 16px', marginBottom: '80px' }}>
         {commentsLoading && <p style={{ textAlign: 'center', color: '#666' }}>Загрузка комментариев...</p>}
 
-        {!commentsLoading && comments.length > 0
-          ? comments.map((comment, index) => <CommentThread key={comment.id} comment={comment} isNew={location.state?.scrollTo === 'new-comment' && index === comments.length - 1} sectionKey={SECTION_KEY} themeId={DEFAULT_THEME_ID} />)
-          : !commentsLoading && commentsLoaded && <p style={{ textAlign: 'center', color: '#666' }}>Комментариев пока нет</p>}
+        {!commentsLoading && comments.length > 0 ? (
+          comments.map((comment, index) => (
+            <CommentThread
+              key={comment.id}
+              comment={comment}
+              isNew={location.state?.scrollTo === 'new-comment' && index === comments.length - 1}
+              sectionCode={SECTION_CODE} // ✅ Изменено
+              themeId={DEFAULT_THEME_ID}
+            />
+          ))
+        ) : (
+          !commentsLoading && commentsLoaded && <p style={{ textAlign: 'center', color: '#666' }}>Комментариев пока нет</p>
+        )}
       </div>
-      <CommentComposer commentText={commentText} onCommentChange={handleCommentChange} onSubmit={handleSendComment} isSubmitting={isSubmitting} />
+
+      <CommentComposer
+        commentText={commentText}
+        onCommentChange={handleCommentChange}
+        onSubmit={handleSendComment}
+        isSubmitting={isSubmitting}
+      />
     </div>
   )
 }

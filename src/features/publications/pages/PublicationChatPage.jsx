@@ -3,6 +3,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchPostComments, fetchPostsInSection, createPost, uploadFiles } from '@/store/slices/postSlice.js'
+import { fetchTheme } from '@/store/slices/themeSlice' // ✅ Добавлено
 import { getViewedIdeas, markIdeaAsViewed } from '@/shared/utils/utils.js'
 
 // Components
@@ -18,7 +19,7 @@ import skrepkaIcon from '@/assets/images/skrepkaIcon.webp'
 import '@/styles/features/PublicationChatPage.scss'
 
 // Constants
-const SECTION_KEY = 'chat_publications' // Отдельная секция для публикаций
+const SECTION_CODE = 'chat_publications' // ✅ Переименовано
 const DEFAULT_THEME_ID = 1
 
 const PublicationChatPage = () => {
@@ -43,7 +44,7 @@ const PublicationChatPage = () => {
 
   const fetchParams = useMemo(
     () => ({
-      section_key: SECTION_KEY,
+      section_code: SECTION_CODE, // ✅ Изменено
       theme_id: themeId,
       limit: 100,
       offset: 0,
@@ -54,29 +55,36 @@ const PublicationChatPage = () => {
   // Transform posts to publications format
   const publications = useMemo(() => {
     return (Array.isArray(posts) ? posts : []).map(post => {
-      const actualComments = postComments[post.id]?.length || post.comments?.length || post.comments_count || 0
-
-      const reactions = post.reactions || {}
+      const actualComments = postComments[post.id]?.length || 0
 
       return {
         id: post.id,
         username: post.author?.first_name || post.author?.username || 'Пользователь',
         excerpt: post.text,
-        likes: reactions.count_likes || post.likes || 0,
-        dislikes: reactions.count_dislikes || post.dislikes || 0,
+        text: post.text, // ✅ Добавлено
+        likes: post.likes || 0,
+        dislikes: post.dislikes || 0,
         comments: actualComments,
         views: post.views ?? 0,
         timestamp: post.created_at ?? '',
-        files: post.attachments || post.files || [],
-        userReaction: reactions.user_reaction || post.user_reaction || null,
-        author: post.author,
+        created_at: post.created_at, // ✅ Добавлено
+        files: post.media_files_ids || [], // ✅ Исправлено
+        attachments: post.media_files_ids || [], // ✅ Добавлено
+        userReaction: post.user_reaction || null,
+        author: post.author, // ✅ Добавлено
       }
     })
   }, [posts, postComments])
 
+  // ✅ Загружаем тему при монтировании
+  useEffect(() => {
+    dispatch(fetchTheme(themeId))
+  }, [dispatch, themeId])
+
   // Fetch publications if not loaded
   useEffect(() => {
     if (!postsLoaded && !loading) {
+      console.log('📥 Загружаем публикации:', fetchParams)
       dispatch(fetchPostsInSection(fetchParams))
     }
   }, [dispatch, fetchParams, postsLoaded, loading])
@@ -93,7 +101,7 @@ const PublicationChatPage = () => {
         dispatch(
           fetchPostComments({
             post_id: post.id,
-            section_key: SECTION_KEY,
+            section_code: SECTION_CODE, // ✅ Изменено
             theme_id: themeId,
           })
         )
@@ -123,6 +131,7 @@ const PublicationChatPage = () => {
 
   const handleFileChange = useCallback(e => {
     const files = Array.from(e.target.files || [])
+    console.log('📎 Файлы выбраны:', files.length)
     setPublicationData(prev => ({ ...prev, files }))
   }, [])
 
@@ -138,23 +147,34 @@ const PublicationChatPage = () => {
 
     setIsSubmitting(true)
     try {
+      console.log('📤 Создаем публикацию:', {
+        text: publicationData.excerpt.substring(0, 50),
+        files_count: publicationData.files.length,
+        section_code: SECTION_CODE,
+        theme_id: themeId,
+      })
+
+      // ✅ Создаем публикацию с новыми параметрами
       await dispatch(
         createPost({
           message_text: publicationData.excerpt.trim(),
-          section_key: SECTION_KEY,
+          section_code: SECTION_CODE, // ✅ Изменено
           theme_id: themeId,
-          publishing_method: 'original',
+          type: 'post', // ✅ Добавлено
+          is_openai_generated: false, // ✅ Добавлено
+          ratio: 99, // ✅ Добавлено
           files: publicationData.files,
         })
       ).unwrap()
 
+      console.log('✅ Публикация создана успешно')
       setPublicationData({ excerpt: '', files: [] })
 
       // Очищаем file input
       const fileInput = document.querySelector('input[type="file"]')
       if (fileInput) fileInput.value = ''
     } catch (error) {
-      console.error('Error creating publication:', error)
+      console.error('❌ Error creating publication:', error)
       alert(`Ошибка создания публикации: ${error}`)
     } finally {
       setIsSubmitting(false)
@@ -194,7 +214,14 @@ const PublicationChatPage = () => {
       ) : (
         <div className="publications-list">
           {publications.map(publication => (
-            <PublicationCard key={publication.id} publication={publication} onExpand={handlePublicationExpand} commentCount={publication.comments} sectionKey={SECTION_KEY} themeId={themeId} />
+            <PublicationCard
+              key={publication.id}
+              publication={publication}
+              onExpand={handlePublicationExpand}
+              commentCount={publication.comments}
+              sectionCode={SECTION_CODE} // ✅ Изменено
+              themeId={themeId}
+            />
           ))}
         </div>
       )}
@@ -204,13 +231,26 @@ const PublicationChatPage = () => {
       <div className="chat-footer-box">
         <div className="footer-input-row">
           <img src={skrepkaIcon} alt="Attach" className="footer-icon" />
-          <input type="file" onChange={handleFileChange} className="footer-input" placeholder="Прикрепить файл" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" multiple />
+          <input
+            type="file"
+            onChange={handleFileChange}
+            className="footer-input"
+            placeholder="Прикрепить файл"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+            multiple
+          />
         </div>
 
         <div className="footer-input-row">
-          {/* Убираем скрепку для выдержки - только текст */}
-          <div style={{ width: '20px' }}></div> {/* Placeholder для выравнивания */}
-          <input type="text" placeholder="Добавить выдержку" className="footer-input" value={publicationData.excerpt} onChange={handleExcerptChange} disabled={isSubmitting} />
+          <div style={{ width: '20px' }}></div>
+          <input
+            type="text"
+            placeholder="Добавить выдержку"
+            className="footer-input"
+            value={publicationData.excerpt}
+            onChange={handleExcerptChange}
+            disabled={isSubmitting}
+          />
         </div>
 
         {/* Показываем прикрепленные файлы */}
@@ -227,7 +267,11 @@ const PublicationChatPage = () => {
           </div>
         )}
 
-        <button className={`publish-button ${isPublishDisabled ? 'disabled' : ''}`} onClick={handlePublish} disabled={isPublishDisabled}>
+        <button
+          className={`publish-button ${isPublishDisabled ? 'disabled' : ''}`}
+          onClick={handlePublish}
+          disabled={isPublishDisabled}
+        >
           {isSubmitting ? 'ПУБЛИКУЕТСЯ...' : 'ОПУБЛИКОВАТЬ'}
         </button>
       </div>

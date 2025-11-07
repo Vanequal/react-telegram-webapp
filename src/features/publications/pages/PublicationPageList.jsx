@@ -16,7 +16,7 @@ import sendIcon from '@/assets/images/sendButtonActive.png'
 import '@/styles/features/PublicationPage.scss'
 
 // Constants
-const SECTION_KEY = 'chat_publications'
+const SECTION_CODE = 'chat_publications'
 const DEFAULT_THEME_ID = 1
 
 const PublicationPageList = () => {
@@ -34,7 +34,7 @@ const PublicationPageList = () => {
 
   const fetchParams = useMemo(
     () => ({
-      section_key: SECTION_KEY,
+      section_code: SECTION_CODE,
       theme_id: themeId,
       limit: 100,
       offset: 0,
@@ -84,7 +84,7 @@ const PublicationPageList = () => {
         dispatch(
           fetchPostComments({
             post_id: post.id,
-            section_key: SECTION_KEY,
+            section_code: SECTION_CODE,
             theme_id: themeId,
           })
         )
@@ -141,7 +141,7 @@ const PublicationPageList = () => {
           <p style={{ margin: 0, fontWeight: '600', fontSize: '14px' }}>Публикаций пока нет. Добавьте первую публикацию!</p>
         </div>
       ) : (
-        publications.map(publication => <PublicationCard key={publication.id} publication={publication} onExpand={handlePublicationExpand} commentCount={publication.comments} sectionKey={SECTION_KEY} themeId={themeId} />)
+        publications.map(publication => <PublicationCard key={publication.id} publication={publication} onExpand={handlePublicationExpand} commentCount={publication.comments} sectionCode={SECTION_CODE} themeId={themeId} />)
       )}
 
       {/* Footer - неактивные элементы, активная только кнопка отправки */}

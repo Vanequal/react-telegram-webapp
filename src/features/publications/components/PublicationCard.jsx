@@ -22,7 +22,7 @@ import '@/styles/features/PublicationPage.scss'
 const VIEW_THRESHOLD_MS = 30000
 const INTERSECTION_THRESHOLD = 0.75
 
-const PublicationCard = React.memo(function PublicationCard({ publication, onExpand, commentCount = 0, sectionKey, themeId }) {
+const PublicationCard = React.memo(function PublicationCard({ publication, onExpand, commentCount = 0, sectionCode, themeId }) {
   const dispatch = useDispatch()
   const posts = useSelector(state => state.post.posts)
   const comments = useSelector(state => state.post.comments[publication.id] || [])
@@ -98,12 +98,12 @@ const PublicationCard = React.memo(function PublicationCard({ publication, onExp
         reactToPost({
           post_id: publication.id,
           reaction,
-          section_key: sectionKey,
+          section_code: sectionCode,
           theme_id: themeId,
         })
       )
     },
-    [dispatch, publication.id, sectionKey, themeId]
+    [dispatch, publication.id, sectionCode, themeId]
   )
 
   const handleCardExpand = useCallback(() => onExpand(publication.id), [onExpand, publication.id])
