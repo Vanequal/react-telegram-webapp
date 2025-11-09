@@ -14,7 +14,7 @@ import CommentComposer from '@/features/discussion/components/CommentComposer'
 import '@/styles/features/discussion.scss'
 
 // Constants
-const SECTION_KEY = 'chat_ideas'
+const SECTION_CODE = 'chat_ideas'
 const DEFAULT_THEME_ID = 1
 
 const DiscussionPage = () => {
@@ -59,7 +59,7 @@ const DiscussionPage = () => {
           createComment({
             post_id: +id,
             message_text: commentText.trim(),
-            section_key: SECTION_KEY,
+            section_code: SECTION_CODE,
             theme_id: DEFAULT_THEME_ID,
             files: files, // Передаем файлы
           })
@@ -103,7 +103,7 @@ const DiscussionPage = () => {
           reactToPost({
             post_id: idea.id,
             reaction,
-            section_key: SECTION_KEY,
+            section_code: SECTION_CODE,
             theme_id: DEFAULT_THEME_ID,
           })
         )
@@ -120,7 +120,7 @@ const DiscussionPage = () => {
       dispatch(
         fetchPostById({
           message_id: postId,
-          section_key: SECTION_KEY,
+          section_code: SECTION_CODE,
           theme_id: DEFAULT_THEME_ID,
         })
       )
@@ -141,7 +141,7 @@ const DiscussionPage = () => {
       dispatch(
         fetchPostComments({
           post_id: postId,
-          section_key: SECTION_KEY,
+          section_code: SECTION_CODE,
           theme_id: DEFAULT_THEME_ID,
           type: 'post',
         })
@@ -203,7 +203,7 @@ const DiscussionPage = () => {
           {commentsLoading && <p className="loading-comments">Загрузка комментариев...</p>}
 
           {!commentsLoading && comments.length > 0
-            ? comments.map((comment, index) => <CommentThread key={comment.id} comment={comment} isNew={location.state?.scrollTo === 'new-comment' && index === comments.length - 1} sectionKey={SECTION_KEY} themeId={DEFAULT_THEME_ID} />)
+            ? comments.map((comment, index) => <CommentThread key={comment.id} comment={comment} isNew={location.state?.scrollTo === 'new-comment' && index === comments.length - 1} sectionCode={SECTION_CODE} themeId={DEFAULT_THEME_ID} />)
             : !commentsLoading && commentsLoaded && <p className="empty-comments">Комментариев пока нет</p>}
         </div>
       </div>

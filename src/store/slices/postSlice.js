@@ -80,9 +80,9 @@ export const createPostPreview = createAsyncThunk('post/createPreview', async ({
       `/api/v1/messages/openai`,
       { text },
       {
-        params: { 
+        params: {
           section_code, // ✅ Изменено с section_key
-          theme_id 
+          theme_id
         },
       }
     )
@@ -95,12 +95,12 @@ export const createPostPreview = createAsyncThunk('post/createPreview', async ({
     }
   } catch (err) {
     console.error('🔥 Ошибка создания превью:', err?.response?.data || err.message)
-    
+
     // ✅ Обработка случая когда OpenAI отключен (status 403)
     if (err?.response?.status === 403) {
       return rejectWithValue('OpenAI временно недоступен')
     }
-    
+
     return rejectWithValue(err.response?.data?.detail || 'Ошибка предпросмотра поста')
   }
 })
@@ -143,89 +143,102 @@ export const fetchPostById = createAsyncThunk('post/fetchPostById', async ({ mes
   }
 })
 
-// ✅ УДАЛЕНЫ createPublication, fetchPublications, fetchPublicationById
-// Потому что в Swagger нет отдельных endpoints для публикаций
-// Публикации это тоже посты, просто с type: "publication"
+// ✅ Создание комментария - НОВЫЙ endpoint для комментариев
+export const createComment = createAsyncThunk(
+  'post/createComment',
+  async ({ post_id, message_text, section_code, theme_id, reply_to_message_id = null, files = [] }, { rejectWithValue, dispatch }) => {
+    try {
+      // Загружаем файлы если есть
+      let uploadedFiles = []
+      if (files && files.length > 0) {
+        const uploadResult = await dispatch(uploadFiles(files)).unwrap()
+        uploadedFiles = uploadResult
+      }
 
-// ✅ Создание комментария - аналогично постам
-export const createComment = createAsyncThunk('post/createComment', async ({ post_id, message_text, section_code, theme_id, files = [] }, { rejectWithValue, dispatch }) => {
-  try {
-    // Сначала загружаем файлы, если они есть
-    let uploadedFiles = []
-    if (files && files.length > 0) {
-      const uploadResult = await dispatch(uploadFiles(files)).unwrap()
-      uploadedFiles = uploadResult
-    }
-
-    console.log('📤 Создание комментария:', {
-      text: message_text,
-      content_id: post_id,
-      section_code,
-      theme_id,
-      files_count: uploadedFiles.length,
-    })
-
-    // ✅ Структура данных согласно Swagger (аналогично постам)
-    const requestData = {
-      type: 'comment',
-      text: message_text,
-      is_openai_generated: false,
-      ratio: 99,
-    }
-
-    console.log('📋 Отправляем запрос на создание комментария:', {
-      url: `/api/v1/messages/${section_code}/posts`,
-      data: requestData,
-      params: { theme_id },
-    })
-
-    // ✅ Комментарии создаются через тот же endpoint что и посты
-    const res = await axios.post(`/api/v1/messages/${section_code}/posts`, requestData, {
-      params: { theme_id },
-    })
-
-    console.log('✅ Комментарий создан:', res.data)
-
-    return {
-      ...res.data,
-      post_id: post_id,
-      uploaded_files: uploadedFiles,
-    }
-  } catch (err) {
-    console.error('🔥 Ошибка создания комментария:', err?.response?.data || err.message)
-    return rejectWithValue(err.response?.data?.detail || 'Ошибка добавления комментария')
-  }
-})
-
-// ✅ Получение комментариев - используем тот же endpoint что и для постов
-export const fetchPostComments = createAsyncThunk('post/fetchComments', async ({ post_id, section_code, theme_id }, { rejectWithValue }) => {
-  try {
-    console.log('📥 Загрузка комментариев:', {
-      message_id: post_id,
-      section_code,
-      theme_id,
-    })
-
-    // ✅ Получаем все сообщения секции и фильтруем комментарии
-    const res = await axios.get(`/api/v1/messages/${section_code}/posts`, {
-      params: {
+      console.log('📤 Создание комментария:', {
+        text: message_text,
+        content_id: post_id,
+        reply_to_message_id,
+        section_code,
         theme_id,
-        limit: 100,
-        offset: 0,
-      },
-    })
+        files_count: uploadedFiles.length,
+      })
 
-    // ✅ Фильтруем только комментарии (type === 'comment')
-    const allMessages = res.data || []
-    const comments = allMessages.filter(msg => msg.message?.type === 'comment')
+      // ✅ Структура данных согласно Swagger для комментариев
+      const requestData = {
+        type: 'comment',
+        text: message_text,
+        content_id: post_id, // ← ID поста к которому комментарий
+        reply_to_message_id: reply_to_message_id, // ← ID комментария (для replies)
+      }
 
-    console.log('✅ Комментарии загружены:', comments.length)
-    return { postId: post_id, comments }
-  } catch (err) {
-    console.error('🔥 Ошибка загрузки комментариев:', err?.response?.data || err.message)
-    return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки комментариев')
+      console.log('📋 Отправляем запрос на создание комментария:', {
+        url: `/api/v1/messages/${section_code}/comments`,
+        data: requestData,
+        params: { theme_id },
+      })
+
+      // ✅ НОВЫЙ endpoint специально для комментариев
+      const res = await axios.post(
+        `/api/v1/messages/${section_code}/comments`,
+        requestData,
+        {
+          params: { theme_id },
+        }
+      )
+
+      console.log('✅ Комментарий создан:', res.data)
+
+      return {
+        ...res.data,
+        post_id: post_id,
+        uploaded_files: uploadedFiles,
+      }
+    } catch (err) {
+      console.error('🔥 Ошибка создания комментария:', err?.response?.data || err.message)
+      return rejectWithValue(err.response?.data?.detail || 'Ошибка добавления комментария')
+    }
   }
-})
+)
+
+// ✅ Получение комментариев - НОВЫЙ endpoint
+export const fetchPostComments = createAsyncThunk(
+  'post/fetchComments',
+  async ({ post_id, section_code, theme_id, limit = 100, offset = 0 }, { rejectWithValue }) => {
+    try {
+      console.log('📥 Загрузка комментариев:', {
+        post_id,
+        section_code,
+        theme_id,
+      })
+
+      // ✅ НОВЫЙ endpoint специально для комментариев
+      const res = await axios.get(`/api/v1/messages/${section_code}/comments`, {
+        params: {
+          theme_id,
+          limit,
+          offset,
+        },
+      })
+
+      // ✅ Фильтруем комментарии для конкретного поста по content_id
+      const allComments = res.data || []
+      const postComments = allComments.filter(item =>
+        item.message_comment?.content_id === post_id
+      )
+
+      console.log('✅ Комментарии загружены:', {
+        total: allComments.length,
+        forThisPost: postComments.length
+      })
+
+      return { postId: post_id, comments: postComments }
+    } catch (err) {
+      console.error('🔥 Ошибка загрузки комментариев:', err?.response?.data || err.message)
+      return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки комментариев')
+    }
+  }
+)
 
 // ✅ Реакция на пост - endpoint не указан в Swagger
 // TODO: Уточнить у бэкендера правильный endpoint для реакций
@@ -347,10 +360,10 @@ const postSlice = createSlice({
       })
       .addCase(createPost.fulfilled, (state, action) => {
         state.loading = false
-        
+
         // ✅ API возвращает объект с полями message и message_post
         const { message, message_post } = action.payload
-        
+
         const newPost = {
           id: message.id,
           author_id: message.author_id,
@@ -365,7 +378,7 @@ const postSlice = createSlice({
           ratio: message_post?.ratio || 99,
           // TODO: Добавить reactions когда будет известна структура
         }
-        
+
         state.posts.unshift(newPost)
         state.preview = null
         state.uploadedFiles = []
@@ -431,7 +444,7 @@ const postSlice = createSlice({
       .addCase(fetchPostById.fulfilled, (state, action) => {
         state.loading = false
         const { message, message_post } = action.payload
-        
+
         state.selectedPost = {
           id: message.id,
           author_id: message.author_id,
@@ -488,14 +501,13 @@ const postSlice = createSlice({
         }
       })
 
-      // Создание комментария
       .addCase(createComment.pending, state => {
         state.commentsLoading = true
         state.commentError = null
       })
       .addCase(createComment.fulfilled, (state, action) => {
         state.commentsLoading = false
-        const { message, message_post, post_id } = action.payload
+        const { message, message_comment, post_id } = action.payload
 
         const newComment = {
           id: message.id,
@@ -507,8 +519,8 @@ const postSlice = createSlice({
           created_at: message.created_at,
           updated_at: message.updated_at,
           media_files_ids: message.media_files_ids || [],
-          is_openai_generated: message_post?.is_openai_generated || false,
-          ratio: message_post?.ratio || 99,
+          content_id: message_comment?.content_id || null, // ← ID поста
+          reply_to_message_id: message_comment?.reply_to_message_id || null, // ← ID родительского комментария
         }
 
         if (!state.comments[post_id]) {
@@ -530,7 +542,6 @@ const postSlice = createSlice({
         state.commentsLoading = false
         state.commentError = action.payload
       })
-
       // Реакции на пост
       .addCase(reactToPost.fulfilled, (state, action) => {
         const { post_id, count_likes, count_dislikes, new_reaction } = action.payload

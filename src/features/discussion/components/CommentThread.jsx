@@ -9,7 +9,7 @@ import dislikeIcon from '@/assets/images/dislikeIcon.webp'
 import FileAttachments from '@/shared/components/FileAttachments'
 import ImageModal from '@/shared/components/ImageModal'
 
-const CommentThread = ({ comment, isNew, sectionKey, themeId }) => {
+const CommentThread = ({ comment, isNew, sectionCode, themeId }) => {
   const dispatch = useDispatch()
   const [showReplies, setShowReplies] = useState(true)
   const [selectedImage, setSelectedImage] = useState(null)
@@ -25,12 +25,12 @@ const CommentThread = ({ comment, isNew, sectionKey, themeId }) => {
         reactToPost({
           post_id: comment.id,
           reaction,
-          section_key: sectionKey,
+          section_code: sectionCode,
           theme_id: themeId,
         })
       )
     },
-    [dispatch, comment.id, sectionKey, themeId]
+    [dispatch, comment.id, sectionCode, themeId]
   )
 
   // Обработчик реакций на ответы
@@ -40,12 +40,12 @@ const CommentThread = ({ comment, isNew, sectionKey, themeId }) => {
         reactToPost({
           post_id: replyId,
           reaction,
-          section_key: sectionKey,
+          section_code: sectionCode,
           theme_id: themeId,
         })
       )
     },
-    [dispatch, sectionKey, themeId]
+    [dispatch, sectionCode, themeId]
   )
 
   // Обработчик клика по изображению
@@ -190,7 +190,7 @@ CommentThread.propTypes = {
     attachments: PropTypes.array,
   }).isRequired,
   isNew: PropTypes.bool,
-  sectionKey: PropTypes.string.isRequired,
+  sectionCode: PropTypes.string.isRequired,
   themeId: PropTypes.number.isRequired,
 }
 
