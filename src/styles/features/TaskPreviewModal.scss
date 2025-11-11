@@ -1,0 +1,97 @@
+// src/styles/features/TaskPreviewModal.scss (создай новый файл)
+@import '../variables';
+
+.task-preview-modal {
+  &__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 44, 87, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+
+  &__section {
+    margin-bottom: 24px;
+  }
+
+  &__title {
+    font-family: $font-roboto;
+    font-size: 18px;
+    font-weight: 700;
+    color: $text-primary;
+    margin-bottom: 12px;
+  }
+
+  &__subtitle {
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 600;
+    color: $text-primary;
+    margin-bottom: 8px;
+  }
+
+  &__text {
+    font-family: $font-roboto;
+    font-size: 16px;
+    color: $text-primary;
+    line-height: 1.5;
+  }
+
+  &__textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    border-radius: 10px;
+    font-family: $font-roboto;
+    font-size: 16px;
+    color: $text-primary;
+    resize: vertical;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+
+    &:focus {
+      outline: none;
+      border-color: rgba(0, 122, 255, 1);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  &__btn {
+    @include button-reset;
+    background: white;
+    color: $text-primary;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+}

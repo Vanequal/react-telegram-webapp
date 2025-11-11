@@ -1,0 +1,84 @@
+// src/styles/features/TaskResultCard.scss (создай новый файл)
+@import '../variables';
+
+.task-result-card {
+  @include card-style;
+  width: 90%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 12px auto;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__user-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+  }
+
+  &__username {
+    font-family: $font-telegram;
+    font-size: 16px;
+    color: $text-primary;
+  }
+
+  &__files {
+    margin: 12px 0;
+  }
+
+  &__excerpt {
+    margin: 16px 0;
+  }
+
+  &__excerpt-title {
+    font-family: $font-roboto;
+    font-size: 18px;
+    font-weight: 700;
+    color: $text-primary;
+    margin-bottom: 8px;
+  }
+
+  &__excerpt-text {
+    font-family: $font-roboto;
+    font-size: 16px;
+    color: $text-primary;
+    line-height: 1.5;
+  }
+
+  &__divider {
+    height: 1px;
+    background-color: rgba(226, 230, 233, 1);
+    margin: 16px 0;
+  }
+
+  &__original {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__text {
+    font-family: $font-space-grotesk;
+    font-size: 20px;
+    color: $text-primary;
+    line-height: 1.5;
+  }
+
+  &__timestamp {
+    color: $text-secondary;
+    font-size: 14px;
+    font-family: $font-roboto;
+  }
+}

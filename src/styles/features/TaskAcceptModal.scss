@@ -1,0 +1,137 @@
+// src/styles/features/TaskAcceptModal.scss (создай новый файл)
+@import '../variables';
+
+.task-accept-modal {
+  &__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 44, 87, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+
+  background: white;
+  border-radius: 10px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  position: relative;
+
+  &__ratio {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(21, 101, 192, 1);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-family: $font-roboto;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  &__checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  &__checkbox {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    border: 2px solid rgba(0, 0, 0, 0.56);
+    border-radius: 2px;
+    cursor: pointer;
+    margin-top: 2px;
+  }
+
+  &__checkbox-label {
+    font-family: $font-roboto;
+    font-size: 16px;
+    color: $text-primary;
+    cursor: pointer;
+    line-height: 1.5;
+  }
+
+  &__field {
+    margin-top: 20px;
+    margin-bottom: 16px;
+  }
+
+  &__field-label {
+    display: block;
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 600;
+    color: $text-primary;
+    margin-bottom: 8px;
+  }
+
+  &__textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    border-radius: 8px;
+    font-family: $font-roboto;
+    font-size: 16px;
+    color: $text-primary;
+    resize: vertical;
+    background: white;
+
+    &:focus {
+      outline: none;
+      border-color: rgba(0, 122, 255, 1);
+    }
+  }
+
+  &__date-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    border-radius: 8px;
+    font-family: $font-roboto;
+    font-size: 16px;
+    color: $text-primary;
+    background: white;
+
+    &:focus {
+      outline: none;
+      border-color: rgba(0, 122, 255, 1);
+    }
+  }
+
+  &__submit-btn {
+    @include button-reset;
+    background: rgba(21, 101, 192, 1);
+    color: white;
+    padding: 14px 24px;
+    border-radius: 4px;
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 24px;
+    transition: opacity 0.2s ease;
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
