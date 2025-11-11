@@ -292,12 +292,10 @@ export const fetchDownloadUrl = createAsyncThunk('post/fetchDownloadUrl', async 
   }
 })
 
-// ✅ Создание задачи (task)
 export const createTask = createAsyncThunk(
   'post/createTask',
   async ({ message_text, section_code, theme_id, ratio = null, files = [] }, { rejectWithValue, dispatch }) => {
     try {
-      // Загружаем файлы если есть
       let uploadedFiles = []
       if (files && files.length > 0) {
         const uploadResult = await dispatch(uploadFiles(files)).unwrap()
@@ -312,15 +310,15 @@ export const createTask = createAsyncThunk(
         files_count: uploadedFiles.length,
       })
 
-      // ✅ Структура данных согласно Swagger
+      // ✅ ИСПРАВЛЕНО: type должен быть "post", а НЕ "task"!
       const requestData = {
-        type: 'task',
+        type: 'post', // ← ВАЖНО! Бэк ожидает "post"
         text: message_text,
         is_openai_generated: false,
-        ratio: ratio || 1, // Коэффициент задачи
+        ratio: ratio || 1,
       }
 
-      // ✅ Создаем задачу через /posts endpoint
+      // Создаем через /posts endpoint
       const res = await axios.post(`/api/v1/messages/${section_code}/posts`, requestData, {
         params: { theme_id },
       })
@@ -813,7 +811,7 @@ const postSlice = createSlice({
           theme_id: item.message.theme_id,
           section_code: item.message.section_code,
           text: item.message.text,
-          type: 'task', // ← ВАЖНО
+          type: 'task', // ← Ставим type: 'task' локально для фильтрации
           created_at: item.message.created_at,
           updated_at: item.message.updated_at,
           media_files_ids: item.message.media_files_ids || [],
@@ -823,7 +821,7 @@ const postSlice = createSlice({
           expires_at: item.message_task?.expires_at || null,
         }))
 
-        // Заменяем только задачи в posts
+        // Заменяем только задачи
         state.posts = state.posts.filter(p => p.type !== 'task').concat(tasks)
       })
       .addCase(fetchTasks.rejected, (state, action) => {
