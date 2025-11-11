@@ -2,7 +2,7 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
-import { reactToPost } from '@/store/slices/postSlice'
+import { reactToPost, acceptTask, completeTask } from '@/store/slices/postSlice'
 
 // Components
 import ReactionBadges from '@/shared/components/ReactionBadges'
@@ -18,13 +18,13 @@ import pinIcon from '@/assets/images/pinIcon.webp'
 // Styles
 import '@/styles/features/TaskCard.scss'
 
-const TaskCard = ({ task, sectionCode, themeId, onTaskAccepted, onTaskCompleted }) => {
+const TaskCard = ({ task, sectionCode, themeId }) => {
   const dispatch = useDispatch()
   const posts = useSelector(state => state.post.posts)
+  const currentUser = useSelector(state => state.me.user) // Предполагаем что есть user в meSlice
 
   // Local state
   const [showAcceptModal, setShowAcceptModal] = useState(false)
-  const [showDetails, setShowDetails] = useState(false)
   const [selectedImage, setSelectedImage] = useState(null)
 
   // Derived data
@@ -48,10 +48,28 @@ const TaskCard = ({ task, sectionCode, themeId, onTaskAccepted, onTaskCompleted 
     }))
   }, [task.attachments, currentPost?.attachments, task.files])
 
-  // Task status
-  const taskStatus = task.status || 'idle' // idle, in_progress, completed
-  const taskRatio = task.ratio || null
-  const inProgressItems = task.in_progress_items || [] // Массив { type: 'full'|'partial', user, deadline, description }
+  // Task status from backend
+  const taskStatus = currentPost?.status || task.status || 'idle' // idle, in_progress, completed
+  const taskRatio = currentPost?.ratio || task.ratio || null
+  const isPartially = currentPost?.is_partially || task.is_partially || false
+  const expiresAt = currentPost?.expires_at || task.expires_at || null
+
+  // Формируем массив "в работе" для отображения
+  const inProgressItems = useMemo(() => {
+    if (taskStatus === 'idle' || taskStatus === 'completed') return []
+
+    // TODO: В идеале нужен отдельный запрос для получения всех исполнителей
+    // Пока показываем одну запись на основе текущих данных
+    return [
+      {
+        type: isPartially ? 'partial' : 'full',
+        user: task.executor || { username: 'Исполнитель' }, // TODO: данные исполнителя
+        deadline: expiresAt,
+        description: task.executor_description || '', // TODO: описание от исполнителя
+        isCurrentUser: currentUser?.id === task.executor?.id, // Проверяем это текущий юзер или нет
+      },
+    ]
+  }, [taskStatus, isPartially, expiresAt, task.executor, task.executor_description, currentUser])
 
   // Handlers
   const handleReaction = useCallback(
@@ -77,13 +95,46 @@ const TaskCard = ({ task, sectionCode, themeId, onTaskAccepted, onTaskCompleted 
   }, [])
 
   const handleAcceptSubmit = useCallback(
-    data => {
-      setShowAcceptModal(false)
-      if (onTaskAccepted) {
-        onTaskAccepted(task.id, data)
+    async data => {
+      try {
+        await dispatch(
+          acceptTask({
+            task_message_id: task.id,
+            section_code: sectionCode,
+            theme_id: themeId,
+            is_partially: data.type === 'partial',
+            description: data.description || '',
+            expires_at: data.deadline,
+          })
+        ).unwrap()
+
+        setShowAcceptModal(false)
+      } catch (error) {
+        console.error('Ошибка принятия задачи:', error)
       }
     },
-    [task.id, onTaskAccepted]
+    [task.id, sectionCode, themeId, dispatch]
+  )
+
+  const handleTaskCompleted = useCallback(
+    async (taskId, item, completionData) => {
+      try {
+        await dispatch(
+          completeTask({
+            task_message_id: taskId,
+            section_code: sectionCode,
+            theme_id: themeId,
+            description: completionData.description,
+            files: completionData.files,
+          })
+        ).unwrap()
+
+        console.log('✅ Задача успешно завершена')
+      } catch (error) {
+        console.error('Ошибка завершения задачи:', error)
+      }
+    },
+    [sectionCode, themeId, dispatch]
   )
 
   const formatTimestamp = timestamp => {
@@ -130,7 +181,7 @@ const TaskCard = ({ task, sectionCode, themeId, onTaskAccepted, onTaskCompleted 
           <span className="task-card__timestamp">{formatTimestamp(task.created_at || task.timestamp)}</span>
         </div>
 
-        {/* Help Button (только если задача еще не в работе и не выполнена) */}
+        {/* Help Button (только если задача idle) */}
         {taskStatus === 'idle' && (
           <button className="task-card__help-btn" onClick={handleAcceptTask}>
             Готов помочь с задачей
@@ -139,11 +190,19 @@ const TaskCard = ({ task, sectionCode, themeId, onTaskAccepted, onTaskCompleted 
 
         {/* In Progress Section */}
         {(taskStatus === 'in_progress' || taskStatus === 'completed') && inProgressItems.length > 0 && (
-          <TaskInProgress items={inProgressItems} taskId={task.id} sectionCode={sectionCode} themeId={themeId} onTaskCompleted={onTaskCompleted} />
+          <TaskInProgress items={inProgressItems} taskId={task.id} sectionCode={sectionCode} themeId={themeId} onTaskCompleted={handleTaskCompleted} />
         )}
 
-        {/* Ratio Badge (если есть коэффициент) */}
+        {/* Ratio Badge */}
         {taskRatio && <div className="task-card__ratio">x{taskRatio}</div>}
+
+        {/* Completed Badge */}
+        {taskStatus === 'completed' && (
+          <div className="task-card__completed-badge">
+            <div className="task-card__completed-text">Задача выполнена</div>
+            <img src={userIcon} alt="User" className="task-card__completed-avatar" />
+          </div>
+        )}
       </div>
 
       {/* Modals */}
@@ -158,8 +217,6 @@ TaskCard.propTypes = {
   task: PropTypes.object.isRequired,
   sectionCode: PropTypes.string.isRequired,
   themeId: PropTypes.number.isRequired,
-  onTaskAccepted: PropTypes.func,
-  onTaskCompleted: PropTypes.func,
 }
 
 export default TaskCard

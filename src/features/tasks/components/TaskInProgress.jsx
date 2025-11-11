@@ -55,7 +55,7 @@ const TaskInProgress = ({ items, taskId, sectionCode, themeId, onTaskCompleted }
               <span className="task-in-progress__text">
                 {item.type === 'full' ? 'Задача в работе' : 'Часть задачи в работе'} до {formatDeadline(item.deadline)}
               </span>
-              <img src={userIcon} alt="User" className="task-in-progress__avatar" />
+              <img src={item.user?.avatar || userIcon} alt="User" className="task-in-progress__avatar" />
             </div>
 
             {expandedIndex === index && (

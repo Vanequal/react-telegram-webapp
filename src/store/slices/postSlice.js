@@ -465,6 +465,8 @@ const postSlice = createSlice({
     commentsLoadingFlags: {},
     postsLoaded: false,
     uploadedFiles: [],
+    tasksLoading: false,
+    taskError: null,
   },
   reducers: {
     clearError: state => {
@@ -765,11 +767,11 @@ const postSlice = createSlice({
       })
       // Создание задачи
       .addCase(createTask.pending, state => {
-        state.loading = true
-        state.error = null
+        state.tasksLoading = true
+        state.taskError = null
       })
       .addCase(createTask.fulfilled, (state, action) => {
-        state.loading = false
+        state.tasksLoading = false
 
         const { message, message_post } = action.payload
 
@@ -779,13 +781,14 @@ const postSlice = createSlice({
           theme_id: message.theme_id,
           section_code: message.section_code,
           text: message.text,
-          type: message.type,
+          type: 'task', // ← ВАЖНО
           created_at: message.created_at,
           updated_at: message.updated_at,
           media_files_ids: message.media_files_ids || [],
-          is_openai_generated: message_post?.is_openai_generated || false,
           ratio: message_post?.ratio || null,
-          status: 'idle', // idle, in_progress, completed
+          status: 'idle',
+          is_partially: false,
+          expires_at: null,
         }
 
         state.posts.unshift(newTask)
@@ -793,17 +796,16 @@ const postSlice = createSlice({
         state.uploadedFiles = []
       })
       .addCase(createTask.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload
+        state.tasksLoading = false
+        state.taskError = action.payload
       })
-
       // Получение задач
       .addCase(fetchTasks.pending, state => {
-        state.loading = true
-        state.error = null
+        state.tasksLoading = true
+        state.taskError = null
       })
       .addCase(fetchTasks.fulfilled, (state, action) => {
-        state.loading = false
+        state.tasksLoading = false
 
         const tasks = (action.payload || []).map(item => ({
           id: item.message.id,
@@ -811,36 +813,35 @@ const postSlice = createSlice({
           theme_id: item.message.theme_id,
           section_code: item.message.section_code,
           text: item.message.text,
-          type: item.message.type,
+          type: 'task', // ← ВАЖНО
           created_at: item.message.created_at,
           updated_at: item.message.updated_at,
           media_files_ids: item.message.media_files_ids || [],
-          is_openai_generated: item.message_post?.is_openai_generated || false,
           ratio: item.message_post?.ratio || null,
-          // Данные задачи
           is_partially: item.message_task?.is_partially || false,
           status: item.message_task?.status || 'idle',
           expires_at: item.message_task?.expires_at || null,
         }))
 
-        state.posts = tasks
+        // Заменяем только задачи в posts
+        state.posts = state.posts.filter(p => p.type !== 'task').concat(tasks)
       })
       .addCase(fetchTasks.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload
+        state.tasksLoading = false
+        state.taskError = action.payload
       })
 
-      // Принятие задачи
       .addCase(acceptTask.pending, state => {
-        state.loading = true
-        state.error = null
+        state.tasksLoading = true
+        state.taskError = null
       })
+
       .addCase(acceptTask.fulfilled, (state, action) => {
-        state.loading = false
+        state.tasksLoading = false
 
-        const { task_message_id, message_task } = action.payload
+        const { task_message_id, message, message_task } = action.payload
 
-        // Обновляем статус задачи
+        // Обновляем задачу в списке
         const taskIndex = state.posts.findIndex(post => post.id === task_message_id)
         if (taskIndex !== -1) {
           state.posts[taskIndex] = {
@@ -848,25 +849,27 @@ const postSlice = createSlice({
             status: message_task?.status || 'in_progress',
             is_partially: message_task?.is_partially || false,
             expires_at: message_task?.expires_at || null,
+            executor_description: message?.text || '',
           }
         }
       })
       .addCase(acceptTask.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload
+        state.tasksLoading = false
+        state.taskError = action.payload
       })
 
       // Завершение задачи
       .addCase(completeTask.pending, state => {
-        state.loading = true
-        state.error = null
+        state.tasksLoading = true
+        state.taskError = null
       })
+
       .addCase(completeTask.fulfilled, (state, action) => {
-        state.loading = false
+        state.tasksLoading = false
 
         const { task_message_id } = action.payload
 
-        // Обновляем статус задачи на completed
+        // Обновляем статус на completed
         const taskIndex = state.posts.findIndex(post => post.id === task_message_id)
         if (taskIndex !== -1) {
           state.posts[taskIndex] = {
@@ -876,8 +879,8 @@ const postSlice = createSlice({
         }
       })
       .addCase(completeTask.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload
+        state.tasksLoading = false
+        state.taskError = action.payload
       })
   },
 })
