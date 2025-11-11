@@ -5,7 +5,6 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #eeeff1;
 
   &__content {
     flex: 1;
@@ -37,93 +36,6 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-  }
-}
-
-// TaskComposer styles
-.task-composer {
-  &__form {
-    position: fixed;
-    top: 60px;
-    left: 0;
-    right: 0;
-    bottom: 60px;
-    background: white;
-    padding: 20px;
-    overflow-y: auto;
-    z-index: 50;
-  }
-
-  &__field {
-    margin-bottom: 20px;
-  }
-
-  &__label {
-    display: block;
-    font-family: $font-roboto;
-    font-size: 16px;
-    font-weight: 600;
-    color: $text-primary;
-    margin-bottom: 8px;
-  }
-
-  &__input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #e2e6e9;
-    border-radius: 8px;
-    font-family: $font-roboto;
-    font-size: 16px;
-    color: $text-primary;
-
-    &:focus {
-      outline: none;
-      border-color: rgba(0, 122, 255, 1);
-    }
-  }
-
-  &__textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #e2e6e9;
-    border-radius: 8px;
-    font-family: $font-roboto;
-    font-size: 16px;
-    color: $text-primary;
-    resize: vertical;
-
-    &:focus {
-      outline: none;
-      border-color: rgba(0, 122, 255, 1);
-    }
-  }
-
-  &__files {
-    margin: 16px 0;
-  }
-
-  &__publish-btn {
-    @include button-reset;
-    background: rgba(0, 122, 255, 1);
-    color: white;
-    padding: 14px 24px;
-    border-radius: 4px;
-    font-family: $font-roboto;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    width: 100%;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-    transition: opacity 0.2s ease;
-
-    &:hover:not(:disabled) {
-      opacity: 0.9;
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
   }
 }
 
@@ -161,5 +73,268 @@
   &__send {
     width: 28px;
     height: 28px;
+  }
+}
+
+// STEP 2: Compose Page
+.task-compose-page {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 100px;
+
+  &__label {
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 400;
+    color: black;
+    text-align: left;
+  }
+
+  &__canvas {
+    font-family: $font-roboto;
+    font-size: 16px;
+    color: black;
+    text-align: left;
+    padding: 12px;
+    border: none;
+    outline: none;
+    background: transparent;
+    
+    &:empty:before {
+      content: attr(placeholder);
+      color: #999;
+    }
+  }
+
+  &__publish-btn {
+    @include button-reset;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 122, 255, 1);
+    color: white;
+    padding: 14px 48px;
+    border-radius: 4px;
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.2s ease;
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// STEP 3: Preview Page
+.task-preview-page {
+  flex: 1;
+  padding: 20px;
+  padding-bottom: 100px;
+  overflow-y: auto;
+
+  &__section {
+    margin-bottom: 32px;
+  }
+
+  &__title {
+    font-family: $font-roboto;
+    font-size: 18px;
+    font-weight: 700;
+    color: black;
+    margin-bottom: 12px;
+    text-align: left;
+  }
+
+  &__subtitle {
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 700;
+    color: black;
+    margin-bottom: 8px;
+    text-align: left;
+  }
+
+  &__text {
+    font-family: $font-roboto;
+    font-size: 16px;
+    color: black;
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  &__textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    border-radius: 10px;
+    font-family: $font-roboto;
+    font-size: 16px;
+    color: black;
+    resize: vertical;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    background: white;
+
+    &:focus {
+      outline: none;
+      border-color: rgba(0, 122, 255, 1);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  &__btn {
+    @include button-reset;
+    background: white;
+    color: black;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    transition: opacity 0.2s ease;
+    text-align: left;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+}
+
+// STEP 4: Rating Page
+.task-rating-page {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 44, 87, 0.8);
+
+  &__card {
+    background: white;
+    border-radius: 10px;
+    padding: 24px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  }
+
+  &__title {
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 500;
+    color: black;
+    margin-bottom: 24px;
+    text-align: left;
+    line-height: 1.4;
+  }
+
+  &__input-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  &__input {
+    width: 120px;
+    height: 120px;
+    border: 2px solid rgba(0, 0, 0, 0.23);
+    border-radius: 2px;
+    font-family: $font-roboto;
+    font-size: 48px;
+    font-weight: 700;
+    text-align: center;
+    color: black;
+    background: white;
+
+    &:focus {
+      outline: none;
+      border-color: rgba(0, 122, 255, 1);
+    }
+
+    &:disabled {
+      background: #f5f5f5;
+      cursor: not-allowed;
+    }
+  }
+
+  &__checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  &__checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(0, 0, 0, 0.56);
+    border-radius: 2px;
+    cursor: pointer;
+  }
+
+  &__checkbox-label {
+    font-family: $font-roboto;
+    font-size: 16px;
+    color: black;
+    cursor: pointer;
+  }
+
+  &__instruction {
+    font-family: $font-roboto;
+    font-size: 16px;
+    color: rgba(25, 118, 210, 1);
+    text-align: left;
+    cursor: pointer;
+    margin-top: 16px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__submit-btn {
+    @include button-reset;
+    background: rgba(21, 101, 192, 1);
+    color: white;
+    padding: 14px 24px;
+    border-radius: 4px;
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 16px;
+    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+      0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+    transition: opacity 0.2s ease;
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 }
