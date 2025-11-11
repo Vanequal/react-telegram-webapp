@@ -292,6 +292,164 @@ export const fetchDownloadUrl = createAsyncThunk('post/fetchDownloadUrl', async 
   }
 })
 
+// ✅ Создание задачи (task)
+export const createTask = createAsyncThunk(
+  'post/createTask',
+  async ({ message_text, section_code, theme_id, ratio = null, files = [] }, { rejectWithValue, dispatch }) => {
+    try {
+      // Загружаем файлы если есть
+      let uploadedFiles = []
+      if (files && files.length > 0) {
+        const uploadResult = await dispatch(uploadFiles(files)).unwrap()
+        uploadedFiles = uploadResult
+      }
+
+      console.log('📤 Создание задачи:', {
+        text: message_text,
+        section_code,
+        theme_id,
+        ratio,
+        files_count: uploadedFiles.length,
+      })
+
+      // ✅ Структура данных согласно Swagger
+      const requestData = {
+        type: 'task',
+        text: message_text,
+        is_openai_generated: false,
+        ratio: ratio || 1, // Коэффициент задачи
+      }
+
+      // ✅ Создаем задачу через /posts endpoint
+      const res = await axios.post(`/api/v1/messages/${section_code}/posts`, requestData, {
+        params: { theme_id },
+      })
+
+      console.log('✅ Задача создана:', res.data)
+
+      return {
+        ...res.data,
+        uploaded_files: uploadedFiles,
+      }
+    } catch (err) {
+      console.error('🔥 Ошибка создания задачи:', err?.response?.data || err.message)
+      return rejectWithValue(err.response?.data?.detail || 'Ошибка создания задачи')
+    }
+  }
+)
+
+// ✅ Получение задач (tasks)
+export const fetchTasks = createAsyncThunk(
+  'post/fetchTasks',
+  async ({ section_code, theme_id, limit = 100, offset = 0 }, { rejectWithValue }) => {
+    try {
+      console.log('📥 Загрузка задач:', { section_code, theme_id, limit, offset })
+
+      // ✅ Endpoint для получения задач
+      const res = await axios.get(`/api/v1/messages/${section_code}/tasks`, {
+        params: {
+          theme_id,
+          limit,
+          offset,
+        },
+      })
+
+      console.log('✅ Задачи загружены:', res.data?.length || 0)
+      return res.data
+    } catch (err) {
+      console.error('🔥 Ошибка загрузки задач:', err?.response?.data || err.message)
+      return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки задач')
+    }
+  }
+)
+
+// ✅ Взять задачу в работу
+export const acceptTask = createAsyncThunk(
+  'post/acceptTask',
+  async ({ task_message_id, section_code, theme_id, is_partially, description = '', expires_at }, { rejectWithValue }) => {
+    try {
+      console.log('📤 Берем задачу в работу:', {
+        task_message_id,
+        section_code,
+        theme_id,
+        is_partially,
+        description,
+        expires_at,
+      })
+
+      // ✅ Структура данных согласно Swagger
+      const requestData = {
+        type: 'task',
+        text: description, // Описание того, что будет делать исполнитель
+        is_partially: is_partially, // true/false - частично или полностью
+        expires_at: expires_at, // Дата окончания
+      }
+
+      // ✅ Берем задачу в работу через /tasks endpoint
+      // ВАЖНО: здесь нужно указать message_id задачи
+      const res = await axios.post(`/api/v1/messages/${section_code}/tasks`, requestData, {
+        params: {
+          theme_id,
+          message_id: task_message_id // ← ID задачи которую берем
+        },
+      })
+
+      console.log('✅ Задача взята в работу:', res.data)
+
+      return {
+        ...res.data,
+        task_message_id,
+      }
+    } catch (err) {
+      console.error('🔥 Ошибка принятия задачи:', err?.response?.data || err.message)
+      return rejectWithValue(err.response?.data?.detail || 'Ошибка принятия задачи')
+    }
+  }
+)
+
+// ✅ Отметить задачу как выполненную
+export const completeTask = createAsyncThunk(
+  'post/completeTask',
+  async ({ task_message_id, section_code, theme_id, description, files = [] }, { rejectWithValue, dispatch }) => {
+    try {
+      // Загружаем файлы результата
+      let uploadedFiles = []
+      if (files && files.length > 0) {
+        const uploadResult = await dispatch(uploadFiles(files)).unwrap()
+        uploadedFiles = uploadResult
+      }
+
+      console.log('📤 Отмечаем задачу выполненной:', {
+        task_message_id,
+        description,
+        files_count: uploadedFiles.length,
+      })
+
+      // ✅ Создаем комментарий с результатами выполнения
+      const commentResult = await dispatch(
+        createComment({
+          post_id: task_message_id,
+          message_text: description,
+          section_code,
+          theme_id,
+          files: files,
+        })
+      ).unwrap()
+
+      console.log('✅ Задача отмечена как выполненная')
+
+      return {
+        task_message_id,
+        comment: commentResult,
+        uploaded_files: uploadedFiles,
+      }
+    } catch (err) {
+      console.error('🔥 Ошибка завершения задачи:', err?.response?.data || err.message)
+      return rejectWithValue(err.response?.data?.detail || 'Ошибка завершения задачи')
+    }
+  }
+)
+
 const postSlice = createSlice({
   name: 'post',
   initialState: {
@@ -605,6 +763,122 @@ const postSlice = createSlice({
       .addCase(fetchDownloadUrl.rejected, (state, action) => {
         console.warn('Ошибка загрузки файла:', action.payload)
       })
+      // Создание задачи
+      .addCase(createTask.pending, state => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(createTask.fulfilled, (state, action) => {
+        state.loading = false
+
+        const { message, message_post } = action.payload
+
+        const newTask = {
+          id: message.id,
+          author_id: message.author_id,
+          theme_id: message.theme_id,
+          section_code: message.section_code,
+          text: message.text,
+          type: message.type,
+          created_at: message.created_at,
+          updated_at: message.updated_at,
+          media_files_ids: message.media_files_ids || [],
+          is_openai_generated: message_post?.is_openai_generated || false,
+          ratio: message_post?.ratio || null,
+          status: 'idle', // idle, in_progress, completed
+        }
+
+        state.posts.unshift(newTask)
+        state.preview = null
+        state.uploadedFiles = []
+      })
+      .addCase(createTask.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+
+      // Получение задач
+      .addCase(fetchTasks.pending, state => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(fetchTasks.fulfilled, (state, action) => {
+        state.loading = false
+
+        const tasks = (action.payload || []).map(item => ({
+          id: item.message.id,
+          author_id: item.message.author_id,
+          theme_id: item.message.theme_id,
+          section_code: item.message.section_code,
+          text: item.message.text,
+          type: item.message.type,
+          created_at: item.message.created_at,
+          updated_at: item.message.updated_at,
+          media_files_ids: item.message.media_files_ids || [],
+          is_openai_generated: item.message_post?.is_openai_generated || false,
+          ratio: item.message_post?.ratio || null,
+          // Данные задачи
+          is_partially: item.message_task?.is_partially || false,
+          status: item.message_task?.status || 'idle',
+          expires_at: item.message_task?.expires_at || null,
+        }))
+
+        state.posts = tasks
+      })
+      .addCase(fetchTasks.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+
+      // Принятие задачи
+      .addCase(acceptTask.pending, state => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(acceptTask.fulfilled, (state, action) => {
+        state.loading = false
+
+        const { task_message_id, message_task } = action.payload
+
+        // Обновляем статус задачи
+        const taskIndex = state.posts.findIndex(post => post.id === task_message_id)
+        if (taskIndex !== -1) {
+          state.posts[taskIndex] = {
+            ...state.posts[taskIndex],
+            status: message_task?.status || 'in_progress',
+            is_partially: message_task?.is_partially || false,
+            expires_at: message_task?.expires_at || null,
+          }
+        }
+      })
+      .addCase(acceptTask.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+
+      // Завершение задачи
+      .addCase(completeTask.pending, state => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(completeTask.fulfilled, (state, action) => {
+        state.loading = false
+
+        const { task_message_id } = action.payload
+
+        // Обновляем статус задачи на completed
+        const taskIndex = state.posts.findIndex(post => post.id === task_message_id)
+        if (taskIndex !== -1) {
+          state.posts[taskIndex] = {
+            ...state.posts[taskIndex],
+            status: 'completed',
+          }
+        }
+      })
+      .addCase(completeTask.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
   },
 })
 
@@ -617,5 +891,6 @@ export const selectComments = postId => state => state.post.comments[postId] || 
 export const selectPostsLoading = state => state.post.loading
 export const selectPostsError = state => state.post.error
 export const selectPreview = state => state.post.preview
+export const selectTasks = state => state.post.posts.filter(p => p.type === 'task')
 
 export default postSlice.reducer
