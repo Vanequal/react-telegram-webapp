@@ -87,6 +87,8 @@ const TaskChatPage = () => {
             // Формируем полный текст задачи
             const fullText = `${title.trim()}\n\n${description.trim()}`
 
+            console.log('📤 Запрашиваем GPT preview для:', fullText)
+
             // Запрос к OpenAI для превью
             const previewResult = await dispatch(
                 createPostPreview({
@@ -96,20 +98,31 @@ const TaskChatPage = () => {
                 })
             ).unwrap()
 
+            console.log('✅ Получен ответ от GPT:', previewResult)
+
             setOriginalData({
                 title: title.trim(),
                 description: description.trim(),
             })
+
+            // ✅ ПРАВИЛЬНО ИЗВЛЕКАЕМ ДАННЫЕ
             setGptData({
-                title: 'Улучшенная версия от ИИ',
-                description: previewResult.openai_text,
+                title: 'Улучшенная версия от ИИ', // Заголовок статичный
+                description: previewResult.openai_text || previewResult.gpt_text || 'Нет ответа от GPT',
             })
-            setEditedGptText(previewResult.openai_text)
+            setEditedGptText(previewResult.openai_text || previewResult.gpt_text || '')
+
             setStep('preview')
         } catch (error) {
-            console.error('Ошибка получения preview:', error)
-            // Если OpenAI недоступен, пропускаем preview
-            setStep('rating')
+            console.error('❌ Ошибка получения preview:', error)
+
+            // Если OpenAI недоступен (403), переходим сразу к рейтингу
+            if (error === 'OpenAI временно недоступен') {
+                console.log('⚠️ OpenAI недоступен, пропускаем preview')
+                setStep('rating')
+            } else {
+                alert('Ошибка получения preview от GPT')
+            }
         } finally {
             setIsSubmitting(false)
         }
@@ -147,15 +160,19 @@ const TaskChatPage = () => {
         if (!skipRatio) setRatio('')
     }, [skipRatio])
 
+    // В handleFinalPublish:
     const handleFinalPublish = useCallback(async () => {
         setIsSubmitting(true)
 
         try {
             const taskText = useGPTVersion
-                ? `${gptData.title}\n\n${editedGptText}`
+                ? editedGptText  // ✅ Если GPT, берем только описание
                 : `${title.trim()}\n\n${description.trim()}`
 
-            await dispatch(
+            console.log('📤 Публикуем задачу с текстом:', taskText)
+            console.log('📤 Ratio:', skipRatio ? null : parseInt(ratio) || null)
+
+            const result = await dispatch(
                 createTask({
                     message_text: taskText,
                     section_code: SECTION_CODE,
@@ -165,7 +182,9 @@ const TaskChatPage = () => {
                 })
             ).unwrap()
 
-            // ✅ СНАЧАЛА СБРОС
+            console.log('✅ Задача создана, результат:', result)
+
+            // Сброс
             setTitle('')
             setDescription('')
             setSelectedFiles([])
@@ -175,23 +194,27 @@ const TaskChatPage = () => {
             setOriginalData(null)
             setGptData(null)
             setEditedGptText('')
+            setIsEditingGPT(false)
 
-            // ✅ ПОТОМ ПЕРЕХОД К СПИСКУ
             setStep('list')
 
-            // ✅ ПОТОМ ПЕРЕЗАГРУЗКА
+            // Перезагрузка
+            console.log('🔄 Перезагружаем список задач...')
             await dispatch(
                 fetchTasks({
                     section_code: SECTION_CODE,
                     theme_id: DEFAULT_THEME_ID,
                 })
             )
+
+            console.log('✅ Список задач обновлен')
         } catch (error) {
-            console.error('Ошибка публикации задачи:', error)
+            console.error('❌ Ошибка публикации задачи:', error)
+            alert(`Ошибка: ${error}`)
         } finally {
             setIsSubmitting(false)
         }
-    }, [title, description, ratio, skipRatio, selectedFiles, useGPTVersion, gptData, editedGptText, dispatch])
+    }, [title, description, ratio, skipRatio, selectedFiles, useGPTVersion, editedGptText, dispatch])
 
     const canPublish = title.trim() || description.trim()
     const canSubmitRating = ratio.trim() !== '' || skipRatio
@@ -283,16 +306,13 @@ const TaskChatPage = () => {
 
                     <div className="task-preview-page__section">
                         <h3 className="task-preview-page__title">Улучшенная версия от ИИ:</h3>
-                        <p className="task-preview-page__subtitle">{gptData.title || 'Заголовок от GPT'}</p>
+                        <p className="task-preview-page__subtitle">Заголовок от GPT</p>
 
-                        {/* ✅ ПЛАШКА с текстом от ИИ (редактируемая) */}
+                        {/* ✅ ПЛАШКА с текстом от ИИ (БЕЗ textarea) */}
                         <div className="task-preview-page__gpt-card">
-                            <textarea
-                                className="task-preview-page__gpt-textarea"
-                                value={editedGptText}
-                                onChange={e => setEditedGptText(e.target.value)}
-                                rows={8}
-                            />
+                            <div className="task-preview-page__gpt-text">
+                                {editedGptText || 'Загрузка...'}
+                            </div>
                         </div>
                     </div>
 
