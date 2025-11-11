@@ -26,7 +26,7 @@ import ReloadPage from '@/pages/Home/ReloadPage'
 import PublicationChatPage from '@/features/publications/pages/PublicationChatPage'
 import PublicationPageList from '@/features/publications/pages/PublicationPageList'
 import PublicationPage from '@/features/publications/pages/PublicationPage'
-import TaskChatPage from '@/pages/Home/TaskChatPage'
+import TaskChatPage from '@/features/tasks/pages/TaskChatPage'
 import LaboratoryPage from '@/pages/Home/LaboratoryPage'
 
 import '@/styles/global.scss'
