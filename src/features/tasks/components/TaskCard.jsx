@@ -14,6 +14,8 @@ import TaskAcceptModal from './TaskAcceptModal'
 // Icons
 import userIcon from '@/assets/images/userIcon.webp'
 import pinIcon from '@/assets/images/pinIcon.webp'
+import avatarStack from '@/assets/images/avatarStack.webp'
+import donatIcon from '@/assets/images/donatIcon.webp'
 
 // Styles
 import '@/styles/features/TaskCard.scss'
