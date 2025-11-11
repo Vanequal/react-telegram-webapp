@@ -2,222 +2,257 @@
 @import '../variables';
 
 .task-card {
-  @include card-style;
-  width: 90%;
-  max-width: 600px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  position: relative;
-  margin: 12px auto; // ← ЦЕНТРИРУЕМ
-
-  &__header {
+    @include card-style;
+    width: 90%;
+    max-width: 600px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    margin: 12px auto; // ← ЦЕНТРИРУЕМ
 
-  &__user {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  &__user-icon {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-  }
-
-  &__username {
-    font-family: $font-telegram;
-    font-size: 16px;
-    color: $text-primary;
-  }
-
-  &__pin {
-    width: 20px;
-    height: 20px;
-  }
-
-  &__content {
-    margin: 8px 0;
-  }
-
-  &__text {
-    font-family: $font-space-grotesk;
-    font-size: 20px;
-    color: $text-primary;
-    line-height: 1.5;
-    word-break: break-word;
-  }
-
-  &__files {
-    margin: 12px 0;
-  }
-
-  &__reactions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-  }
-
-  &__timestamp {
-    color: $text-secondary;
-    font-size: 14px;
-    font-family: $font-roboto;
-  }
-
-  &__help-btn {
-    @include button-reset;
-    background: rgba(21, 101, 192, 1);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 4px;
-    font-family: $font-roboto;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 8px;
-    transition: opacity 0.2s ease;
-
-    &:hover {
-      opacity: 0.9;
+    &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
-  }
 
-  &__ratio {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: rgba(21, 101, 192, 1);
-    color: white;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-family: $font-roboto;
-    font-size: 14px;
-    font-weight: 600;
-  }
+    &__user {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 
-  &__completed-badge {
-    background: white;
-    border-radius: 10px;
-    padding: 12px 16px;
-    margin-top: 12px;
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+    &__user-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+    }
 
-  &__completed-text {
-    font-family: $font-roboto;
-    font-size: 16px;
-    color: $text-primary;
-    font-weight: 500;
-  }
+    &__username {
+        font-family: $font-telegram;
+        font-size: 16px;
+        color: $text-primary;
+    }
 
-  &__completed-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-  }
+    &__pin {
+        width: 20px;
+        height: 20px;
+    }
+
+    &__content {
+        margin: 8px 0;
+    }
+
+    &__text {
+        font-family: $font-space-grotesk;
+        font-size: 20px;
+        color: $text-primary;
+        line-height: 1.5;
+        word-break: break-word;
+    }
+
+    &__files {
+        margin: 12px 0;
+    }
+
+    &__reactions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+    }
+
+    &__timestamp {
+        color: $text-secondary;
+        font-size: 14px;
+        font-family: $font-roboto;
+    }
+
+    &__help-btn {
+        @include button-reset;
+        background: rgba(21, 101, 192, 1);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 4px;
+        font-family: $font-roboto;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 8px;
+        transition: opacity 0.2s ease;
+
+        &:hover {
+            opacity: 0.9;
+        }
+    }
+
+    &__ratio {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(21, 101, 192, 1);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-family: $font-roboto;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    &__completed-badge {
+        background: white;
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-top: 12px;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    &__completed-text {
+        font-family: $font-roboto;
+        font-size: 16px;
+        color: $text-primary;
+        font-weight: 500;
+    }
+
+    &__completed-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+    }
 }
 
 // TaskInProgress styles
 .task-in-progress {
-  margin-top: 12px;
-
-  &__divider {
-    height: 1px;
-    background-color: rgba(226, 230, 233, 1);
-    margin: 8px 0;
-  }
-
-  &__item {
-    margin: 8px 0;
-  }
-
-  &__row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    padding: 8px 0;
-  }
-
-  &__arrow {
-    width: 14px;
-    height: 8px;
-    flex-shrink: 0; // ← НЕ СЖИМАЕТСЯ
-    transition: transform 0.3s ease;
-
-    &.expanded {
-      transform: rotate(180deg);
-    }
-  }
-
-  &__text {
-    flex: 1;
-    font-family: $font-roboto;
-    font-size: 14px;
-    font-style: italic;
-    color: rgba(224, 48, 48, 1); // ← КРАСНЫЙ ЦВЕТ
-    margin-left: 8px; // ← ОТСТУП ОТ SVG
-  }
-
-  &__avatar {
-    width: 32px; // ← УВЕЛИЧИЛ
-    height: 32px; // ← УВЕЛИЧИЛ
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-left: 8px; // ← ОТСТУП ОТ ТЕКСТА
-  }
-
-  &__details {
     margin-top: 12px;
-    padding: 12px;
-    background: rgba(0, 44, 87, 0.8); // ← ТЕМНЫЙ ФОН
-  }
 
-  &__details-card {
-    background: white;
-    border-radius: 10px;
-    padding: 16px;
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-  }
-
-  &__description {
-    font-family: $font-roboto;
-    font-size: 16px;
-    color: $text-primary;
-    margin-bottom: 12px;
-  }
-
-  &__deadline {
-    font-family: $font-roboto;
-    font-size: 14px;
-    color: $text-secondary;
-    margin-bottom: 16px;
-  }
-
-  &__complete-btn {
-    @include button-reset;
-    background: rgba(21, 101, 192, 1);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 4px;
-    font-family: $font-roboto;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    width: 100%;
-    transition: opacity 0.2s ease;
-
-    &:hover {
-      opacity: 0.9;
+    &__divider {
+        height: 1px;
+        background-color: rgba(226, 230, 233, 1);
+        margin: 8px 0;
     }
-  }
+
+    &__item {
+        margin: 8px 0;
+    }
+
+    &__row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        padding: 8px 0;
+    }
+
+    &__arrow {
+        width: 14px;
+        height: 8px;
+        flex-shrink: 0; // ← НЕ СЖИМАЕТСЯ
+        transition: transform 0.3s ease;
+
+        &.expanded {
+            transform: rotate(180deg);
+        }
+    }
+
+    &__text {
+        flex: 1;
+        font-family: $font-roboto;
+        font-size: 14px;
+        font-style: italic;
+        color: rgba(224, 48, 48, 1); // ← КРАСНЫЙ ЦВЕТ
+        margin-left: 8px; // ← ОТСТУП ОТ SVG
+    }
+
+    &__avatar {
+        width: 32px; // ← УВЕЛИЧИЛ
+        height: 32px; // ← УВЕЛИЧИЛ
+        border-radius: 50%;
+        flex-shrink: 0;
+        margin-left: 8px; // ← ОТСТУП ОТ ТЕКСТА
+    }
+
+    &__details {
+        margin-top: 12px;
+        padding: 12px;
+        background: rgba(0, 44, 87, 0.8); // ← ТЕМНЫЙ ФОН
+    }
+
+    &__details-card {
+        background: white;
+        border-radius: 10px;
+        padding: 16px;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    }
+
+    &__description {
+        font-family: $font-roboto;
+        font-size: 16px;
+        color: $text-primary;
+        margin-bottom: 12px;
+    }
+
+    &__deadline {
+        font-family: $font-roboto;
+        font-size: 14px;
+        color: $text-secondary;
+        margin-bottom: 16px;
+    }
+
+    &__complete-btn {
+        @include button-reset;
+        background: rgba(21, 101, 192, 1);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 4px;
+        font-family: $font-roboto;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        width: 100%;
+        transition: opacity 0.2s ease;
+
+        &:hover {
+            opacity: 0.9;
+        }
+    }
+
+    &__divider {
+        height: 1px;
+        background-color: rgba(226, 230, 233, 1);
+        margin: 8px 0;
+    }
+
+    &__footer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+
+        &:hover {
+            opacity: 0.8;
+        }
+    }
+
+    &__avatar-stack {
+        width: 50px;
+        height: 28px;
+    }
+
+    &__comments {
+        font-family: $font-roboto;
+        font-size: 14px;
+        color: rgba(0, 122, 255, 1);
+        flex: 1;
+    }
+
+    &__icon-donat {
+        width: 48px;
+        height: 28px;
+    }
 }

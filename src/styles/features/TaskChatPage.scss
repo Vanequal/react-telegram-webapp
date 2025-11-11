@@ -2,341 +2,361 @@
 @import '../variables';
 
 .task-chat-page {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-
-  &__content {
-    flex: 1;
-    padding: 16px 0 80px 0;
-    overflow-y: auto;
-  }
-
-  &__empty {
-    padding: 16px;
-  }
-
-  &__top-text {
-    font-size: 20px;
-    color: black;
-    text-align: left;
-    font-family: $font-space-grotesk;
-    margin-bottom: 16px;
-  }
-
-  &__bottom-text {
-    margin-top: 60%;
-    font-size: 20px;
-    color: black;
-    text-align: left;
-    font-family: $font-space-grotesk;
-  }
-
-  &__list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    align-items: center; // ← ЦЕНТРИРУЕМ КАРТЫ
-  }
+    min-height: 100vh;
+
+    &__content {
+        flex: 1;
+        padding: 16px 0 80px 0;
+        overflow-y: auto;
+    }
+
+    &__empty {
+        padding: 16px;
+    }
+
+    &__top-text {
+        font-size: 20px;
+        color: black;
+        text-align: left;
+        font-family: $font-space-grotesk;
+        margin-bottom: 16px;
+    }
+
+    &__bottom-text {
+        margin-top: 60%;
+        font-size: 20px;
+        color: black;
+        text-align: left;
+        font-family: $font-space-grotesk;
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        align-items: center; // ← ЦЕНТРИРУЕМ КАРТЫ
+    }
 }
 
 // Task Footer
 .task-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: #eeeff1;
-  padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-sizing: border-box;
-  z-index: 100;
-
-  &__icon {
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-  }
-
-  &__input {
-    flex: 1;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #eeeff1;
     padding: 8px 12px;
-    border: 1px solid #e2e6e9;
-    border-radius: 20px;
-    box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
-    font-family: $font-roboto;
-    font-size: 16px;
-    color: #00000099;
-    background-color: #fff;
-  }
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+    z-index: 100;
 
-  &__send {
-    width: 28px;
-    height: 28px;
-  }
+    &__icon {
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+    }
+
+    &__input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #e2e6e9;
+        border-radius: 20px;
+        box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
+        font-family: $font-roboto;
+        font-size: 16px;
+        color: #00000099;
+        background-color: #fff;
+    }
+
+    &__send {
+        width: 28px;
+        height: 28px;
+    }
 }
 
 // STEP 2: Compose Page
 .task-compose-page {
-  flex: 1;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding-bottom: 100px;
-
-  &__label {
-    font-family: $font-roboto;
-    font-size: 16px;
-    font-weight: 400;
-    color: black;
-    text-align: left;
-  }
-
-  &__canvas {
-    font-family: $font-roboto;
-    font-size: 16px;
-    color: black;
-    text-align: left;
-    padding: 12px;
-    border: none;
-    outline: none;
-    background: transparent;
-    
-    &:empty:before {
-      content: attr(placeholder);
-      color: #999;
-    }
-  }
-
-  &__publish-btn {
-    @include button-reset;
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 122, 255, 1);
-    color: white;
-    padding: 14px 48px;
-    border-radius: 4px;
-    font-family: $font-roboto;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-    transition: opacity 0.2s ease;
-
-    &:hover:not(:disabled) {
-      opacity: 0.9;
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-  }
-}
-
-// STEP 3: Preview Page
-.task-preview-page {
-  flex: 1;
-  padding: 20px;
-  padding-bottom: 100px;
-  overflow-y: auto;
-
-  &__section {
-    margin-bottom: 32px;
-  }
-
-  &__title {
-    font-family: $font-roboto;
-    font-size: 18px;
-    font-weight: 700;
-    color: black;
-    margin-bottom: 12px;
-    text-align: left;
-  }
-
-  &__subtitle {
-    font-family: $font-roboto;
-    font-size: 16px;
-    font-weight: 700;
-    color: black;
-    margin-bottom: 8px;
-    text-align: left;
-  }
-
-  &__text {
-    font-family: $font-roboto;
-    font-size: 16px;
-    color: black;
-    line-height: 1.5;
-    text-align: left;
-  }
-
-  &__textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.23);
-    border-radius: 10px;
-    font-family: $font-roboto;
-    font-size: 16px;
-    color: black;
-    resize: vertical;
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-    background: white;
-
-    &:focus {
-      outline: none;
-      border-color: rgba(0, 122, 255, 1);
-    }
-  }
-
-  &__actions {
+    flex: 1;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-top: 24px;
-  }
+    gap: 16px;
+    padding-bottom: 100px;
 
-  &__btn {
-    @include button-reset;
-    background: white;
-    color: black;
-    padding: 14px 24px;
-    border-radius: 8px;
-    font-family: $font-roboto;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    width: 100%;
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-    transition: opacity 0.2s ease;
-    text-align: left;
-
-    &:hover {
-      opacity: 0.9;
+    &__label {
+        font-family: $font-roboto;
+        font-size: 16px;
+        font-weight: 700; // ← ЖИРНЫЙ
+        color: black;
+        text-align: left;
     }
-  }
+
+    &__input {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        outline: none;
+        font-family: $font-roboto;
+        font-size: 16px;
+        color: black;
+        background: transparent;
+        resize: none;
+        min-height: 40px;
+
+        &::placeholder {
+            color: #999;
+        }
+    }
+
+    &__textarea {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        outline: none;
+        font-family: $font-roboto;
+        font-size: 16px;
+        color: black;
+        background: transparent;
+        resize: vertical;
+        min-height: 200px;
+
+        &::placeholder {
+            color: #999;
+        }
+    }
+
+    &__publish-btn {
+        @include button-reset;
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 122, 255, 1);
+        color: white;
+        padding: 14px 48px;
+        border-radius: 4px;
+        font-family: $font-roboto;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        transition: opacity 0.2s ease;
+
+        &:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
+}
+
+.task-preview-page {
+    flex: 1;
+    padding: 20px;
+    padding-bottom: 100px;
+    overflow-y: auto;
+
+    &__section {
+        margin-bottom: 32px;
+    }
+
+    &__title {
+        font-family: $font-roboto;
+        font-size: 18px;
+        font-weight: 700;
+        color: black;
+        margin-bottom: 12px;
+        text-align: left;
+    }
+
+    &__subtitle {
+        font-family: $font-roboto;
+        font-size: 16px;
+        font-weight: 700;
+        color: black;
+        margin-bottom: 12px;
+        text-align: left;
+    }
+
+    &__text {
+        font-family: $font-roboto;
+        font-size: 16px;
+        color: black;
+        line-height: 1.5;
+        text-align: left;
+    }
+
+    // ✅ ПЛАШКА для GPT текста
+    &__gpt-card {
+        background: white;
+        border: 1px solid rgba(0, 0, 0, 0.23);
+        border-radius: 10px;
+        padding: 12px;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    }
+
+    &__gpt-textarea {
+        width: 100%;
+        border: none;
+        outline: none;
+        font-family: $font-roboto;
+        font-size: 16px;
+        color: black;
+        resize: vertical;
+        background: transparent;
+        min-height: 150px;
+    }
+
+    &__actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    &__btn {
+        @include button-reset;
+        background: white;
+        color: black;
+        padding: 14px 24px;
+        border-radius: 8px;
+        font-family: $font-roboto;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        width: 100%;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        transition: opacity 0.2s ease;
+        text-align: left;
+
+        &:hover {
+            opacity: 0.9;
+        }
+    }
 }
 
 // STEP 4: Rating Page
 .task-rating-page {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: rgba(0, 44, 87, 0.8);
-
-  &__card {
-    background: white;
-    border-radius: 10px;
-    padding: 24px;
-    max-width: 400px;
-    width: 100%;
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-  }
-
-  &__title {
-    font-family: $font-roboto;
-    font-size: 16px;
-    font-weight: 500;
-    color: black;
-    margin-bottom: 24px;
-    text-align: left;
-    line-height: 1.4;
-  }
-
-  &__input-wrapper {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-  }
-
-  &__input {
-    width: 120px;
-    height: 120px;
-    border: 2px solid rgba(0, 0, 0, 0.23);
-    border-radius: 2px;
-    font-family: $font-roboto;
-    font-size: 48px;
-    font-weight: 700;
-    text-align: center;
-    color: black;
-    background: white;
-
-    &:focus {
-      outline: none;
-      border-color: rgba(0, 122, 255, 1);
-    }
-
-    &:disabled {
-      background: #f5f5f5;
-      cursor: not-allowed;
-    }
-  }
-
-  &__checkbox-row {
+    flex: 1;
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 44, 87, 0.8);
 
-  &__checkbox {
-    width: 24px;
-    height: 24px;
-    border: 2px solid rgba(0, 0, 0, 0.56);
-    border-radius: 2px;
-    cursor: pointer;
-  }
-
-  &__checkbox-label {
-    font-family: $font-roboto;
-    font-size: 16px;
-    color: black;
-    cursor: pointer;
-  }
-
-  &__instruction {
-    font-family: $font-roboto;
-    font-size: 16px;
-    color: rgba(25, 118, 210, 1);
-    text-align: left;
-    cursor: pointer;
-    margin-top: 16px;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
-  &__submit-btn {
-    @include button-reset;
-    background: rgba(21, 101, 192, 1);
-    color: white;
-    padding: 14px 24px;
-    border-radius: 4px;
-    font-family: $font-roboto;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 16px;
-    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14),
-      0px 1px 10px 0px rgba(0, 0, 0, 0.12);
-    transition: opacity 0.2s ease;
-
-    &:hover:not(:disabled) {
-      opacity: 0.9;
+    &__card {
+        background: white;
+        border-radius: 10px;
+        padding: 24px;
+        max-width: 400px;
+        width: 100%;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
     }
 
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    &__title {
+        font-family: $font-roboto;
+        font-size: 16px;
+        font-weight: 500;
+        color: black;
+        margin-bottom: 24px;
+        text-align: left;
+        line-height: 1.4;
     }
-  }
+
+    &__input-wrapper {
+        display: flex;
+        justify-content: flex-start; // ← СЛЕВА
+        margin-bottom: 20px;
+    }
+
+    &__input {
+        width: 80px; // ← МЕНЬШЕ
+        height: 80px; // ← МЕНЬШЕ
+        border: 2px solid rgba(0, 0, 0, 0.23);
+        border-radius: 2px;
+        font-family: $font-roboto;
+        font-size: 36px; // ← МЕНЬШЕ ШРИФТ
+        font-weight: 700;
+        text-align: center;
+        color: black;
+        background: white;
+
+        &:focus {
+            outline: none;
+            border-color: rgba(0, 122, 255, 1);
+        }
+
+        &:disabled {
+            background: #f5f5f5;
+            cursor: not-allowed;
+        }
+    }
+
+    &__checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    &__checkbox {
+        width: 24px;
+        height: 24px;
+        border: 2px solid rgba(0, 0, 0, 0.56);
+        border-radius: 2px;
+        cursor: pointer;
+    }
+
+    &__checkbox-label {
+        font-family: $font-roboto;
+        font-size: 16px;
+        color: black;
+        cursor: pointer;
+    }
+
+    &__instruction {
+        font-family: $font-roboto;
+        font-size: 16px;
+        color: rgba(25, 118, 210, 1);
+        text-align: left;
+        cursor: pointer;
+        margin-top: 16px;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    &__submit-btn {
+        @include button-reset;
+        background: rgba(21, 101, 192, 1);
+        color: white;
+        padding: 14px 24px;
+        border-radius: 4px;
+        font-family: $font-roboto;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 16px;
+        box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+            0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+        transition: opacity 0.2s ease;
+
+        &:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
 }
