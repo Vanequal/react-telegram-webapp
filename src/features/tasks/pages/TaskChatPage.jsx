@@ -181,17 +181,23 @@ const TaskChatPage = () => {
             })
 
             // ✅ Правильные параметры для createTask
-            const result = await dispatch(
-                createTask({
-                    message_text: taskText,
-                    section_code: SECTION_CODE,
-                    theme_id: DEFAULT_THEME_ID,
-                    ratio: skipRatio ? null : (parseInt(ratio) || null),
-                    is_partially: false, // При создании задачи это всегда false
-                    expires_at: null, // При создании задачи это null
-                    files: selectedFiles,
-                })
-            ).unwrap()
+            const taskParams = {
+                message_text: taskText,
+                section_code: SECTION_CODE,
+                theme_id: DEFAULT_THEME_ID,
+                is_partially: false, // При создании задачи это всегда false
+                files: selectedFiles,
+            }
+
+            // ✅ Добавляем ratio только если он указан
+            if (!skipRatio && ratio) {
+                taskParams.ratio = parseInt(ratio)
+            }
+
+            // ✅ expires_at не передаем вообще при создании задачи (null вызывает ошибку)
+            // Он нужен только при acceptTask
+
+            const result = await dispatch(createTask(taskParams)).unwrap()
 
             console.log('✅ Задача создана:', result)
 
