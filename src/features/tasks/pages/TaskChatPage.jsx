@@ -185,10 +185,10 @@ const TaskChatPage = () => {
                 message_text: taskText,
                 section_code: SECTION_CODE,
                 theme_id: DEFAULT_THEME_ID,
-                is_partially: false, // При создании задачи это всегда false
                 files: selectedFiles,
-                // expires_at можно не передавать - будет дефолт (+7 дней)
-                // или можно добавить поле выбора даты в UI и передать здесь
+                // ⚠️ НЕ передаем is_partially при создании!
+                // Иначе задача сразу уходит в статус "in_progress"
+                // is_partially нужен только при acceptTask (когда кто-то берет задачу)
             }
 
             // ✅ Добавляем ratio только если он указан

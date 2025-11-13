@@ -218,7 +218,7 @@ export const fetchPostComments = createAsyncThunk(
 // ✅ Создание задачи
 export const createTask = createAsyncThunk(
   'post/createTask',
-  async ({ message_text, section_code, theme_id, ratio = null, is_partially = false, expires_at = null, files = [] }, { rejectWithValue, dispatch }) => {
+  async ({ message_text, section_code, theme_id, ratio = null, files = [] }, { rejectWithValue, dispatch }) => {
     try {
       // Сначала загружаем файлы
       let uploadedFileIds = []
@@ -229,31 +229,28 @@ export const createTask = createAsyncThunk(
         console.log('✅ Файлы загружены, IDs:', uploadedFileIds)
       }
 
-      // ✅ Если expires_at не указан, ставим дефолтное значение (через 7 дней)
-      let taskExpiresAt = expires_at
-      if (!taskExpiresAt) {
-        const defaultDate = new Date()
-        defaultDate.setDate(defaultDate.getDate() + 7) // +7 дней
-        taskExpiresAt = defaultDate.toISOString()
-      }
+      // ✅ Дефолтный срок выполнения - через 7 дней
+      const defaultDate = new Date()
+      defaultDate.setDate(defaultDate.getDate() + 7)
+      const taskExpiresAt = defaultDate.toISOString()
 
       console.log('📤 Создание задачи:', {
         text: message_text,
         section_code,
         theme_id,
         ratio,
-        is_partially,
         expires_at: taskExpiresAt,
         files_count: uploadedFileIds.length,
       })
 
       // ✅ Согласно Swagger для /tasks endpoint
+      // ⚠️ is_partially НЕ НУЖЕН при создании! Только при acceptTask!
       const requestData = {
         type: 'task',
         text: message_text,
         media_file_ids: uploadedFileIds,
-        is_partially: is_partially,
-        expires_at: taskExpiresAt, // ✅ ОБЯЗАТЕЛЬНОЕ ПОЛЕ!
+        expires_at: taskExpiresAt, // ОБЯЗАТЕЛЬНОЕ поле
+        // НЕ передаем is_partially при создании - иначе задача сразу уходит в работу!
       }
 
       console.log('📋 Отправляем данные:', requestData)
