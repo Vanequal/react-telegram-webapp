@@ -49,10 +49,14 @@ const TaskChatPage = () => {
     const [skipRatio, setSkipRatio] = useState(false)
 
     // Filter tasks
-    const tasks = posts.filter(post => post.section_code === SECTION_CODE && post.type === 'task')
+    const tasks = posts.filter(post => post.type === 'task' && post.section_code === SECTION_CODE)
+
+    console.log('🔍 Всего постов в store:', posts.length)
+    console.log('🔍 Задач после фильтрации:', tasks.length)
 
     // Load tasks on mount
     useEffect(() => {
+        console.log('🔄 Компонент TaskChatPage монтируется, загружаем задачи...')
         dispatch(
             fetchTasks({
                 section_code: SECTION_CODE,
@@ -160,31 +164,38 @@ const TaskChatPage = () => {
         if (!skipRatio) setRatio('')
     }, [skipRatio])
 
-    // В handleFinalPublish:
+    // ✅ ИСПРАВЛЕННАЯ функция публикации задачи
     const handleFinalPublish = useCallback(async () => {
         setIsSubmitting(true)
 
         try {
+            // Определяем текст задачи
             const taskText = useGPTVersion
-                ? editedGptText  // ✅ Если GPT, берем только описание
-                : `${title.trim()}\n\n${description.trim()}`
+                ? editedGptText  // Если GPT, берем отредактированный текст
+                : `${title.trim()}\n\n${description.trim()}` // Иначе заголовок + описание
 
-            console.log('📤 Публикуем задачу с текстом:', taskText)
-            console.log('📤 Ratio:', skipRatio ? null : parseInt(ratio) || null)
+            console.log('📤 Публикуем задачу:', {
+                text: taskText,
+                ratio: skipRatio ? null : parseInt(ratio) || null,
+                files_count: selectedFiles.length,
+            })
 
+            // ✅ Правильные параметры для createTask
             const result = await dispatch(
                 createTask({
                     message_text: taskText,
                     section_code: SECTION_CODE,
                     theme_id: DEFAULT_THEME_ID,
-                    ratio: skipRatio ? null : parseInt(ratio) || null,
+                    ratio: skipRatio ? null : (parseInt(ratio) || null),
+                    is_partially: false, // При создании задачи это всегда false
+                    expires_at: null, // При создании задачи это null
                     files: selectedFiles,
                 })
             ).unwrap()
 
-            console.log('✅ Задача создана, результат:', result)
+            console.log('✅ Задача создана:', result)
 
-            // Сброс
+            // Сброс всех полей
             setTitle('')
             setDescription('')
             setSelectedFiles([])
@@ -194,11 +205,10 @@ const TaskChatPage = () => {
             setOriginalData(null)
             setGptData(null)
             setEditedGptText('')
-            setIsEditingGPT(false)
 
             setStep('list')
 
-            // Перезагрузка
+            // Перезагрузка списка задач
             console.log('🔄 Перезагружаем список задач...')
             await dispatch(
                 fetchTasks({
@@ -210,7 +220,7 @@ const TaskChatPage = () => {
             console.log('✅ Список задач обновлен')
         } catch (error) {
             console.error('❌ Ошибка публикации задачи:', error)
-            alert(`Ошибка: ${error}`)
+            alert(`Ошибка публикации задачи: ${error}`)
         } finally {
             setIsSubmitting(false)
         }
@@ -289,8 +299,19 @@ const TaskChatPage = () => {
                         rows={8}
                     />
 
+                    {/* Отображение выбранных файлов */}
+                    {selectedFiles.length > 0 && (
+                        <div className="task-compose-page__files">
+                            {selectedFiles.map((file, index) => (
+                                <div key={index} className="task-compose-page__file">
+                                    {file.name}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
                     <button className="task-compose-page__publish-btn" onClick={handlePublishClick} disabled={!canPublish || isSubmitting}>
-                        Опубликовать
+                        {isSubmitting ? 'Обработка...' : 'Опубликовать'}
                     </button>
                 </div>
             )}
@@ -317,13 +338,13 @@ const TaskChatPage = () => {
                     </div>
 
                     <div className="task-preview-page__actions">
-                        <button className="task-preview-page__btn" onClick={handlePublishOriginal}>
+                        <button className="task-preview-page__btn" onClick={handlePublishOriginal} disabled={isSubmitting}>
                             Опубликовать оригинал
                         </button>
-                        <button className="task-preview-page__btn" onClick={handlePublishGPT}>
+                        <button className="task-preview-page__btn" onClick={handlePublishGPT} disabled={isSubmitting}>
                             Опубликовать версию GPT
                         </button>
-                        <button className="task-preview-page__btn" onClick={handleEditGPT}>
+                        <button className="task-preview-page__btn" onClick={handleEditGPT} disabled={isSubmitting}>
                             Редактировать версию GPT
                         </button>
                     </div>
@@ -355,7 +376,7 @@ const TaskChatPage = () => {
 
                         {canSubmitRating && (
                             <button className="task-rating-page__submit-btn" onClick={handleFinalPublish} disabled={isSubmitting}>
-                                Опубликовать задачу
+                                {isSubmitting ? 'Публикация...' : 'Опубликовать задачу'}
                             </button>
                         )}
                     </div>
