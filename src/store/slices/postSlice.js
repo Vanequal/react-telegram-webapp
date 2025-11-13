@@ -218,7 +218,7 @@ export const fetchPostComments = createAsyncThunk(
 // ✅ Создание задачи
 export const createTask = createAsyncThunk(
   'post/createTask',
-  async ({ message_text, section_code, theme_id, ratio = null, is_partially = false, files = [] }, { rejectWithValue, dispatch }) => {
+  async ({ message_text, section_code, theme_id, ratio = null, is_partially = false, expires_at = null, files = [] }, { rejectWithValue, dispatch }) => {
     try {
       // Сначала загружаем файлы
       let uploadedFileIds = []
@@ -229,12 +229,21 @@ export const createTask = createAsyncThunk(
         console.log('✅ Файлы загружены, IDs:', uploadedFileIds)
       }
 
+      // ✅ Если expires_at не указан, ставим дефолтное значение (через 7 дней)
+      let taskExpiresAt = expires_at
+      if (!taskExpiresAt) {
+        const defaultDate = new Date()
+        defaultDate.setDate(defaultDate.getDate() + 7) // +7 дней
+        taskExpiresAt = defaultDate.toISOString()
+      }
+
       console.log('📤 Создание задачи:', {
         text: message_text,
         section_code,
         theme_id,
         ratio,
         is_partially,
+        expires_at: taskExpiresAt,
         files_count: uploadedFileIds.length,
       })
 
@@ -244,10 +253,8 @@ export const createTask = createAsyncThunk(
         text: message_text,
         media_file_ids: uploadedFileIds,
         is_partially: is_partially,
+        expires_at: taskExpiresAt, // ✅ ОБЯЗАТЕЛЬНОЕ ПОЛЕ!
       }
-
-      // ⚠️ expires_at НЕ НУЖЕН при создании задачи (только при acceptTask)
-      // Если передать null - будет ошибка 422
 
       console.log('📋 Отправляем данные:', requestData)
 

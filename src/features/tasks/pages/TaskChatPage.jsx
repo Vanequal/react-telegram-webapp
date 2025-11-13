@@ -187,15 +187,14 @@ const TaskChatPage = () => {
                 theme_id: DEFAULT_THEME_ID,
                 is_partially: false, // При создании задачи это всегда false
                 files: selectedFiles,
+                // expires_at можно не передавать - будет дефолт (+7 дней)
+                // или можно добавить поле выбора даты в UI и передать здесь
             }
 
             // ✅ Добавляем ratio только если он указан
             if (!skipRatio && ratio) {
                 taskParams.ratio = parseInt(ratio)
             }
-
-            // ✅ expires_at не передаем вообще при создании задачи (null вызывает ошибку)
-            // Он нужен только при acceptTask
 
             const result = await dispatch(createTask(taskParams)).unwrap()
 
