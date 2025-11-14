@@ -276,19 +276,20 @@ export const createTask = createAsyncThunk(
 
 // ✅ Получение задач
 // Задачи = это посты с ratio, получаем через /posts endpoint
+// + получаем исполнения через /tasks endpoint
 export const fetchTasks = createAsyncThunk(
   'post/fetchTasks',
   async ({ section_code, theme_id, limit = 100, offset = 0 }, { rejectWithValue }) => {
     try {
-      console.log('📥 Загрузка задач (через /posts с фильтрацией по ratio):', { 
+      console.log('📥 Загрузка задач:', { 
         section_code, 
         theme_id, 
         limit, 
         offset 
       })
 
-      // ⚠️ Получаем через /posts, затем фильтруем по ratio
-      const res = await axios.get(`/api/v1/messages/${section_code}/posts`, {
+      // 1. Получаем все посты
+      const postsRes = await axios.get(`/api/v1/messages/${section_code}/posts`, {
         params: {
           theme_id,
           limit,
@@ -296,17 +297,61 @@ export const fetchTasks = createAsyncThunk(
         },
       })
 
-      // Фильтруем только те посты, у которых есть ratio (это задачи)
-      const allPosts = res.data || []
-      const tasks = allPosts.filter(item => {
-        const ratio = item.message_post?.ratio
-        return ratio && ratio > 0 // Задача = пост с ratio > 0
+      // 2. Получаем все исполнения задач
+      const tasksRes = await axios.get(`/api/v1/messages/${section_code}/tasks`, {
+        params: {
+          theme_id,
+          limit,
+          offset,
+        },
       })
 
+      const allPosts = postsRes.data || []
+      const allTaskExecutions = tasksRes.data || []
+
       console.log('✅ Получено постов:', allPosts.length)
-      console.log('✅ Из них задач (с ratio):', tasks.length)
+      console.log('✅ Получено исполнений задач:', allTaskExecutions.length)
+
+      // 3. Фильтруем посты с ratio (это задачи)
+      const taskPosts = allPosts.filter(item => {
+        const ratio = item.message_post?.ratio
+        return ratio && ratio > 0
+      })
+
+      // 4. Создаем карту исполнений по message_id задачи
+      const executionsMap = {}
+      allTaskExecutions.forEach(item => {
+        // TODO: Уточнить у бэкендера как связаны задача и её исполнение
+        // Возможно через reply_to_message_id или content_id
+        const taskId = item.message?.reply_to_message_id || item.message_task?.content_id
+        if (taskId) {
+          if (!executionsMap[taskId]) {
+            executionsMap[taskId] = []
+          }
+          executionsMap[taskId].push(item)
+        }
+      })
+
+      // 5. Объединяем задачи с их исполнениями
+      const tasksWithStatus = taskPosts.map(taskPost => {
+        const executions = executionsMap[taskPost.message.id] || []
+        const hasExecutions = executions.length > 0
+
+        return {
+          ...taskPost,
+          executions: executions,
+          has_executions: hasExecutions,
+        }
+      })
+
+      console.log('✅ Задач с ratio:', tasksWithStatus.length)
+      console.log('📊 Статистика исполнений:', {
+        total: tasksWithStatus.length,
+        with_executions: tasksWithStatus.filter(t => t.has_executions).length,
+        idle: tasksWithStatus.filter(t => !t.has_executions).length,
+      })
       
-      return tasks
+      return tasksWithStatus
     } catch (err) {
       console.error('🔥 Ошибка загрузки задач:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки задач')
@@ -845,29 +890,45 @@ const postSlice = createSlice({
       .addCase(fetchTasks.fulfilled, (state, action) => {
         state.tasksLoading = false
 
-        // ⚠️ Теперь задачи = посты с ratio
-        const tasks = (action.payload || []).map(item => ({
-          id: item.message.id,
-          author_id: item.message.author_id,
-          theme_id: item.message.theme_id,
-          section_code: item.message.section_code,
-          text: item.message.text,
-          type: 'task', // Локально ставим тип task для фильтрации
-          created_at: item.message.created_at,
-          updated_at: item.message.updated_at,
-          media_file_ids: item.message.media_file_ids || [],
-          ratio: item.message_post?.ratio || 1,
-          is_openai_generated: item.message_post?.is_openai_generated || false,
-          
-          // ✅ Статус задачи определяем по наличию message_task
-          // Если есть message_task - значит кто-то взялся за задачу
-          status: item.message_task ? (item.message_task.status || 'in_progress') : 'idle',
-          is_partially: item.message_task?.is_partially || false,
-          expires_at: item.message_task?.expires_at || null,
-        }))
+        // ⚠️ Теперь задачи приходят с полем executions
+        const tasks = (action.payload || []).map(item => {
+          const hasExecutions = item.has_executions || item.executions?.length > 0
+          const executions = item.executions || []
+
+          // Находим активное исполнение (последнее)
+          const activeExecution = executions.length > 0 ? executions[executions.length - 1] : null
+
+          return {
+            id: item.message.id,
+            author_id: item.message.author_id,
+            theme_id: item.message.theme_id,
+            section_code: item.message.section_code,
+            text: item.message.text,
+            type: 'task', // Локально ставим тип task для фильтрации
+            created_at: item.message.created_at,
+            updated_at: item.message.updated_at,
+            media_file_ids: item.message.media_file_ids || [],
+            ratio: item.message_post?.ratio || 1,
+            is_openai_generated: item.message_post?.is_openai_generated || false,
+            
+            // ✅ Статус задачи определяем по наличию исполнений
+            status: hasExecutions ? (activeExecution?.message_task?.status || 'in_progress') : 'idle',
+            is_partially: activeExecution?.message_task?.is_partially || false,
+            expires_at: activeExecution?.message_task?.expires_at || null,
+            
+            // Сохраняем массив исполнений для TaskInProgress
+            executions: executions,
+            executor: activeExecution?.message?.author || null,
+            executor_description: activeExecution?.message?.text || '',
+          }
+        })
 
         console.log('✅ Загружено задач:', tasks.length)
-        console.log('📊 Статусы задач:', tasks.map(t => ({ id: t.id, status: t.status })))
+        console.log('📊 Статусы задач:', tasks.map(t => ({ 
+          id: t.id, 
+          status: t.status,
+          has_executions: t.executions?.length > 0
+        })))
 
         // Заменяем только задачи, оставляя другие типы постов
         state.posts = state.posts.filter(p => p.type !== 'task').concat(tasks)
