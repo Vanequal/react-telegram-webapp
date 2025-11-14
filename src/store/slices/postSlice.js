@@ -215,7 +215,8 @@ export const fetchPostComments = createAsyncThunk(
 // ЗАДАЧИ (TASKS)
 // ============================================================================
 
-// ✅ Создание задачи
+// ✅ Создание задачи (через /posts endpoint!)
+// Endpoint /tasks используется только для принятия в работу!
 export const createTask = createAsyncThunk(
   'post/createTask',
   async ({ message_text, section_code, theme_id, ratio = null, files = [] }, { rejectWithValue, dispatch }) => {
@@ -229,41 +230,41 @@ export const createTask = createAsyncThunk(
         console.log('✅ Файлы загружены, IDs:', uploadedFileIds)
       }
 
-      // ✅ Дефолтный срок выполнения - через 7 дней
-      const defaultDate = new Date()
-      defaultDate.setDate(defaultDate.getDate() + 7)
-      const taskExpiresAt = defaultDate.toISOString()
-
-      console.log('📤 Создание задачи:', {
+      console.log('📤 Создание задачи через /posts:', {
         text: message_text,
         section_code,
         theme_id,
         ratio,
-        expires_at: taskExpiresAt,
         files_count: uploadedFileIds.length,
       })
 
-      // ✅ Согласно Swagger для /tasks endpoint
-      // ⚠️ is_partially НЕ НУЖЕН при создании! Только при acceptTask!
+      // ✅ Создаем задачу через /posts endpoint!
+      // Задача = это пост с ratio
       const requestData = {
-        type: 'task',
+        type: 'post',
         text: message_text,
         media_file_ids: uploadedFileIds,
-        expires_at: taskExpiresAt, // ОБЯЗАТЕЛЬНОЕ поле
-        // НЕ передаем is_partially при создании - иначе задача сразу уходит в работу!
+        is_openai_generated: false,
+        ratio: ratio || 1, // Задача отличается от обычного поста наличием ratio
       }
 
-      console.log('📋 Отправляем данные:', requestData)
+      console.log('📋 Отправляем данные в /posts:', requestData)
 
-      const res = await axios.post(`/api/v1/messages/${section_code}/tasks`, requestData, {
+      // ⚠️ ВАЖНО: Создаем через /posts, а не через /tasks!
+      const res = await axios.post(`/api/v1/messages/${section_code}/posts`, requestData, {
         params: { theme_id },
       })
 
-      console.log('✅ Задача создана, ответ:', res.data)
+      console.log('✅ Задача создана через /posts, ответ от API:', res.data)
+      console.log('📊 Структура ответа:', {
+        message: res.data.message,
+        message_post: res.data.message_post,
+        ratio: res.data.message_post?.ratio,
+      })
 
       return {
         ...res.data,
-        ratio: ratio, // Добавляем ratio отдельно (его нет в ответе API)
+        ratio: ratio, // Сохраняем для совместимости
         uploaded_file_ids: uploadedFileIds,
       }
     } catch (err) {
@@ -274,13 +275,20 @@ export const createTask = createAsyncThunk(
 )
 
 // ✅ Получение задач
+// Задачи = это посты с ratio, получаем через /posts endpoint
 export const fetchTasks = createAsyncThunk(
   'post/fetchTasks',
   async ({ section_code, theme_id, limit = 100, offset = 0 }, { rejectWithValue }) => {
     try {
-      console.log('📥 Загрузка задач:', { section_code, theme_id, limit, offset })
+      console.log('📥 Загрузка задач (через /posts с фильтрацией по ratio):', { 
+        section_code, 
+        theme_id, 
+        limit, 
+        offset 
+      })
 
-      const res = await axios.get(`/api/v1/messages/${section_code}/tasks`, {
+      // ⚠️ Получаем через /posts, затем фильтруем по ratio
+      const res = await axios.get(`/api/v1/messages/${section_code}/posts`, {
         params: {
           theme_id,
           limit,
@@ -288,8 +296,17 @@ export const fetchTasks = createAsyncThunk(
         },
       })
 
-      console.log('✅ Задачи загружены:', res.data?.length || 0)
-      return res.data
+      // Фильтруем только те посты, у которых есть ratio (это задачи)
+      const allPosts = res.data || []
+      const tasks = allPosts.filter(item => {
+        const ratio = item.message_post?.ratio
+        return ratio && ratio > 0 // Задача = пост с ratio > 0
+      })
+
+      console.log('✅ Получено постов:', allPosts.length)
+      console.log('✅ Из них задач (с ratio):', tasks.length)
+      
+      return tasks
     } catch (err) {
       console.error('🔥 Ошибка загрузки задач:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки задач')
@@ -772,12 +789,13 @@ const postSlice = createSlice({
       .addCase(createTask.fulfilled, (state, action) => {
         state.tasksLoading = false
 
-        const { message, message_task, ratio } = action.payload
+        // ⚠️ Теперь создание через /posts, поэтому структура ответа другая
+        const { message, message_post, ratio } = action.payload
 
-        console.log('✅ Добавляем задачу в store:', {
+        console.log('✅ Сохраняем задачу в store (создана через /posts):', {
           id: message.id,
           text: message.text,
-          ratio: ratio,
+          ratio: ratio || message_post?.ratio,
         })
 
         const newTask = {
@@ -786,21 +804,30 @@ const postSlice = createSlice({
           theme_id: message.theme_id,
           section_code: message.section_code,
           text: message.text,
-          type: 'task', // Локально ставим тип task для фильтрации
+          type: 'task', // Локально ставим тип task (хотя создано через /posts)
           created_at: message.created_at,
           updated_at: message.updated_at,
           media_file_ids: message.media_file_ids || [],
-          ratio: ratio, // Из payload (не из API response)
-          status: message_task?.status || 'idle',
-          is_partially: message_task?.is_partially || false,
-          expires_at: message_task?.expires_at || null,
+          ratio: ratio || message_post?.ratio || 1, // Из payload или message_post
+          
+          // ✅ Статус по умолчанию 'idle' т.к. задача только создана
+          // message_post не содержит информации о статусе задачи
+          status: 'idle',
+          is_partially: false,
+          expires_at: null, // При создании через /posts нет expires_at
+          
+          // Дополнительные поля от message_post
+          is_openai_generated: message_post?.is_openai_generated || false,
         }
+
+        console.log('📦 Объект задачи для store:', newTask)
 
         state.posts.unshift(newTask)
         state.preview = null
         state.uploadedFiles = []
 
         console.log('✅ Задача добавлена в store, всего постов:', state.posts.length)
+        console.log('🔍 Статус добавленной задачи:', newTask.status)
       })
       .addCase(createTask.rejected, (state, action) => {
         state.tasksLoading = false
@@ -818,23 +845,29 @@ const postSlice = createSlice({
       .addCase(fetchTasks.fulfilled, (state, action) => {
         state.tasksLoading = false
 
+        // ⚠️ Теперь задачи = посты с ratio
         const tasks = (action.payload || []).map(item => ({
           id: item.message.id,
           author_id: item.message.author_id,
           theme_id: item.message.theme_id,
           section_code: item.message.section_code,
           text: item.message.text,
-          type: 'task', // Локально ставим тип task
+          type: 'task', // Локально ставим тип task для фильтрации
           created_at: item.message.created_at,
           updated_at: item.message.updated_at,
           media_file_ids: item.message.media_file_ids || [],
-          ratio: item.message_post?.ratio || null, // ratio может быть в message_post
+          ratio: item.message_post?.ratio || 1,
+          is_openai_generated: item.message_post?.is_openai_generated || false,
+          
+          // ✅ Статус задачи определяем по наличию message_task
+          // Если есть message_task - значит кто-то взялся за задачу
+          status: item.message_task ? (item.message_task.status || 'in_progress') : 'idle',
           is_partially: item.message_task?.is_partially || false,
-          status: item.message_task?.status || 'idle',
           expires_at: item.message_task?.expires_at || null,
         }))
 
         console.log('✅ Загружено задач:', tasks.length)
+        console.log('📊 Статусы задач:', tasks.map(t => ({ id: t.id, status: t.status })))
 
         // Заменяем только задачи, оставляя другие типы постов
         state.posts = state.posts.filter(p => p.type !== 'task').concat(tasks)
