@@ -1,12 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from '@/shared/api/axios'
+import logger from '@/shared/utils/logger'
 
 export const fetchCurrentUser = createAsyncThunk('me/fetchCurrentUser', async (_, { rejectWithValue }) => {
   try {
     const response = await axios.get('/api/v1/users/me')
     return response.data
   } catch (err) {
-    console.error('Fetch current user error:', err)
+    logger.error('Fetch current user error:', err)
     return rejectWithValue(err.response?.data?.detail || 'Failed to fetch user')
   }
 })

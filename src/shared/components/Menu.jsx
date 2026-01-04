@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import PropTypes from 'prop-types'
 
 import { RiArrowRightSLine } from 'react-icons/ri'
 
@@ -117,6 +118,15 @@ const MenuItem = ({ icon, label, value, isBlueValue, fontValue, onClick }) => (
   </div>
 )
 
+MenuItem.propTypes = {
+  icon: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.string,
+  isBlueValue: PropTypes.bool,
+  fontValue: PropTypes.string,
+  onClick: PropTypes.func
+}
+
 const MenuToggle = ({ icon, label }) => (
   <div className="menu__item">
     <div className="menu__item-left">
@@ -129,5 +139,10 @@ const MenuToggle = ({ icon, label }) => (
     </label>
   </div>
 )
+
+MenuToggle.propTypes = {
+  icon: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired
+}
 
 export default Menu

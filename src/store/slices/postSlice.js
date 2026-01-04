@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit'
 import axios from '@/shared/api/axios'
+import logger from '@/shared/utils/logger'
 
 // ============================================================================
 // ФАЙЛЫ
@@ -12,7 +13,7 @@ export const uploadFiles = createAsyncThunk('post/uploadFiles', async (files, { 
       return []
     }
 
-    console.log('📤 Загружаем файлы:', files.length)
+    logger.log('📤 Загружаем файлы:', files.length)
 
     const formData = new FormData()
     files.forEach(file => {
@@ -25,10 +26,10 @@ export const uploadFiles = createAsyncThunk('post/uploadFiles', async (files, { 
       },
     })
 
-    console.log('✅ Файлы загружены, получены IDs:', res.data)
+    logger.log('✅ Файлы загружены, получены IDs:', res.data)
     return res.data // Возвращает массив UUID
   } catch (err) {
-    console.error('🔥 Ошибка загрузки файлов:', err?.response?.data || err.message)
+    logger.error('🔥 Ошибка загрузки файлов:', err?.response?.data || err.message)
     return rejectWithValue(err?.response?.data?.detail || 'Ошибка загрузки файлов')
   }
 })
@@ -58,7 +59,7 @@ export const createPost = createAsyncThunk(
         ratio: ratio,
       }
 
-      console.log('📤 Создание поста:', {
+      logger.log('📤 Создание поста:', {
         url: `/api/v1/messages/${section_code}/posts`,
         data: requestData,
         params: { theme_id },
@@ -68,14 +69,14 @@ export const createPost = createAsyncThunk(
         params: { theme_id },
       })
 
-      console.log('✅ Пост создан:', res.data)
+      logger.log('✅ Пост создан:', res.data)
 
       return {
         ...res.data,
         uploaded_file_ids: uploadedFileIds,
       }
     } catch (err) {
-      console.error('🔥 Ошибка создания поста:', err?.response?.data || err.message)
+      logger.error('🔥 Ошибка создания поста:', err?.response?.data || err.message)
       return rejectWithValue(err?.response?.data?.detail || 'Ошибка создания поста')
     }
   }
@@ -86,7 +87,7 @@ export const fetchPostsInSection = createAsyncThunk(
   'post/fetchPostsInSection',
   async ({ section_code, theme_id, limit = 100, offset = 0 }, { rejectWithValue }) => {
     try {
-      console.log('📥 Загрузка постов:', { section_code, theme_id, limit, offset })
+      logger.log('📥 Загрузка постов:', { section_code, theme_id, limit, offset })
 
       const res = await axios.get(`/api/v1/messages/${section_code}/posts`, {
         params: {
@@ -96,10 +97,10 @@ export const fetchPostsInSection = createAsyncThunk(
         },
       })
 
-      console.log('✅ Посты загружены:', res.data?.length || 0)
+      logger.log('✅ Посты загружены:', res.data?.length || 0)
       return res.data
     } catch (err) {
-      console.error('🔥 Ошибка загрузки постов:', err?.response?.data || err.message)
+      logger.error('🔥 Ошибка загрузки постов:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки постов')
     }
   }
@@ -117,7 +118,7 @@ export const fetchPostById = createAsyncThunk(
 
       return res.data
     } catch (err) {
-      console.error('🔥 Ошибка загрузки поста:', err?.response?.data || err.message)
+      logger.error('🔥 Ошибка загрузки поста:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки поста')
     }
   }
@@ -139,7 +140,7 @@ export const createComment = createAsyncThunk(
         uploadedFileIds = uploadResult || []
       }
 
-      console.log('📤 Создание комментария:', {
+      logger.log('📤 Создание комментария:', {
         text: message_text,
         content_id: post_id,
         reply_to_message_id,
@@ -161,7 +162,7 @@ export const createComment = createAsyncThunk(
         params: { theme_id },
       })
 
-      console.log('✅ Комментарий создан:', res.data)
+      logger.log('✅ Комментарий создан:', res.data)
 
       return {
         ...res.data,
@@ -169,7 +170,7 @@ export const createComment = createAsyncThunk(
         uploaded_file_ids: uploadedFileIds,
       }
     } catch (err) {
-      console.error('🔥 Ошибка создания комментария:', err?.response?.data || err.message)
+      logger.error('🔥 Ошибка создания комментария:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка добавления комментария')
     }
   }
@@ -180,7 +181,7 @@ export const fetchPostComments = createAsyncThunk(
   'post/fetchComments',
   async ({ post_id, section_code, theme_id, limit = 100, offset = 0 }, { rejectWithValue }) => {
     try {
-      console.log('📥 Загрузка комментариев:', {
+      logger.log('📥 Загрузка комментариев:', {
         post_id,
         section_code,
         theme_id,
@@ -198,14 +199,14 @@ export const fetchPostComments = createAsyncThunk(
       const allComments = res.data || []
       const postComments = allComments.filter(item => item.message_comment?.content_id === post_id)
 
-      console.log('✅ Комментарии загружены:', {
+      logger.log('✅ Комментарии загружены:', {
         total: allComments.length,
         forThisPost: postComments.length,
       })
 
       return { postId: post_id, comments: postComments }
     } catch (err) {
-      console.error('🔥 Ошибка загрузки комментариев:', err?.response?.data || err.message)
+      logger.error('🔥 Ошибка загрузки комментариев:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки комментариев')
     }
   }
@@ -224,13 +225,13 @@ export const createTask = createAsyncThunk(
       // Сначала загружаем файлы
       let uploadedFileIds = []
       if (files && files.length > 0) {
-        console.log('📤 Загружаем файлы для задачи:', files.length)
+        logger.log('📤 Загружаем файлы для задачи:', files.length)
         const uploadResult = await dispatch(uploadFiles(files)).unwrap()
         uploadedFileIds = uploadResult || []
-        console.log('✅ Файлы загружены, IDs:', uploadedFileIds)
+        logger.log('✅ Файлы загружены, IDs:', uploadedFileIds)
       }
 
-      console.log('📤 Создание задачи через /posts:', {
+      logger.log('📤 Создание задачи через /posts:', {
         text: message_text,
         section_code,
         theme_id,
@@ -248,15 +249,15 @@ export const createTask = createAsyncThunk(
         ratio: ratio || 1, // Задача отличается от обычного поста наличием ratio
       }
 
-      console.log('📋 Отправляем данные в /posts:', requestData)
+      logger.log('📋 Отправляем данные в /posts:', requestData)
 
       // ⚠️ ВАЖНО: Создаем через /posts, а не через /tasks!
       const res = await axios.post(`/api/v1/messages/${section_code}/posts`, requestData, {
         params: { theme_id },
       })
 
-      console.log('✅ Задача создана через /posts, ответ от API:', res.data)
-      console.log('📊 Структура ответа:', {
+      logger.log('✅ Задача создана через /posts, ответ от API:', res.data)
+      logger.log('📊 Структура ответа:', {
         message: res.data.message,
         message_post: res.data.message_post,
         ratio: res.data.message_post?.ratio,
@@ -268,7 +269,7 @@ export const createTask = createAsyncThunk(
         uploaded_file_ids: uploadedFileIds,
       }
     } catch (err) {
-      console.error('🔥 Ошибка создания задачи:', err?.response?.data || err.message)
+      logger.error('🔥 Ошибка создания задачи:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка создания задачи')
     }
   }
@@ -281,11 +282,11 @@ export const fetchTasks = createAsyncThunk(
   'post/fetchTasks',
   async ({ section_code, theme_id, limit = 100, offset = 0 }, { rejectWithValue }) => {
     try {
-      console.log('📥 Загрузка задач:', { 
-        section_code, 
-        theme_id, 
-        limit, 
-        offset 
+      logger.log('📥 Загрузка задач:', {
+        section_code,
+        theme_id,
+        limit,
+        offset
       })
 
       // 1. Получаем все посты
@@ -309,8 +310,8 @@ export const fetchTasks = createAsyncThunk(
       const allPosts = postsRes.data || []
       const allTaskExecutions = tasksRes.data || []
 
-      console.log('✅ Получено постов:', allPosts.length)
-      console.log('✅ Получено исполнений задач:', allTaskExecutions.length)
+      logger.log('✅ Получено постов:', allPosts.length)
+      logger.log('✅ Получено исполнений задач:', allTaskExecutions.length)
 
       // 3. Фильтруем посты с ratio (это задачи)
       const taskPosts = allPosts.filter(item => {
@@ -344,16 +345,16 @@ export const fetchTasks = createAsyncThunk(
         }
       })
 
-      console.log('✅ Задач с ratio:', tasksWithStatus.length)
-      console.log('📊 Статистика исполнений:', {
+      logger.log('✅ Задач с ratio:', tasksWithStatus.length)
+      logger.log('📊 Статистика исполнений:', {
         total: tasksWithStatus.length,
         with_executions: tasksWithStatus.filter(t => t.has_executions).length,
         idle: tasksWithStatus.filter(t => !t.has_executions).length,
       })
-      
+
       return tasksWithStatus
     } catch (err) {
-      console.error('🔥 Ошибка загрузки задач:', err?.response?.data || err.message)
+      logger.error('🔥 Ошибка загрузки задач:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки задач')
     }
   }
@@ -364,7 +365,7 @@ export const acceptTask = createAsyncThunk(
   'post/acceptTask',
   async ({ task_message_id, section_code, theme_id, is_partially, description = '', expires_at }, { rejectWithValue }) => {
     try {
-      console.log('📤 Берем задачу в работу:', {
+      logger.log('📤 Берем задачу в работу:', {
         task_message_id,
         section_code,
         theme_id,
@@ -395,14 +396,14 @@ export const acceptTask = createAsyncThunk(
         },
       })
 
-      console.log('✅ Задача взята в работу:', res.data)
+      logger.log('✅ Задача взята в работу:', res.data)
 
       return {
         ...res.data,
         task_message_id,
       }
     } catch (err) {
-      console.error('🔥 Ошибка принятия задачи:', err?.response?.data || err.message)
+      logger.error('🔥 Ошибка принятия задачи:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка принятия задачи')
     }
   }
@@ -420,7 +421,7 @@ export const completeTask = createAsyncThunk(
         uploadedFileIds = uploadResult || []
       }
 
-      console.log('📤 Отмечаем задачу выполненной:', {
+      logger.log('📤 Отмечаем задачу выполненной:', {
         task_message_id,
         description,
         files_count: uploadedFileIds.length,
@@ -437,7 +438,7 @@ export const completeTask = createAsyncThunk(
         })
       ).unwrap()
 
-      console.log('✅ Задача отмечена как выполненная')
+      logger.log('✅ Задача отмечена как выполненная')
 
       return {
         task_message_id,
@@ -445,7 +446,7 @@ export const completeTask = createAsyncThunk(
         uploaded_file_ids: uploadedFileIds,
       }
     } catch (err) {
-      console.error('🔥 Ошибка завершения задачи:', err?.response?.data || err.message)
+      logger.error('🔥 Ошибка завершения задачи:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка завершения задачи')
     }
   }
@@ -460,7 +461,7 @@ export const createPostPreview = createAsyncThunk(
   'post/createPreview',
   async ({ section_code, theme_id, text }, { rejectWithValue }) => {
     try {
-      console.log('📤 Запрос превью от OpenAI:', { section_code, theme_id, text })
+      logger.log('📤 Запрос превью от OpenAI:', { section_code, theme_id, text })
 
       const res = await axios.post(
         `/api/v1/messages/openai`,
@@ -473,14 +474,14 @@ export const createPostPreview = createAsyncThunk(
         }
       )
 
-      console.log('✅ Превью получено:', res.data)
+      logger.log('✅ Превью получено:', res.data)
 
       return {
         original_text: res.data.original_text,
         openai_text: res.data.openai_text,
       }
     } catch (err) {
-      console.error('🔥 Ошибка создания превью:', err?.response?.data || err.message)
+      logger.error('🔥 Ошибка создания превью:', err?.response?.data || err.message)
 
       // ✅ Обработка случая когда OpenAI отключен (status 403)
       if (err?.response?.status === 403) {
@@ -502,7 +503,7 @@ export const reactToPost = createAsyncThunk(
   'post/reactToPost',
   async ({ post_id, reaction, section_code, theme_id }, { rejectWithValue }) => {
     try {
-      console.log('📤 Отправляем реакцию:', {
+      logger.log('📤 Отправляем реакцию:', {
         message_id: post_id,
         reaction,
         section_code,
@@ -521,14 +522,14 @@ export const reactToPost = createAsyncThunk(
         }
       )
 
-      console.log('📥 Получен ответ на реакцию:', res.data)
+      logger.log('📥 Получен ответ на реакцию:', res.data)
 
       return {
         post_id,
         ...res.data,
       }
     } catch (err) {
-      console.error('🔥 Ошибка реакции:', err?.response?.data || err.message)
+      logger.error('🔥 Ошибка реакции:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка при отправке реакции')
     }
   }
@@ -545,14 +546,14 @@ export const fetchDownloadUrl = createAsyncThunk(
     try {
       const downloadUrl = `${axios.defaults.baseURL}/api/v1/messages/attachments/${attachmentUrl}`
 
-      console.log(`✅ Сформирован URL для файла:`, {
+      logger.log(`✅ Сформирован URL для файла:`, {
         original: attachmentUrl,
         downloadUrl: downloadUrl,
       })
 
       return { attachmentUrl, url: downloadUrl }
     } catch (err) {
-      console.error('🔥 Ошибка формирования URL файла:', err?.response?.data || err.message)
+      logger.error('🔥 Ошибка формирования URL файла:', err?.response?.data || err.message)
       return rejectWithValue(err?.response?.data?.detail || 'Ошибка загрузки ссылки')
     }
   }
@@ -765,7 +766,7 @@ const postSlice = createSlice({
           }
         }
 
-        console.log('✅ Комментарии сохранены в store:', {
+        logger.log('✅ Комментарии сохранены в store:', {
           postId,
           commentsCount: state.comments[postId].length,
         })
@@ -837,7 +838,7 @@ const postSlice = createSlice({
         // ⚠️ Теперь создание через /posts, поэтому структура ответа другая
         const { message, message_post, ratio } = action.payload
 
-        console.log('✅ Сохраняем задачу в store (создана через /posts):', {
+        logger.log('✅ Сохраняем задачу в store (создана через /posts):', {
           id: message.id,
           text: message.text,
           ratio: ratio || message_post?.ratio,
@@ -865,19 +866,19 @@ const postSlice = createSlice({
           is_openai_generated: message_post?.is_openai_generated || false,
         }
 
-        console.log('📦 Объект задачи для store:', newTask)
+        logger.log('📦 Объект задачи для store:', newTask)
 
         state.posts.unshift(newTask)
         state.preview = null
         state.uploadedFiles = []
 
-        console.log('✅ Задача добавлена в store, всего постов:', state.posts.length)
-        console.log('🔍 Статус добавленной задачи:', newTask.status)
+        logger.log('✅ Задача добавлена в store, всего постов:', state.posts.length)
+        logger.log('🔍 Статус добавленной задачи:', newTask.status)
       })
       .addCase(createTask.rejected, (state, action) => {
         state.tasksLoading = false
         state.taskError = action.payload
-        console.error('❌ Ошибка при создании задачи:', action.payload)
+        logger.error('❌ Ошибка при создании задачи:', action.payload)
       })
 
       // ========================================================================
@@ -923,9 +924,9 @@ const postSlice = createSlice({
           }
         })
 
-        console.log('✅ Загружено задач:', tasks.length)
-        console.log('📊 Статусы задач:', tasks.map(t => ({ 
-          id: t.id, 
+        logger.log('✅ Загружено задач:', tasks.length)
+        logger.log('📊 Статусы задач:', tasks.map(t => ({
+          id: t.id,
           status: t.status,
           has_executions: t.executions?.length > 0
         })))
@@ -950,7 +951,7 @@ const postSlice = createSlice({
 
         const { task_message_id, message, message_task } = action.payload
 
-        console.log('✅ Обновляем задачу в store после принятия:', task_message_id)
+        logger.log('✅ Обновляем задачу в store после принятия:', task_message_id)
 
         // Обновляем задачу в списке
         const taskIndex = state.posts.findIndex(post => post.id === task_message_id)
@@ -1016,7 +1017,7 @@ const postSlice = createSlice({
       // ========================================================================
       .addCase(reactToPost.fulfilled, (state, action) => {
         const { post_id, count_likes, count_dislikes, new_reaction } = action.payload
-        console.log('📊 Обновляем реакции:', {
+        logger.log('📊 Обновляем реакции:', {
           post_id,
           count_likes,
           count_dislikes,
@@ -1061,7 +1062,7 @@ const postSlice = createSlice({
         })
       })
       .addCase(reactToPost.rejected, (state, action) => {
-        console.error('❌ Ошибка при отправке реакции:', action.payload)
+        logger.error('❌ Ошибка при отправке реакции:', action.payload)
         state.error = action.payload
       })
 
@@ -1076,7 +1077,7 @@ const postSlice = createSlice({
         }
       })
       .addCase(fetchDownloadUrl.rejected, (state, action) => {
-        console.warn('Ошибка загрузки файла:', action.payload)
+        logger.warn('Ошибка загрузки файла:', action.payload)
       })
   },
 })
@@ -1087,17 +1088,42 @@ const postSlice = createSlice({
 
 export const { clearError, clearPosts, clearComments, clearPreview, clearUploadedFiles, setCommentsLoadingFlag } = postSlice.actions
 
-// Селекторы
+// Базовые селекторы
 export const selectPosts = state => state.post.posts
 export const selectSelectedPost = state => state.post.selectedPost
-export const selectComments = postId => state => state.post.comments[postId] || []
+export const selectCommentsMap = state => state.post.comments
 export const selectPostsLoading = state => state.post.loading
 export const selectPostsError = state => state.post.error
 export const selectPreview = state => state.post.preview
-export const selectTasks = state => state.post.posts.filter(p => p.type === 'task')
 export const selectTasksLoading = state => state.post.tasksLoading
 export const selectTaskError = state => state.post.taskError
 export const selectCommentsLoading = state => state.post.commentsLoading
 export const selectCommentError = state => state.post.commentError
+
+// Мемоизированные селекторы
+export const selectTasks = createSelector(
+  [selectPosts],
+  (posts) => posts.filter(p => p.type === 'task')
+)
+
+export const selectIdleTasks = createSelector(
+  [selectTasks],
+  (tasks) => tasks.filter(t => t.status === 'idle')
+)
+
+export const selectInProgressTasks = createSelector(
+  [selectTasks],
+  (tasks) => tasks.filter(t => t.status === 'in_progress')
+)
+
+export const selectCompletedTasks = createSelector(
+  [selectTasks],
+  (tasks) => tasks.filter(t => t.status === 'completed')
+)
+
+export const selectComments = (postId) => createSelector(
+  [selectCommentsMap],
+  (comments) => comments[postId] || []
+)
 
 export default postSlice.reducer

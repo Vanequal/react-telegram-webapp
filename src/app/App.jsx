@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { authWithTelegram } from '../store/slices/authSlice'
 import { fetchCurrentUser } from '../store/slices/meSlice'
 import axios from '../shared/api/axios'
+import logger from '@/shared/utils/logger'
 
 import Home from '@/pages/Home/Home'
 import HomeSimplified from '@/pages/Home/HomeSimplified'
@@ -43,7 +44,7 @@ function App() {
     const savedToken = sessionStorage.getItem('token')
 
     // Локальная разработка
-    if (window.location.hostname === 'localhost') {
+    if (import.meta.env.DEV && window.location.hostname === 'localhost') {
       const mockToken = 'mock-token'
       sessionStorage.setItem('token', mockToken)
       axios.defaults.headers.common['Authorization'] = `Bearer ${mockToken}`
@@ -66,21 +67,21 @@ function App() {
       dispatch(authWithTelegram(initData))
         .unwrap()
         .then((result) => {
-          console.log('✅ Авторизация успешна:', result)
+          logger.log('✅ Авторизация успешна:', result)
           // ✅ После успешной авторизации загружаем данные пользователя
           return dispatch(fetchCurrentUser()).unwrap()
         })
         .then((userData) => {
-          console.log('✅ Данные пользователя загружены:', userData)
+          logger.log('✅ Данные пользователя загружены:', userData)
         })
         .catch((error) => {
-          console.error('❌ Ошибка авторизации:', error)
+          logger.error('❌ Ошибка авторизации:', error)
         })
         .finally(() => {
           setAuthReady(true)
         })
     } else {
-      console.warn('⚠️ initData не найден')
+      logger.warn('⚠️ initData не найден')
       setAuthReady(true)
     }
   }, [dispatch])
