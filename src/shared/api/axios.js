@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'https://bedbug-smart-remarkably.ngrok-free.app',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
   headers: {
     'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true'
@@ -13,7 +13,6 @@ instance.interceptors.request.use((config) => {
 
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`;
-    config.headers['WWW-Authenticate'] = `Bearer ${token}`;
   }
 
   return config;

@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from '@/shared/api/axios'
+import logger from '@/shared/utils/logger'
 
 export const authWithTelegram = createAsyncThunk('auth/telegram', async (initData, { rejectWithValue }) => {
   try {
@@ -16,7 +17,7 @@ export const authWithTelegram = createAsyncThunk('auth/telegram', async (initDat
     // ✅ Согласно Swagger API возвращает token в теле ответа, а не в headers
     const { token, message, status } = response.data
     
-    console.log('✅ Авторизация успешна:', { message, status })
+    logger.log('✅ Авторизация успешна:', { message, status })
 
     if (!token) throw new Error('Токен не найден в ответе')
 
@@ -26,7 +27,7 @@ export const authWithTelegram = createAsyncThunk('auth/telegram', async (initDat
     // ✅ API возвращает весь объект response.data, включая token
     return { token, message, status }
   } catch (err) {
-    console.error('❌ Auth error:', err?.response?.data || err.message)
+    logger.error('❌ Auth error:', err?.response?.data || err.message)
     return rejectWithValue(err.response?.data?.detail || 'Auth error')
   }
 })
