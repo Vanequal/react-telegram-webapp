@@ -80,12 +80,10 @@ const TaskCard = ({ task, sectionCode, themeId }) => {
                 reactToPost({
                     post_id: task.id,
                     reaction,
-                    section_code: sectionCode,
-                    theme_id: themeId,
                 })
             )
         },
-        [dispatch, task.id, sectionCode, themeId]
+        [dispatch, task.id]
     )
 
     const handleImageClick = useCallback(image => {

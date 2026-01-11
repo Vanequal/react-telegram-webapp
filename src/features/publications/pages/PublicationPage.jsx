@@ -106,8 +106,6 @@ const PublicationPage = () => {
           reactToPost({
             post_id: publication.id,
             reaction,
-            section_code: SECTION_CODE, // ✅ Изменено
-            theme_id: DEFAULT_THEME_ID,
           })
         )
       }

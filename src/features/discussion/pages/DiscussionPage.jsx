@@ -103,8 +103,6 @@ const DiscussionPage = () => {
           reactToPost({
             post_id: idea.id,
             reaction,
-            section_code: SECTION_CODE,
-            theme_id: DEFAULT_THEME_ID,
           })
         )
       }

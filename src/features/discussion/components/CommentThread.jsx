@@ -25,12 +25,10 @@ const CommentThread = ({ comment, isNew, sectionCode, themeId }) => {
         reactToPost({
           post_id: comment.id,
           reaction,
-          section_code: sectionCode,
-          theme_id: themeId,
         })
       )
     },
-    [dispatch, comment.id, sectionCode, themeId]
+    [dispatch, comment.id]
   )
 
   // Обработчик реакций на ответы
@@ -40,12 +38,10 @@ const CommentThread = ({ comment, isNew, sectionCode, themeId }) => {
         reactToPost({
           post_id: replyId,
           reaction,
-          section_code: sectionCode,
-          theme_id: themeId,
         })
       )
     },
-    [dispatch, sectionCode, themeId]
+    [dispatch]
   )
 
   // Обработчик клика по изображению

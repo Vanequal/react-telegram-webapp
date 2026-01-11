@@ -109,12 +109,10 @@ const QuestionCard = React.memo(function QuestionCard({ question, onExpand, answ
         reactToPost({
           post_id: question.id,
           reaction,
-          section_key: sectionCode,
-          theme_id: themeId,
         })
       )
     },
-    [dispatch, question.id, sectionCode, themeId]
+    [dispatch, question.id]
   )
 
   const handleExpandClick = useCallback(() => setExpanded(true), [])

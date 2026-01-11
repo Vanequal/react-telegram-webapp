@@ -106,8 +106,6 @@ const QuestionAnswerPage = () => {
           reactToPost({
             post_id: question.id,
             reaction,
-            section_code: SECTION_CODE, // ✅ Изменено
-            theme_id: DEFAULT_THEME_ID,
           })
         )
       }
