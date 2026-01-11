@@ -60,13 +60,13 @@ export const createPost = createAsyncThunk(
       }
 
       logger.log('📤 Создание поста:', {
-        url: `/api/v1/messages/${section_code}/posts`,
+        url: `/api/v1/messages/posts`,
         data: requestData,
-        params: { theme_id },
+        params: { theme_id, section_code },
       })
 
-      const res = await axios.post(`/api/v1/messages/${section_code}/posts`, requestData, {
-        params: { theme_id },
+      const res = await axios.post(`/api/v1/messages/posts`, requestData, {
+        params: { theme_id, section_code },
       })
 
       logger.log('✅ Пост создан:', res.data)
@@ -89,9 +89,10 @@ export const fetchPostsInSection = createAsyncThunk(
     try {
       logger.log('📥 Загрузка постов:', { section_code, theme_id, limit, offset })
 
-      const res = await axios.get(`/api/v1/messages/${section_code}/posts`, {
+      const res = await axios.get(`/api/v1/messages/posts`, {
         params: {
           theme_id,
+          section_code,
           limit,
           offset,
         },
@@ -106,20 +107,32 @@ export const fetchPostsInSection = createAsyncThunk(
   }
 )
 
-// ✅ Получение конкретного поста (если есть такой endpoint)
+// ✅ Получение конкретного поста
+// Загружаем все посты и фильтруем нужный, так как отдельного endpoint для одного поста нет в swagger
 export const fetchPostById = createAsyncThunk(
   'post/fetchPostById',
   async ({ message_id, section_code, theme_id }, { rejectWithValue }) => {
     try {
-      // TODO: Уточнить у бэкендера правильный endpoint для получения одного поста
-      const res = await axios.get(`/api/v1/messages/${section_code}/posts/${message_id}`, {
-        params: { theme_id },
+      // Загружаем все посты секции
+      const res = await axios.get(`/api/v1/messages/posts`, {
+        params: {
+          theme_id,
+          section_code,
+          limit: 500, // Максимальный лимит
+        },
       })
 
-      return res.data
+      // Находим нужный пост
+      const post = (res.data || []).find(item => item.message?.id === message_id)
+
+      if (!post) {
+        throw new Error('Пост не найден')
+      }
+
+      return post
     } catch (err) {
       logger.error('🔥 Ошибка загрузки поста:', err?.response?.data || err.message)
-      return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки поста')
+      return rejectWithValue(err.response?.data?.detail || err?.message || 'Ошибка загрузки поста')
     }
   }
 )
@@ -158,8 +171,8 @@ export const createComment = createAsyncThunk(
         reply_to_message_id: reply_to_message_id, // ← ID комментария (для replies)
       }
 
-      const res = await axios.post(`/api/v1/messages/${section_code}/comments`, requestData, {
-        params: { theme_id },
+      const res = await axios.post(`/api/v1/messages/comments`, requestData, {
+        params: { theme_id, section_code },
       })
 
       logger.log('✅ Комментарий создан:', res.data)
@@ -187,21 +200,20 @@ export const fetchPostComments = createAsyncThunk(
         theme_id,
       })
 
-      const res = await axios.get(`/api/v1/messages/${section_code}/comments`, {
+      // ✅ Согласно Swagger: GET /api/v1/messages/comments/{content_id}
+      const res = await axios.get(`/api/v1/messages/comments/${post_id}`, {
         params: {
           theme_id,
+          section_code,
           limit,
           offset,
         },
       })
 
-      // ✅ Фильтруем комментарии для конкретного поста по content_id
-      const allComments = res.data || []
-      const postComments = allComments.filter(item => item.message_comment?.content_id === post_id)
+      const postComments = res.data || []
 
       logger.log('✅ Комментарии загружены:', {
-        total: allComments.length,
-        forThisPost: postComments.length,
+        count: postComments.length,
       })
 
       return { postId: post_id, comments: postComments }
@@ -252,8 +264,8 @@ export const createTask = createAsyncThunk(
       logger.log('📋 Отправляем данные в /posts:', requestData)
 
       // ⚠️ ВАЖНО: Создаем через /posts, а не через /tasks!
-      const res = await axios.post(`/api/v1/messages/${section_code}/posts`, requestData, {
-        params: { theme_id },
+      const res = await axios.post(`/api/v1/messages/posts`, requestData, {
+        params: { theme_id, section_code },
       })
 
       logger.log('✅ Задача создана через /posts, ответ от API:', res.data)
@@ -277,7 +289,7 @@ export const createTask = createAsyncThunk(
 
 // ✅ Получение задач
 // Задачи = это посты с ratio, получаем через /posts endpoint
-// + получаем исполнения через /tasks endpoint
+// + получаем исполнения через /tasks/{content_id} endpoint для каждой задачи
 export const fetchTasks = createAsyncThunk(
   'post/fetchTasks',
   async ({ section_code, theme_id, limit = 100, offset = 0 }, { rejectWithValue }) => {
@@ -290,69 +302,69 @@ export const fetchTasks = createAsyncThunk(
       })
 
       // 1. Получаем все посты
-      const postsRes = await axios.get(`/api/v1/messages/${section_code}/posts`, {
+      const postsRes = await axios.get(`/api/v1/messages/posts`, {
         params: {
           theme_id,
-          limit,
-          offset,
-        },
-      })
-
-      // 2. Получаем все исполнения задач
-      const tasksRes = await axios.get(`/api/v1/messages/${section_code}/tasks`, {
-        params: {
-          theme_id,
+          section_code,
           limit,
           offset,
         },
       })
 
       const allPosts = postsRes.data || []
-      const allTaskExecutions = tasksRes.data || []
-
       logger.log('✅ Получено постов:', allPosts.length)
-      logger.log('✅ Получено исполнений задач:', allTaskExecutions.length)
 
-      // 3. Фильтруем посты с ratio (это задачи)
+      // 2. Фильтруем посты с ratio (это задачи)
       const taskPosts = allPosts.filter(item => {
         const ratio = item.message_post?.ratio
         return ratio && ratio > 0
       })
 
-      // 4. Создаем карту исполнений по message_id задачи
-      const executionsMap = {}
-      allTaskExecutions.forEach(item => {
-        // TODO: Уточнить у бэкендера как связаны задача и её исполнение
-        // Возможно через reply_to_message_id или content_id
-        const taskId = item.message?.reply_to_message_id || item.message_task?.content_id
-        if (taskId) {
-          if (!executionsMap[taskId]) {
-            executionsMap[taskId] = []
+      logger.log('✅ Найдено задач с ratio:', taskPosts.length)
+
+      // 3. Для каждой задачи получаем её исполнения
+      const tasksWithExecutions = await Promise.all(
+        taskPosts.map(async (taskPost) => {
+          try {
+            // ✅ Согласно Swagger: GET /api/v1/messages/tasks/{content_id}
+            const executionsRes = await axios.get(`/api/v1/messages/tasks/${taskPost.message.id}`, {
+              params: {
+                theme_id,
+                section_code,
+                limit: 100,
+                offset: 0,
+              },
+            })
+
+            const executions = executionsRes.data || []
+            const hasExecutions = executions.length > 0
+
+            logger.log(`✅ Задача ${taskPost.message.id}: ${executions.length} исполнений`)
+
+            return {
+              ...taskPost,
+              executions: executions,
+              has_executions: hasExecutions,
+            }
+          } catch (err) {
+            // Если ошибка при получении исполнений, возвращаем задачу без исполнений
+            logger.warn(`⚠️ Не удалось загрузить исполнения для задачи ${taskPost.message.id}:`, err.message)
+            return {
+              ...taskPost,
+              executions: [],
+              has_executions: false,
+            }
           }
-          executionsMap[taskId].push(item)
-        }
-      })
+        })
+      )
 
-      // 5. Объединяем задачи с их исполнениями
-      const tasksWithStatus = taskPosts.map(taskPost => {
-        const executions = executionsMap[taskPost.message.id] || []
-        const hasExecutions = executions.length > 0
-
-        return {
-          ...taskPost,
-          executions: executions,
-          has_executions: hasExecutions,
-        }
-      })
-
-      logger.log('✅ Задач с ratio:', tasksWithStatus.length)
       logger.log('📊 Статистика исполнений:', {
-        total: tasksWithStatus.length,
-        with_executions: tasksWithStatus.filter(t => t.has_executions).length,
-        idle: tasksWithStatus.filter(t => !t.has_executions).length,
+        total: tasksWithExecutions.length,
+        with_executions: tasksWithExecutions.filter(t => t.has_executions).length,
+        idle: tasksWithExecutions.filter(t => !t.has_executions).length,
       })
 
-      return tasksWithStatus
+      return tasksWithExecutions
     } catch (err) {
       logger.error('🔥 Ошибка загрузки задач:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки задач')
@@ -375,11 +387,12 @@ export const acceptTask = createAsyncThunk(
       })
 
       // ✅ Структура данных согласно Swagger
-      // Используем тот же endpoint /tasks для создания исполнения
+      // POST /api/v1/messages/tasks для создания исполнения задачи
       const requestData = {
         type: 'task',
         text: description, // Описание того, что будет делать исполнитель
         media_file_ids: [],
+        content_id: task_message_id, // ← ID задачи которую берем
         is_partially: is_partially,
       }
 
@@ -388,11 +401,11 @@ export const acceptTask = createAsyncThunk(
         requestData.expires_at = expires_at
       }
 
-      // TODO: Уточнить у бэкендера - нужен ли отдельный endpoint или параметр message_id
-      const res = await axios.post(`/api/v1/messages/${section_code}/tasks`, requestData, {
+      // ✅ Согласно Swagger: POST /api/v1/messages/tasks
+      const res = await axios.post(`/api/v1/messages/tasks`, requestData, {
         params: {
           theme_id,
-          message_id: task_message_id, // ← ID задачи которую берем (если поддерживается)
+          section_code,
         },
       })
 
@@ -498,35 +511,26 @@ export const createPostPreview = createAsyncThunk(
 // ============================================================================
 
 // ✅ Реакция на пост/комментарий
-// TODO: Этот endpoint не указан в новом Swagger - нужно уточнить у бэкендера
 export const reactToPost = createAsyncThunk(
   'post/reactToPost',
-  async ({ post_id, reaction, section_code, theme_id }, { rejectWithValue }) => {
+  async ({ post_id, reaction }, { rejectWithValue }) => {
     try {
       logger.log('📤 Отправляем реакцию:', {
         message_id: post_id,
         reaction,
-        section_code,
-        theme_id,
       })
 
-      // TODO: Уточнить правильный endpoint для реакций
+      // ✅ Согласно Swagger: PATCH /api/v1/messages/{message_id}/reaction
       const res = await axios.patch(
-        `/api/v1/messages/${post_id}/update_reaction`,
-        { reaction },
-        {
-          params: {
-            section_code,
-            theme_id,
-          },
-        }
+        `/api/v1/messages/${post_id}/reaction`,
+        { reaction }
       )
 
       logger.log('📥 Получен ответ на реакцию:', res.data)
 
       return {
         post_id,
-        ...res.data,
+        reactions: res.data, // Swagger возвращает массив всех реакций
       }
     } catch (err) {
       logger.error('🔥 Ошибка реакции:', err?.response?.data || err.message)
@@ -1016,12 +1020,22 @@ const postSlice = createSlice({
       // РЕАКЦИИ
       // ========================================================================
       .addCase(reactToPost.fulfilled, (state, action) => {
-        const { post_id, count_likes, count_dislikes, new_reaction } = action.payload
+        const { post_id, reactions } = action.payload
+
+        // ✅ Swagger возвращает массив реакций, нужно пересчитать статистику
+        const reactionsList = reactions || []
+        const count_likes = reactionsList.filter(r => r.reaction === 'like').length
+        const count_dislikes = reactionsList.filter(r => r.reaction === 'dislike').length
+
+        // Находим реакцию текущего пользователя (если есть)
+        // TODO: Получить user_id из meSlice для определения user_reaction
+        const user_reaction = null // Временно, нужно добавить логику
+
         logger.log('📊 Обновляем реакции:', {
           post_id,
           count_likes,
           count_dislikes,
-          new_reaction,
+          total_reactions: reactionsList.length,
         })
 
         // Обновляем в списке постов
@@ -1031,7 +1045,8 @@ const postSlice = createSlice({
             ...state.posts[postIndex],
             likes: count_likes,
             dislikes: count_dislikes,
-            user_reaction: new_reaction,
+            user_reaction: user_reaction,
+            reactions: reactionsList,
           }
         }
 
@@ -1041,7 +1056,8 @@ const postSlice = createSlice({
             ...state.selectedPost,
             likes: count_likes,
             dislikes: count_dislikes,
-            user_reaction: new_reaction,
+            user_reaction: user_reaction,
+            reactions: reactionsList,
           }
         }
 
@@ -1055,7 +1071,8 @@ const postSlice = createSlice({
                 ...state.comments[postKey][commentIndex],
                 likes: count_likes,
                 dislikes: count_dislikes,
-                user_reaction: new_reaction,
+                user_reaction: user_reaction,
+                reactions: reactionsList,
               }
             }
           }

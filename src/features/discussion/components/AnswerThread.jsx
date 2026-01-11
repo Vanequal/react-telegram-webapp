@@ -25,12 +25,10 @@ const AnswerThread = ({ answer, isNew, sectionKey, themeId, isFirstAnswer = fals
         reactToPost({
           post_id: answer.id,
           reaction,
-          section_key: sectionKey,
-          theme_id: themeId,
         })
       )
     },
-    [dispatch, answer.id, sectionKey, themeId]
+    [dispatch, answer.id]
   )
 
   // Обработчик реакций на дополнительные ответы
@@ -40,12 +38,10 @@ const AnswerThread = ({ answer, isNew, sectionKey, themeId, isFirstAnswer = fals
         reactToPost({
           post_id: replyId,
           reaction,
-          section_key: sectionKey,
-          theme_id: themeId,
         })
       )
     },
-    [dispatch, sectionKey, themeId]
+    [dispatch]
   )
 
   // Обработчик клика по изображению

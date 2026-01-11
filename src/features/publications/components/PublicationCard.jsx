@@ -98,12 +98,10 @@ const PublicationCard = React.memo(function PublicationCard({ publication, onExp
         reactToPost({
           post_id: publication.id,
           reaction,
-          section_code: sectionCode,
-          theme_id: themeId,
         })
       )
     },
-    [dispatch, publication.id, sectionCode, themeId]
+    [dispatch, publication.id]
   )
 
   const handleCardExpand = useCallback(() => onExpand(publication.id), [onExpand, publication.id])

@@ -131,12 +131,10 @@ const IdeaCard = React.memo(function IdeaCard({ idea, onExpand, isExpanded = fal
         reactToPost({
           post_id: idea.id,
           reaction,
-          section_code: sectionCode,
-          theme_id: themeId,
         })
       )
     },
-    [dispatch, idea.id, sectionCode, themeId]
+    [dispatch, idea.id]
   )
 
   const handleExpandClick = useCallback(() => setExpanded(true), [])
