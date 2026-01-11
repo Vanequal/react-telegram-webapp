@@ -7,4 +7,5 @@
   gap: 16px;
   min-height: 100vh;
   background-color: $background-main;
+  padding-bottom: 120px; // Добавляем отступ снизу чтобы последняя карточка не уходила за футер
 }

@@ -133,14 +133,19 @@ const TaskChatPage = () => {
       setStep('list');
 
       logger.log('Reloading task list...');
-      await dispatch(
-        fetchTasks({
-          section_code: SECTION_CODE,
-          theme_id: THEME_ID
-        })
-      );
-
-      logger.log('Task list updated');
+      // Перезагружаем список задач, но игнорируем ошибки (задача уже создана)
+      try {
+        await dispatch(
+          fetchTasks({
+            section_code: SECTION_CODE,
+            theme_id: THEME_ID
+          })
+        ).unwrap();
+        logger.log('Task list updated');
+      } catch (fetchError) {
+        // Игнорируем ошибки при перезагрузке, задача уже создана
+        logger.warn('Error reloading tasks (non-critical):', fetchError);
+      }
     } catch (error) {
       logger.error('Error publishing task:', error);
       showError(`Ошибка публикации задачи: ${error}`);

@@ -68,10 +68,19 @@ const PostComposer = ({ postData, onPostDataChange, onSubmit }) => {
           type: f.type,
         })),
       })
-      onPostDataChange({ ...postData, files: newFiles })
+      // ✅ Объединяем старые и новые файлы вместо перезаписи
+      onPostDataChange({ ...postData, files: [...postData.files, ...newFiles] })
 
       // Очищаем input для возможности выбрать те же файлы снова
       e.target.value = ''
+    },
+    [postData, onPostDataChange]
+  )
+
+  const handleRemoveFile = useCallback(
+    index => {
+      const updatedFiles = postData.files.filter((_, i) => i !== index)
+      onPostDataChange({ ...postData, files: updatedFiles })
     },
     [postData, onPostDataChange]
   )
@@ -133,11 +142,27 @@ const PostComposer = ({ postData, onPostDataChange, onSubmit }) => {
       {/* Attached Files Preview */}
       {files.length > 0 && (
         <div className="attached-files-preview">
-          <strong>Вы прикрепили:</strong>
+          <strong>Вы прикрепили ({files.length}):</strong>
           <ul>
             {files.map((file, i) => (
               <li key={i}>
                 {file.name} ({Math.round(file.size / 1024)} KB)
+                <button
+                  type="button"
+                  onClick={() => handleRemoveFile(i)}
+                  style={{
+                    marginLeft: '8px',
+                    cursor: 'pointer',
+                    background: '#ff4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '2px 6px',
+                    fontSize: '12px',
+                  }}
+                >
+                  ✕
+                </button>
               </li>
             ))}
           </ul>

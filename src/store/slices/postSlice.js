@@ -510,6 +510,31 @@ export const createPostPreview = createAsyncThunk(
 // РЕАКЦИИ
 // ============================================================================
 
+// ✅ Получение реакций на сообщение
+export const fetchMessageReactions = createAsyncThunk(
+  'post/fetchMessageReactions',
+  async ({ message_id }, { rejectWithValue }) => {
+    try {
+      logger.log('📥 Загрузка реакций для сообщения:', message_id)
+
+      const res = await axios.get(`/api/v1/messages/${message_id}/reactions`)
+
+      logger.log('✅ Реакции загружены:', {
+        message_id,
+        count: res.data?.length || 0,
+      })
+
+      return {
+        message_id,
+        reactions: res.data || []
+      }
+    } catch (err) {
+      logger.error('🔥 Ошибка загрузки реакций:', err?.response?.data || err.message)
+      return rejectWithValue(err?.response?.data?.detail || 'Ошибка загрузки реакций')
+    }
+  }
+)
+
 // ✅ Реакция на пост/комментарий
 export const reactToPost = createAsyncThunk(
   'post/reactToPost',
@@ -542,6 +567,31 @@ export const reactToPost = createAsyncThunk(
 // ============================================================================
 // ФАЙЛЫ / ССЫЛКИ
 // ============================================================================
+
+// ✅ Получение вложений сообщения
+export const fetchMessageAttachments = createAsyncThunk(
+  'post/fetchMessageAttachments',
+  async ({ message_id }, { rejectWithValue }) => {
+    try {
+      logger.log('📥 Загрузка вложений для сообщения:', message_id)
+
+      const res = await axios.get(`/api/v1/messages/${message_id}/attachments`)
+
+      logger.log('✅ Вложения загружены:', {
+        message_id,
+        count: res.data?.length || 0,
+      })
+
+      return {
+        message_id,
+        attachments: res.data || []
+      }
+    } catch (err) {
+      logger.error('🔥 Ошибка загрузки вложений:', err?.response?.data || err.message)
+      return rejectWithValue(err?.response?.data?.detail || 'Ошибка загрузки вложений')
+    }
+  }
+)
 
 // ✅ Получение ссылки на файл
 export const fetchDownloadUrl = createAsyncThunk(
@@ -1019,6 +1069,69 @@ const postSlice = createSlice({
       // ========================================================================
       // РЕАКЦИИ
       // ========================================================================
+      .addCase(fetchMessageReactions.fulfilled, (state, action) => {
+        const { message_id, reactions } = action.payload
+
+        // Пересчитываем статистику реакций
+        const reactionsList = reactions || []
+        const count_likes = reactionsList.filter(r => r.reaction === 'like').length
+        const count_dislikes = reactionsList.filter(r => r.reaction === 'dislike').length
+
+        // TODO: Определить user_reaction на основе user_id из meSlice
+        const user_reaction = null
+
+        const reactionsData = {
+          count_likes,
+          count_dislikes,
+          user_reaction,
+          reactions: reactionsList,
+        }
+
+        // Обновляем в постах
+        const postIndex = state.posts.findIndex(post => post.id === message_id)
+        if (postIndex !== -1) {
+          state.posts[postIndex] = {
+            ...state.posts[postIndex],
+            likes: count_likes,
+            dislikes: count_dislikes,
+            user_reaction,
+            reactions: reactionsData,
+          }
+        }
+
+        // Обновляем в выбранном посте
+        if (state.selectedPost && state.selectedPost.id === message_id) {
+          state.selectedPost = {
+            ...state.selectedPost,
+            likes: count_likes,
+            dislikes: count_dislikes,
+            user_reaction,
+            reactions: reactionsData,
+          }
+        }
+
+        // Обновляем в комментариях
+        Object.keys(state.comments).forEach(postKey => {
+          const postComments = state.comments[postKey]
+          if (postComments && Array.isArray(postComments)) {
+            const commentIndex = postComments.findIndex(comment => comment.id === message_id)
+            if (commentIndex !== -1) {
+              state.comments[postKey][commentIndex] = {
+                ...state.comments[postKey][commentIndex],
+                likes: count_likes,
+                dislikes: count_dislikes,
+                user_reaction,
+                reactions: reactionsData,
+              }
+            }
+          }
+        })
+
+        logger.log('✅ Реакции обновлены в store:', message_id)
+      })
+      .addCase(fetchMessageReactions.rejected, (state, action) => {
+        logger.warn('⚠️ Ошибка загрузки реакций:', action.payload)
+      })
       .addCase(reactToPost.fulfilled, (state, action) => {
         const { post_id, reactions } = action.payload
 
@@ -1046,7 +1159,12 @@ const postSlice = createSlice({
             likes: count_likes,
             dislikes: count_dislikes,
             user_reaction: user_reaction,
-            reactions: reactionsList,
+            reactions: {
+              count_likes,
+              count_dislikes,
+              user_reaction,
+              reactions: reactionsList,
+            },
           }
         }
 
@@ -1057,7 +1175,12 @@ const postSlice = createSlice({
             likes: count_likes,
             dislikes: count_dislikes,
             user_reaction: user_reaction,
-            reactions: reactionsList,
+            reactions: {
+              count_likes,
+              count_dislikes,
+              user_reaction,
+              reactions: reactionsList,
+            },
           }
         }
 
@@ -1072,7 +1195,12 @@ const postSlice = createSlice({
                 likes: count_likes,
                 dislikes: count_dislikes,
                 user_reaction: user_reaction,
-                reactions: reactionsList,
+                reactions: {
+                  count_likes,
+                  count_dislikes,
+                  user_reaction,
+                  reactions: reactionsList,
+                },
               }
             }
           }
@@ -1081,6 +1209,49 @@ const postSlice = createSlice({
       .addCase(reactToPost.rejected, (state, action) => {
         logger.error('❌ Ошибка при отправке реакции:', action.payload)
         state.error = action.payload
+      })
+
+      // ========================================================================
+      // ЗАГРУЗКА ВЛОЖЕНИЙ СООБЩЕНИЙ
+      // ========================================================================
+      .addCase(fetchMessageAttachments.fulfilled, (state, action) => {
+        const { message_id, attachments } = action.payload
+
+        // Обновляем attachments в постах
+        const postIndex = state.posts.findIndex(post => post.id === message_id)
+        if (postIndex !== -1) {
+          state.posts[postIndex] = {
+            ...state.posts[postIndex],
+            attachments: attachments,
+          }
+        }
+
+        // Обновляем в выбранном посте
+        if (state.selectedPost && state.selectedPost.id === message_id) {
+          state.selectedPost = {
+            ...state.selectedPost,
+            attachments: attachments,
+          }
+        }
+
+        // Обновляем в комментариях
+        Object.keys(state.comments).forEach(postKey => {
+          const postComments = state.comments[postKey]
+          if (postComments && Array.isArray(postComments)) {
+            const commentIndex = postComments.findIndex(comment => comment.id === message_id)
+            if (commentIndex !== -1) {
+              state.comments[postKey][commentIndex] = {
+                ...state.comments[postKey][commentIndex],
+                attachments: attachments,
+              }
+            }
+          }
+        })
+
+        logger.log('✅ Вложения добавлены в store для сообщения:', message_id)
+      })
+      .addCase(fetchMessageAttachments.rejected, (state, action) => {
+        logger.warn('⚠️ Ошибка загрузки вложений:', action.payload)
       })
 
       // ========================================================================
