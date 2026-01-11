@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { createComment, fetchPostComments, reactToPost, fetchPostById } from '@/store/slices/postSlice'
+import { createComment, fetchPostComments, reactToPost, fetchPostById, fetchMessageAttachments } from '@/store/slices/postSlice'
 
 // Components
 import MindVaultHeader from '@/features/mindvault/components/MindVaultHeader'
@@ -146,6 +146,27 @@ const DiscussionPage = () => {
       )
     }
   }, [id, comments, commentsLoading, commentsLoaded, dispatch])
+
+  // Effect для загрузки вложений комментариев
+  useEffect(() => {
+    if (!comments || comments.length === 0) return
+
+    comments.forEach(comment => {
+      // Загружаем вложения если их еще нет
+      if (!comment.attachments) {
+        dispatch(fetchMessageAttachments({ message_id: comment.id }))
+      }
+
+      // Загружаем вложения для ответов
+      if (comment.replies && comment.replies.length > 0) {
+        comment.replies.forEach(reply => {
+          if (!reply.attachments) {
+            dispatch(fetchMessageAttachments({ message_id: reply.id }))
+          }
+        })
+      }
+    })
+  }, [comments?.length, dispatch])
 
   // Effect для сброса флага при смене поста
   useEffect(() => {

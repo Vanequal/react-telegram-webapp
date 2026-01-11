@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { createPostPreview, fetchPostComments, fetchPostsInSection, createPost } from '@/store/slices/postSlice.js'
+import { createPostPreview, fetchPostComments, fetchPostsInSection, createPost, fetchMessageAttachments, fetchMessageReactions } from '@/store/slices/postSlice.js'
 import { fetchTheme } from '@/store/slices/themeSlice' // ✅ Добавлено
 import { getViewedIdeas, markIdeaAsViewed } from '@/shared/utils/utils.js'
 
@@ -68,10 +68,11 @@ const MindVaultPage = () => {
         pinned: post.pinned ?? false,
         timestamp: post.created_at ?? '',
         created_at: post.created_at, // ✅ Добавлено
-        files: post.media_files_ids || [], // ✅ Исправлено
-        attachments: post.media_files_ids || [], // ✅ Добавлено для совместимости
+        files: post.attachments || [], // ✅ Используем attachments из API
+        attachments: post.attachments || [], // ✅ Используем attachments из API
         userReaction: post.user_reaction || null,
         author: post.author, // ✅ Добавлено
+        reactions: post.reactions, // ✅ Добавлено
       }
     })
   }, [posts, postComments])
@@ -107,11 +108,22 @@ const MindVaultPage = () => {
     }
   }, [dispatch, fetchParams, postsLoaded, loading])
 
-  // Load comments for posts
+  // Load attachments, reactions and comments for posts
   useEffect(() => {
     if (!posts || posts.length === 0) return
 
     posts.forEach(post => {
+      // Загружаем вложения если их еще нет
+      if (!post.attachments) {
+        dispatch(fetchMessageAttachments({ message_id: post.id }))
+      }
+
+      // Загружаем реакции если их еще нет
+      if (!post.reactions) {
+        dispatch(fetchMessageReactions({ message_id: post.id }))
+      }
+
+      // Загружаем комментарии
       const isLoading = commentsLoadingFlags[post.id]
       const hasComments = postComments[post.id]
 

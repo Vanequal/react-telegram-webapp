@@ -1,0 +1,105 @@
+@import '../variables';
+
+.experiment-composer {
+  padding: 20px;
+  background-color: $background-main;
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__label {
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 500;
+    color: $text-primary;
+  }
+
+  &__input {
+    padding: 12px 16px;
+    border: 1px solid rgba(226, 230, 233, 1);
+    border-radius: 8px;
+    font-family: $font-roboto;
+    font-size: 16px;
+    color: $text-primary;
+    background-color: white;
+    outline: none;
+
+    &:focus {
+      border-color: rgba(21, 101, 192, 1);
+    }
+
+    &:disabled {
+      background-color: #f5f5f5;
+      cursor: not-allowed;
+    }
+
+    &::placeholder {
+      color: $text-secondary;
+    }
+  }
+
+  &__textarea {
+    padding: 12px 16px;
+    border: 1px solid rgba(226, 230, 233, 1);
+    border-radius: 8px;
+    font-family: $font-roboto;
+    font-size: 16px;
+    color: $text-primary;
+    background-color: white;
+    outline: none;
+    resize: vertical;
+    min-height: 120px;
+
+    &:focus {
+      border-color: rgba(21, 101, 192, 1);
+    }
+
+    &:disabled {
+      background-color: #f5f5f5;
+      cursor: not-allowed;
+    }
+
+    &::placeholder {
+      color: $text-secondary;
+    }
+  }
+
+  &__submit {
+    @include button-reset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 14px 24px;
+    background: rgba(21, 101, 192, 1);
+    color: white;
+    border-radius: 8px;
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    img {
+      width: 24px;
+      height: 24px;
+    }
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    &:disabled {
+      background-color: #ccc;
+    }
+  }
+}
