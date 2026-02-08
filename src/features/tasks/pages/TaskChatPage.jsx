@@ -167,8 +167,13 @@ const TaskChatPage = () => {
     }
   }, [step, navigate]);
 
+  const isRatingStep = step === 'rating';
+
   return (
-    <div className="task-chat-page">
+    <div
+      className="task-chat-page"
+      style={isRatingStep ? { background: 'rgba(0, 44, 87, 0.8)' } : undefined}
+    >
       <input
         ref={taskForm.fileInputRef}
         type="file"
@@ -179,10 +184,11 @@ const TaskChatPage = () => {
       />
 
       <MindVaultHeader
-        bgColor="#EEEFF1"
-        textColor="black"
+        bgColor={isRatingStep ? 'rgba(0, 44, 87, 0.8)' : '#EEEFF1'}
+        textColor={isRatingStep ? 'white' : 'black'}
         title="Чат задач"
         hideSectionTitle
+        hideDescription={isRatingStep}
         onBackClick={handleBackClick}
       />
 

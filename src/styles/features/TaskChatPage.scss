@@ -87,42 +87,33 @@
     gap: 16px;
     padding-bottom: 100px;
 
-    &__label {
-        font-family: $font-roboto;
-        font-size: 16px;
-        font-weight: 700; // ← ЖИРНЫЙ
-        color: black;
-        text-align: left;
+    &__inline-field {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        cursor: text;
     }
 
-    &__input {
-        width: 100%;
-        padding: 12px;
-        border: none;
-        outline: none;
-        font-family: $font-roboto;
-        font-size: 16px;
+    &__inline-label {
+        font-family: $font-space-grotesk;
+        font-size: 20px;
+        font-weight: 400;
         color: black;
-        background: transparent;
-        resize: none;
-        min-height: 40px;
-
-        &::placeholder {
-            color: #999;
-        }
+        white-space: nowrap;
+        flex-shrink: 0;
     }
 
-    &__textarea {
-        width: 100%;
-        padding: 12px;
+    &__inline-input {
+        flex: 1;
         border: none;
         outline: none;
-        font-family: $font-roboto;
-        font-size: 16px;
+        font-family: $font-space-grotesk;
+        font-size: 20px;
+        font-weight: 400;
         color: black;
         background: transparent;
-        resize: vertical;
-        min-height: 200px;
+        padding: 0;
+        min-width: 0;
 
         &::placeholder {
             color: #999;
@@ -271,7 +262,7 @@
     }
 
     &__title {
-        font-family: $font-roboto;
+        font-family: $font-montserrat;
         font-size: 16px;
         font-weight: 500;
         color: black;
@@ -348,7 +339,7 @@
         @include button-reset;
         background: rgba(21, 101, 192, 1);
         color: white;
-        padding: 14px 24px;
+        padding: 8px 24px;
         border-radius: 4px;
         font-family: $font-roboto;
         font-size: 16px;

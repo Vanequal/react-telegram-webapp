@@ -73,19 +73,53 @@
         @include button-reset;
         background: rgba(21, 101, 192, 1);
         color: white;
-        padding: 12px 24px;
+        padding: 4px 10px;
         border-radius: 4px;
         font-family: $font-roboto;
-        font-size: 16px;
+        font-size: 12px;
         font-weight: 500;
         cursor: pointer;
-        width: 100%;
-        margin-top: 8px;
+        white-space: nowrap;
         transition: opacity 0.2s ease;
 
         &:hover {
             opacity: 0.9;
         }
+    }
+
+    &__divider {
+        height: 1px;
+        background-color: $border-color;
+        margin: 8px 0;
+    }
+
+    &__footer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+
+        &:hover {
+            opacity: 0.8;
+        }
+    }
+
+    &__avatar-stack {
+        width: 50px;
+        height: 28px;
+    }
+
+    &__comments {
+        font-family: $font-roboto;
+        font-size: 14px;
+        color: $primary-color;
+        flex: 1;
+    }
+
+    &__icon-donat {
+        width: 48px;
+        height: 28px;
     }
 
     &__ratio {

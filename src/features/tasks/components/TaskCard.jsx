@@ -175,18 +175,17 @@ const TaskCard = ({ task, sectionCode, themeId }) => {
                     </div>
                 )}
 
-                {/* Reactions */}
+                {/* Reactions + Help Button */}
                 <div className="task-card__reactions">
                     <ReactionBadges likes={currentLikes} dislikes={currentDislikes} userReaction={currentUserReaction} onReaction={handleReaction} />
-                    <span className="task-card__timestamp">{formatTimestamp(task.created_at || task.timestamp)}</span>
+                    {taskStatus === 'idle' ? (
+                        <button className="task-card__help-btn" onClick={handleAcceptTask}>
+                            Готов помочь с задачей
+                        </button>
+                    ) : (
+                        <span className="task-card__timestamp">{formatTimestamp(task.created_at || task.timestamp)}</span>
+                    )}
                 </div>
-
-                {/* Help Button (только если задача idle) */}
-                {taskStatus === 'idle' && (
-                    <button className="task-card__help-btn" onClick={handleAcceptTask}>
-                        Готов помочь с задачей
-                    </button>
-                )}
 
                 {/* In Progress Section */}
                 {(taskStatus === 'in_progress' || taskStatus === 'completed') && inProgressItems.length > 0 && (

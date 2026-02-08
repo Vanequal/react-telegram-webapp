@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 
 const TaskComposeForm = ({
@@ -11,35 +11,34 @@ const TaskComposeForm = ({
   onDescriptionChange,
   onPublish
 }) => {
+  const titleInputRef = useRef(null);
+  const descInputRef = useRef(null);
+
   return (
     <div className="task-compose-page">
-      <div className="task-compose-page__label">Заголовок:</div>
-      <textarea
-        className="task-compose-page__input"
-        placeholder="Введите заголовок"
-        value={title}
-        onChange={onTitleChange}
-        rows={2}
-      />
+      <div className="task-compose-page__inline-field" onClick={() => titleInputRef.current?.focus()}>
+        <span className="task-compose-page__inline-label">Заголовок:</span>
+        <input
+          ref={titleInputRef}
+          type="text"
+          className="task-compose-page__inline-input"
+          placeholder="Введите заголовок"
+          value={title}
+          onChange={onTitleChange}
+        />
+      </div>
 
-      <div className="task-compose-page__label">Условие задачи:</div>
-      <textarea
-        className="task-compose-page__textarea"
-        placeholder="Опишите задачу подробно"
-        value={description}
-        onChange={onDescriptionChange}
-        rows={8}
-      />
-
-      {selectedFiles.length > 0 && (
-        <div className="task-compose-page__files">
-          {selectedFiles.map((file, index) => (
-            <div key={index} className="task-compose-page__file">
-              {file.name}
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="task-compose-page__inline-field" onClick={() => descInputRef.current?.focus()}>
+        <span className="task-compose-page__inline-label">Условие задачи:</span>
+        <input
+          ref={descInputRef}
+          type="text"
+          className="task-compose-page__inline-input"
+          placeholder="Опишите задачу"
+          value={description}
+          onChange={onDescriptionChange}
+        />
+      </div>
 
       <button
         className="task-compose-page__publish-btn"

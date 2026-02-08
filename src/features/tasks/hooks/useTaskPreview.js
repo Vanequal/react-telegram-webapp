@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { createPostPreview } from '@/store/slices/postSlice';
+import { createPostPreview, clearError } from '@/store/slices/postSlice';
 import logger from '@/shared/utils/logger';
 
 export const useTaskPreview = (sectionCode, themeId) => {
@@ -42,6 +42,7 @@ export const useTaskPreview = (sectionCode, themeId) => {
       logger.error('Error getting preview:', error);
 
       if (error === 'OpenAI временно недоступен') {
+        dispatch(clearError());
         return { success: false, skipPreview: true };
       }
 
