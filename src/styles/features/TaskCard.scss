@@ -44,12 +44,23 @@
         margin: 8px 0;
     }
 
-    &__text {
+    &__title {
         font-family: $font-space-grotesk;
         font-size: 20px;
+        font-weight: 700;
         color: $text-primary;
         line-height: 1.5;
         word-break: break-word;
+    }
+
+    &__description {
+        font-family: $font-space-grotesk;
+        font-size: 20px;
+        font-weight: 400;
+        color: $text-primary;
+        line-height: 1.5;
+        word-break: break-word;
+        margin-top: 4px;
     }
 
     &__files {

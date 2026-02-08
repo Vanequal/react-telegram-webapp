@@ -184,8 +184,8 @@ const TaskChatPage = () => {
       />
 
       <MindVaultHeader
-        bgColor={isRatingStep ? 'rgba(0, 44, 87, 0.8)' : '#EEEFF1'}
-        textColor={isRatingStep ? 'white' : 'black'}
+        bgColor="#EEEFF1"
+        textColor="black"
         title="Чат задач"
         hideSectionTitle
         hideDescription={isRatingStep}

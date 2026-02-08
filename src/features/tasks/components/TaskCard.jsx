@@ -165,7 +165,21 @@ const TaskCard = ({ task, sectionCode, themeId }) => {
 
                 {/* Content */}
                 <div className="task-card__content">
-                    <div className="task-card__text">{task.text || task.content || 'Нет описания'}</div>
+                    {(() => {
+                        const fullText = task.text || task.content || 'Нет описания'
+                        const separatorIndex = fullText.indexOf('\n\n')
+                        if (separatorIndex !== -1) {
+                            const titlePart = fullText.substring(0, separatorIndex)
+                            const descPart = fullText.substring(separatorIndex + 2)
+                            return (
+                                <>
+                                    <div className="task-card__title">{titlePart}</div>
+                                    <div className="task-card__description">{descPart}</div>
+                                </>
+                            )
+                        }
+                        return <div className="task-card__title">{fullText}</div>
+                    })()}
                 </div>
 
                 {/* Files */}
