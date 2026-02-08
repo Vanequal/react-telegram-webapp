@@ -74,8 +74,9 @@ const IdeaCard = React.memo(function IdeaCard({ idea, onExpand, isExpanded = fal
       // Сохраняем оригинальную структуру
       ...file,
       // Добавляем поля для совместимости со старым FileAttachments
-      url: file.stored_path || file.url,
-      relative_path: file.stored_path || file.relative_path,
+      file_path: file.file_path || file.stored_path || file.url,
+      url: file.file_path || file.stored_path || file.url,
+      relative_path: file.file_path || file.stored_path || file.relative_path,
       original_name: file.original_name || file.name,
       extension: file.extension || (file.original_name ? file.original_name.split('.').pop().toLowerCase() : ''),
       // Индекс для ключей

@@ -48,7 +48,7 @@ const FileAttachments = ({ files, onImageClick }) => {
 
     files.forEach((file, index) => {
       // Поддерживаем и старую, и новую структуру API
-      const filePath = file.stored_path || file.url || file.relative_path
+      const filePath = file.file_path || file.stored_path || file.url || file.relative_path
       const fileName = file.original_name || file.name || `file-${index}`
       const mimeType = file.mime_type || file.type || ''
 
@@ -60,9 +60,9 @@ const FileAttachments = ({ files, onImageClick }) => {
       // Формируем URL для скачивания используя НОВЫЙ endpoint
       let downloadUrl
 
-      if (file.stored_path) {
+      if (file.file_path || file.stored_path) {
         // Новая структура API - используем обновленный endpoint
-        downloadUrl = `${BACKEND_BASE_URL}/api/v1/messages/attachments/${file.stored_path}`
+        downloadUrl = `${BACKEND_BASE_URL}/api/v1/messages/attachments/${file.file_path || file.stored_path}`
       } else {
         // Fallback для старой структуры
         const encodedFilePath = encodeURIComponent(filePath)

@@ -56,8 +56,9 @@ const QuestionCard = React.memo(function QuestionCard({ question, onExpand, answ
 
     return rawFiles.map((file, index) => ({
       ...file,
-      url: file.stored_path || file.url,
-      relative_path: file.stored_path || file.relative_path,
+      file_path: file.file_path || file.stored_path || file.url,
+      url: file.file_path || file.stored_path || file.url,
+      relative_path: file.file_path || file.stored_path || file.relative_path,
       original_name: file.original_name || file.name,
       extension: file.extension || (file.original_name ? file.original_name.split('.').pop().toLowerCase() : ''),
       index: index,

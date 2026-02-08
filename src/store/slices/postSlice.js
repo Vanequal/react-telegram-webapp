@@ -22,7 +22,7 @@ export const uploadFiles = createAsyncThunk('post/uploadFiles', async (files, { 
 
     const res = await axios.post('/api/v1/messages/upload_files', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': undefined, // Позволяем браузеру установить multipart/form-data с boundary
       },
     })
 

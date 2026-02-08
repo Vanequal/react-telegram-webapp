@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchPostComments, fetchPostsInSection, createPost } from '@/store/slices/postSlice.js'
+import { fetchPostComments, fetchPostsInSection, createPost, fetchMessageAttachments, fetchMessageReactions } from '@/store/slices/postSlice.js'
 import { fetchTheme } from '@/store/slices/themeSlice' // ✅ Добавлено
 import { getViewedIdeas, markIdeaAsViewed } from '@/shared/utils/utils.js'
 
@@ -101,11 +101,21 @@ const QuestionChatPage = () => {
     }
   }, [dispatch, fetchParams, postsLoaded, loading])
 
-  // Load answers for questions
+  // Load attachments, reactions and answers for questions
   useEffect(() => {
     if (!posts || posts.length === 0) return
 
     posts.forEach(post => {
+      // Загружаем вложения если их еще нет
+      if (!post.attachments) {
+        dispatch(fetchMessageAttachments({ message_id: post.id }))
+      }
+
+      // Загружаем реакции если их еще нет
+      if (!post.reactions) {
+        dispatch(fetchMessageReactions({ message_id: post.id }))
+      }
+
       const isLoading = commentsLoadingFlags[post.id]
       const hasAnswers = postComments[post.id]
 
@@ -113,7 +123,7 @@ const QuestionChatPage = () => {
         dispatch(
           fetchPostComments({
             post_id: post.id,
-            section_code: SECTION_CODE, // ✅ Изменено
+            section_code: SECTION_CODE,
             theme_id: themeId,
           })
         )
