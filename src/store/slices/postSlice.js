@@ -598,7 +598,7 @@ export const fetchDownloadUrl = createAsyncThunk(
   'post/fetchDownloadUrl',
   async ({ attachmentUrl }, { rejectWithValue }) => {
     try {
-      const downloadUrl = `${axios.defaults.baseURL}/api/v1/messages/attachments/${attachmentUrl}`
+      const downloadUrl = `${axios.defaults.baseURL}/static/${attachmentUrl}`
 
       logger.log(`✅ Сформирован URL для файла:`, {
         original: attachmentUrl,

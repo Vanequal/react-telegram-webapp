@@ -65,15 +65,8 @@ const FileAttachments = ({ files, onImageClick }) => {
         return
       }
 
-      // Формируем URL для скачивания
-      let downloadUrl
-
-      if (file.file_path || file.stored_path) {
-        downloadUrl = `${BACKEND_BASE_URL}/api/v1/messages/attachments/${file.file_path || file.stored_path}`
-      } else {
-        const encodedFilePath = encodeURIComponent(filePath)
-        downloadUrl = `${BACKEND_BASE_URL}/api/v1/files/download/{file_url}?url=${encodedFilePath}`
-      }
+      // Формируем URL для скачивания - статика отдаётся через /static/
+      const downloadUrl = `${BACKEND_BASE_URL}/static/${filePath}`
 
       // Определяем расширение файла
       let ext = ''

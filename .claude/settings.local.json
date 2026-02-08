@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npm run build:*)",
       "Bash(npx vite build)",
-      "Bash(node node_modules/.bin/vite build:*)"
+      "Bash(node node_modules/.bin/vite build:*)",
+      "WebFetch(domain:oleg-forum-site.matthew-0203.ru)"
     ]
   }
 }
