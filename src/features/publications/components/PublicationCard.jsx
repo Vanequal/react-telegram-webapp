@@ -120,7 +120,7 @@ const PublicationCard = React.memo(function PublicationCard({ publication, onExp
   const firstFile = publicationFiles[0]
 
   const handleFileDownload = useCallback(file => {
-    const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://adjacent-forth-administrative-diseases.trycloudflare.com'
+    const BACKEND_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
     let downloadUrl
     if (file.file_path || file.stored_path) {

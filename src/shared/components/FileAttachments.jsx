@@ -1,13 +1,24 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import PropTypes from 'prop-types'
+import axios from '@/shared/api/axios'
 import '@/styles/components/file-attachments.scss'
 
-const FileAttachments = ({ files, onImageClick }) => {
-  const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://adjacent-forth-administrative-diseases.trycloudflare.com'
-  const [imageCache, setImageCache] = useState({})
+// Берём baseURL из того же axios-инстанса, что используется во всём приложении
+const getBackendBaseUrl = () => {
+  return axios.defaults.baseURL || import.meta.env.VITE_API_URL || 'http://localhost:8000'
+}
 
-  // Функция для загрузки изображения через fetch с обходом ngrok
-  const loadImageAsBase64 = async (url, fileId) => {
+const FileAttachments = ({ files, onImageClick }) => {
+  const BACKEND_BASE_URL = useMemo(() => getBackendBaseUrl(), [])
+  const [imageCache, setImageCache] = useState({})
+  const loadingRef = useRef({}) // Трекаем какие изображения уже загружаются
+
+  // Стабильная функция загрузки изображения (useCallback чтобы не пересоздавалась)
+  const loadImageAsBase64 = useCallback(async (url, fileId) => {
+    // Предотвращаем повторную загрузку
+    if (loadingRef.current[fileId]) return null
+    loadingRef.current[fileId] = true
+
     try {
       const response = await fetch(url, {
         method: 'GET',
@@ -35,16 +46,14 @@ const FileAttachments = ({ files, onImageClick }) => {
 
       return base64
     } catch (error) {
-      console.error('❌ Ошибка загрузки изображения через fetch:', error)
+      console.error('Ошибка загрузки изображения:', error.message)
       return null
     }
-  }
+  }, [])
 
   const { images, otherFiles } = useMemo(() => {
     const imgs = []
     const others = []
-
-    console.log('📁 FileAttachments обрабатывает файлы:', files)
 
     files.forEach((file, index) => {
       // Поддерживаем и старую, и новую структуру API
@@ -53,18 +62,15 @@ const FileAttachments = ({ files, onImageClick }) => {
       const mimeType = file.mime_type || file.type || ''
 
       if (!filePath) {
-        console.warn('📁 Файл без пути:', file)
         return
       }
 
-      // Формируем URL для скачивания используя НОВЫЙ endpoint
+      // Формируем URL для скачивания
       let downloadUrl
 
       if (file.file_path || file.stored_path) {
-        // Новая структура API - используем обновленный endpoint
         downloadUrl = `${BACKEND_BASE_URL}/api/v1/messages/attachments/${file.file_path || file.stored_path}`
       } else {
-        // Fallback для старой структуры
         const encodedFilePath = encodeURIComponent(filePath)
         downloadUrl = `${BACKEND_BASE_URL}/api/v1/files/download/{file_url}?url=${encodedFilePath}`
       }
@@ -76,7 +82,6 @@ const FileAttachments = ({ files, onImageClick }) => {
       } else if (fileName.includes('.')) {
         ext = fileName.split('.').pop().toLowerCase()
       } else if (mimeType) {
-        // Извлекаем расширение из MIME-типа
         const mimeMap = {
           'image/jpeg': 'jpg',
           'image/jpg': 'jpg',
@@ -97,7 +102,6 @@ const FileAttachments = ({ files, onImageClick }) => {
 
       // Определяем тип файла
       const isImage = mimeType?.startsWith('image/') || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)
-
       const isVideo = mimeType?.startsWith('video/') || ['mp4', 'webm', 'ogg', 'avi', 'mov', 'wmv'].includes(ext)
 
       const fileData = {
@@ -111,16 +115,6 @@ const FileAttachments = ({ files, onImageClick }) => {
         fileId: file.id || `${index}-${fileName}`,
       }
 
-      console.log(`📄 Обработан файл ${index}:`, {
-        fileName,
-        filePath,
-        downloadUrl,
-        isImage,
-        isVideo,
-        ext,
-        mimeType,
-      })
-
       if (isImage) {
         imgs.push(fileData)
       } else {
@@ -128,17 +122,10 @@ const FileAttachments = ({ files, onImageClick }) => {
       }
     })
 
-    console.log('📁 Результат обработки:', {
-      totalFiles: files.length,
-      images: imgs.length,
-      otherFiles: others.length,
-    })
-
     return { images: imgs, otherFiles: others }
   }, [files, BACKEND_BASE_URL])
 
   if (images.length === 0 && otherFiles.length === 0) {
-    console.log('📁 Нет файлов для отображения')
     return null
   }
 
@@ -163,12 +150,6 @@ const FileAttachments = ({ files, onImageClick }) => {
               download={file.original_name}
               className="file-attachments__file-link"
               onClick={e => {
-                console.log('📥 Скачивание файла:', {
-                  fileName: file.original_name,
-                  url: file.downloadUrl,
-                })
-
-                // Добавляем обход ngrok для скачивания
                 e.preventDefault()
                 const urlWithBypass = file.downloadUrl + (file.downloadUrl.includes('?') ? '&' : '?') + 'ngrok-skip-browser-warning=true'
                 window.open(urlWithBypass, '_blank')
@@ -190,6 +171,7 @@ const ImageWithFetch = ({ image, onImageClick, imageCache, loadImageAsBase64 }) 
   const [imageSrc, setImageSrc] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const loadedRef = useRef(false) // Предотвращаем повторную загрузку
 
   useEffect(() => {
     // Проверяем кэш
@@ -199,7 +181,10 @@ const ImageWithFetch = ({ image, onImageClick, imageCache, loadImageAsBase64 }) 
       return
     }
 
-    // Загружаем изображение через fetch
+    // Загружаем только один раз
+    if (loadedRef.current) return
+    loadedRef.current = true
+
     const loadImage = async () => {
       const base64 = await loadImageAsBase64(image.downloadUrl, image.fileId)
       if (base64) {
@@ -211,7 +196,7 @@ const ImageWithFetch = ({ image, onImageClick, imageCache, loadImageAsBase64 }) 
     }
 
     loadImage()
-  }, [image, imageCache, loadImageAsBase64])
+  }, [image.fileId, image.downloadUrl]) // Зависимости только от стабильных значений
 
   if (loading) {
     return (
@@ -260,18 +245,11 @@ const ImageWithFetch = ({ image, onImageClick, imageCache, loadImageAsBase64 }) 
       onClick={() =>
         onImageClick({
           ...image,
-          src: imageSrc, // Передаем загруженный base64 URL
+          src: imageSrc,
         })
       }
     >
-      <img
-        src={imageSrc}
-        alt={image.alt}
-        className="file-attachments__image"
-        onLoad={() => {
-          console.log('✅ Изображение отображено:', image.original_name)
-        }}
-      />
+      <img src={imageSrc} alt={image.alt} className="file-attachments__image" />
       <div className="file-attachments__image-info">
         <span className="file-attachments__image-name">{image.original_name}</span>
       </div>
@@ -310,7 +288,7 @@ const formatFileSize = bytes => {
 
 FileAttachments.propTypes = {
   files: PropTypes.array.isRequired,
-  onImageClick: PropTypes.func.isRequired,
+  onImageClick: PropTypes.func,
 }
 
 export default FileAttachments

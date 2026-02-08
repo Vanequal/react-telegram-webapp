@@ -1131,6 +1131,19 @@ const postSlice = createSlice({
       })
       .addCase(fetchMessageReactions.rejected, (state, action) => {
         logger.warn('⚠️ Ошибка загрузки реакций:', action.payload)
+
+        // Ставим пустой объект реакций чтобы useEffect не диспатчил повторно
+        const messageId = action.meta?.arg?.message_id
+        if (messageId) {
+          const emptyReactions = { count_likes: 0, count_dislikes: 0, user_reaction: null, reactions: [] }
+          const postIndex = state.posts.findIndex(post => post.id === messageId)
+          if (postIndex !== -1) {
+            state.posts[postIndex] = {
+              ...state.posts[postIndex],
+              reactions: emptyReactions,
+            }
+          }
+        }
       })
       .addCase(reactToPost.fulfilled, (state, action) => {
         const { post_id, reactions } = action.payload
@@ -1252,6 +1265,32 @@ const postSlice = createSlice({
       })
       .addCase(fetchMessageAttachments.rejected, (state, action) => {
         logger.warn('⚠️ Ошибка загрузки вложений:', action.payload)
+
+        // Ставим пустой массив чтобы useEffect не диспатчил повторно
+        const messageId = action.meta?.arg?.message_id
+        if (messageId) {
+          const postIndex = state.posts.findIndex(post => post.id === messageId)
+          if (postIndex !== -1) {
+            state.posts[postIndex] = {
+              ...state.posts[postIndex],
+              attachments: [],
+            }
+          }
+
+          // Обновляем в комментариях
+          Object.keys(state.comments).forEach(postKey => {
+            const postComments = state.comments[postKey]
+            if (postComments && Array.isArray(postComments)) {
+              const commentIndex = postComments.findIndex(comment => comment.id === messageId)
+              if (commentIndex !== -1) {
+                state.comments[postKey][commentIndex] = {
+                  ...state.comments[postKey][commentIndex],
+                  attachments: [],
+                }
+              }
+            }
+          })
+        }
       })
 
       // ========================================================================

@@ -29,13 +29,13 @@ const PublicationDisplayCard = ({ publication, onReaction }) => {
   const firstFile = publicationFiles[0]
 
   const handleFileDownload = useCallback(file => {
-    const BACKEND_BASE_URL = process.env.REACT_APP_API_URL || 'https://adjacent-forth-administrative-diseases.trycloudflare.com'
+    const BACKEND_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
     let downloadUrl
-    if (file.stored_path) {
-      downloadUrl = `${BACKEND_BASE_URL}/api/v1/messages/attachments/${file.stored_path}`
+    if (file.file_path || file.stored_path) {
+      downloadUrl = `${BACKEND_BASE_URL}/api/v1/messages/attachments/${file.file_path || file.stored_path}`
     } else {
-      const encodedFilePath = encodeURIComponent(file.stored_path || file.url || file.relative_path)
+      const encodedFilePath = encodeURIComponent(file.file_path || file.stored_path || file.url || file.relative_path)
       downloadUrl = `${BACKEND_BASE_URL}/api/v1/files/download/{file_url}?url=${encodedFilePath}`
     }
 

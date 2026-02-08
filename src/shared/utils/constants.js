@@ -4,7 +4,7 @@ export const CONSTANTS = {
     VIEW_THRESHOLD_MS: 30000,
     INTERSECTION_THRESHOLD: 0.75,
     TEXT_EXPAND_THRESHOLD: 160,
-    BACKEND_BASE_URL: process.env.REACT_APP_API_URL || 'https://tight-guarantees-discs-announcement.trycloudflare.com/',
+    BACKEND_BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
     
     FILE_ACCEPT: {
       MEDIA: 'image/*,video/*',
