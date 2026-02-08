@@ -68,10 +68,19 @@ const QuestionComposer = ({ questionData, onQuestionDataChange, onSubmit, disabl
           type: f.type,
         })),
       })
-      onQuestionDataChange({ ...questionData, files: newFiles })
+      // Объединяем старые и новые файлы
+      onQuestionDataChange({ ...questionData, files: [...questionData.files, ...newFiles] })
 
       // Очищаем input для возможности выбрать те же файлы снова
       e.target.value = ''
+    },
+    [questionData, onQuestionDataChange]
+  )
+
+  const handleRemoveFile = useCallback(
+    index => {
+      const updatedFiles = questionData.files.filter((_, i) => i !== index)
+      onQuestionDataChange({ ...questionData, files: updatedFiles })
     },
     [questionData, onQuestionDataChange]
   )
@@ -133,11 +142,27 @@ const QuestionComposer = ({ questionData, onQuestionDataChange, onSubmit, disabl
       {/* Attached Files Preview */}
       {files.length > 0 && (
         <div className="attached-files-preview">
-          <strong>Вы прикрепили:</strong>
+          <strong>Вы прикрепили ({files.length}):</strong>
           <ul>
             {files.map((file, i) => (
               <li key={i}>
                 {file.name} ({Math.round(file.size / 1024)} KB)
+                <button
+                  type="button"
+                  onClick={() => handleRemoveFile(i)}
+                  style={{
+                    marginLeft: '8px',
+                    cursor: 'pointer',
+                    background: '#ff4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '2px 6px',
+                    fontSize: '12px',
+                  }}
+                >
+                  ✕
+                </button>
               </li>
             ))}
           </ul>

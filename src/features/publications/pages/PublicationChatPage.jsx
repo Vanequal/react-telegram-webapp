@@ -1,5 +1,5 @@
 // PublicationChatPage.jsx
-import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchPostComments, fetchPostsInSection, createPost, fetchMessageAttachments, fetchMessageReactions } from '@/store/slices/postSlice.js'
@@ -27,12 +27,19 @@ const PublicationChatPage = () => {
   const dispatch = useDispatch()
   const [searchParams] = useSearchParams()
 
+  // Refs for file inputs
+  const attachBtnRef = useRef(null)
+  const fileInputMediaRef = useRef(null)
+  const fileInputFilesRef = useRef(null)
+
   // State
   const [publicationData, setPublicationData] = useState({
     excerpt: '',
     files: [],
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showPopover, setShowPopover] = useState(false)
+  const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 })
 
   // Redux selectors
   const { posts, loading, error, postsLoaded } = useSelector(state => state.post)
@@ -139,10 +146,47 @@ const PublicationChatPage = () => {
     [publications, posts, navigate]
   )
 
+  const handleAttachClick = useCallback(() => {
+    if (attachBtnRef.current) {
+      const rect = attachBtnRef.current.getBoundingClientRect()
+      setPopoverPos({
+        top: rect.bottom + window.scrollY + 6,
+        left: rect.left + window.scrollX,
+      })
+      setShowPopover(true)
+    }
+  }, [])
+
+  const handleMediaClick = useCallback(() => {
+    const tg = window.Telegram?.WebApp
+    const used = tg?.showAttachMenu?.({ media: true })
+    if (!used) {
+      fileInputMediaRef.current?.click()
+    }
+    setShowPopover(false)
+  }, [])
+
+  const handleFileClick = useCallback(() => {
+    const tg = window.Telegram?.WebApp
+    const used = tg?.showAttachMenu?.({ files: true })
+    if (!used) {
+      fileInputFilesRef.current?.click()
+    }
+    setShowPopover(false)
+  }, [])
+
   const handleFileChange = useCallback(e => {
-    const files = Array.from(e.target.files || [])
-    console.log('📎 Файлы выбраны:', files.length)
-    setPublicationData(prev => ({ ...prev, files }))
+    const newFiles = Array.from(e.target.files || [])
+    console.log('📎 Файлы выбраны:', newFiles.length)
+    setPublicationData(prev => ({ ...prev, files: [...prev.files, ...newFiles] }))
+    e.target.value = ''
+  }, [])
+
+  const handleRemoveFile = useCallback(index => {
+    setPublicationData(prev => ({
+      ...prev,
+      files: prev.files.filter((_, i) => i !== index),
+    }))
   }, [])
 
   const handleExcerptChange = useCallback(e => {
@@ -150,8 +194,7 @@ const PublicationChatPage = () => {
   }, [])
 
   const handlePublish = useCallback(async () => {
-    if (!publicationData.excerpt.trim() || publicationData.files.length === 0 || isSubmitting) {
-      alert('Необходимо прикрепить файл и добавить выдержку')
+    if (!publicationData.excerpt.trim() || isSubmitting) {
       return
     }
 
@@ -164,25 +207,20 @@ const PublicationChatPage = () => {
         theme_id: themeId,
       })
 
-      // ✅ Создаем публикацию с новыми параметрами
       await dispatch(
         createPost({
           message_text: publicationData.excerpt.trim(),
-          section_code: SECTION_CODE, // ✅ Изменено
+          section_code: SECTION_CODE,
           theme_id: themeId,
-          type: 'post', // ✅ Добавлено
-          is_openai_generated: false, // ✅ Добавлено
-          ratio: 99, // ✅ Добавлено
+          type: 'post',
+          is_openai_generated: false,
+          ratio: 99,
           files: publicationData.files,
         })
       ).unwrap()
 
       console.log('✅ Публикация создана успешно')
       setPublicationData({ excerpt: '', files: [] })
-
-      // Очищаем file input
-      const fileInput = document.querySelector('input[type="file"]')
-      if (fileInput) fileInput.value = ''
     } catch (error) {
       console.error('❌ Error creating publication:', error)
       alert(`Ошибка создания публикации: ${error}`)
@@ -191,7 +229,7 @@ const PublicationChatPage = () => {
     }
   }, [publicationData, dispatch, themeId, isSubmitting])
 
-  const isPublishDisabled = !publicationData.excerpt.trim() || publicationData.files.length === 0 || isSubmitting
+  const isPublishDisabled = !publicationData.excerpt.trim() || isSubmitting
 
   return (
     <div className="publication-chat-page">
@@ -240,19 +278,12 @@ const PublicationChatPage = () => {
 
       <div className="chat-footer-box">
         <div className="footer-input-row">
-          <img src={skrepkaIcon} alt="Attach" className="footer-icon" />
-          <input
-            type="file"
-            onChange={handleFileChange}
-            className="footer-input"
-            placeholder="Прикрепить файл"
-            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
-            multiple
-          />
-        </div>
+          <img src={skrepkaIcon} alt="Attach" className="footer-icon" onClick={handleAttachClick} ref={attachBtnRef} style={{ cursor: 'pointer' }} />
 
-        <div className="footer-input-row">
-          <div style={{ width: '20px' }}></div>
+          {/* Hidden file inputs */}
+          <input type="file" ref={fileInputMediaRef} onChange={handleFileChange} style={{ display: 'none' }} accept="image/*,video/*" multiple />
+          <input type="file" ref={fileInputFilesRef} onChange={handleFileChange} style={{ display: 'none' }} accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" multiple />
+
           <input
             type="text"
             placeholder="Добавить выдержку"
@@ -263,14 +294,42 @@ const PublicationChatPage = () => {
           />
         </div>
 
-        {/* Показываем прикрепленные файлы */}
+        {/* Popover Menu */}
+        {showPopover && (
+          <div className="popover-menu" style={{ top: `${popoverPos.top}px`, left: `${popoverPos.left}px` }} onMouseLeave={() => setShowPopover(false)}>
+            <button className="popover-btn" onClick={handleMediaClick}>
+              📷 Медиа
+            </button>
+            <button className="popover-btn" onClick={handleFileClick}>
+              📁 Файл
+            </button>
+          </div>
+        )}
+
+        {/* Attached files preview */}
         {publicationData.files.length > 0 && (
           <div className="attached-files-info">
-            <strong>Прикреплено файлов: {publicationData.files.length}</strong>
+            <strong>Прикреплено ({publicationData.files.length}):</strong>
             <ul>
               {publicationData.files.map((file, i) => (
                 <li key={i}>
                   {file.name} ({Math.round(file.size / 1024)} KB)
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveFile(i)}
+                    style={{
+                      marginLeft: '8px',
+                      cursor: 'pointer',
+                      background: '#ff4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '2px 6px',
+                      fontSize: '12px',
+                    }}
+                  >
+                    ✕
+                  </button>
                 </li>
               ))}
             </ul>
