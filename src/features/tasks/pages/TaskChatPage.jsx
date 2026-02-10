@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { createTask, fetchTasks } from '@/store/slices/postSlice';
+import { createTask, fetchTasks, fetchMessageAttachments } from '@/store/slices/postSlice';
 import { SECTION_CODES, DEFAULT_THEME_ID } from '@/shared/constants/sections';
 import logger from '@/shared/utils/logger';
 import { showError } from '@/shared/utils/notifications';
@@ -50,6 +50,17 @@ const TaskChatPage = () => {
       })
     );
   }, [dispatch]);
+
+  // Загружаем вложения для каждой задачи
+  useEffect(() => {
+    if (!tasks || tasks.length === 0) return;
+
+    tasks.forEach(task => {
+      if (!task.attachments) {
+        dispatch(fetchMessageAttachments({ message_id: task.id }));
+      }
+    });
+  }, [tasks.length, dispatch]);
 
   const handleInputFocus = useCallback(() => {
     setStep('compose');

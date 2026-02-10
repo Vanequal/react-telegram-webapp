@@ -23,9 +23,10 @@ const QuestionComposer = ({ questionData, onQuestionDataChange, onSubmit, disabl
   // Handlers
   const handleTextChange = useCallback(
     e => {
-      onQuestionDataChange({ ...questionData, text: e.target.value })
+      const newText = e.target.value
+      onQuestionDataChange(prev => ({ ...prev, text: newText }))
     },
-    [questionData, onQuestionDataChange]
+    [onQuestionDataChange]
   )
 
   const handleAttachClick = useCallback(() => {
@@ -68,21 +69,20 @@ const QuestionComposer = ({ questionData, onQuestionDataChange, onSubmit, disabl
           type: f.type,
         })),
       })
-      // Объединяем старые и новые файлы
-      onQuestionDataChange({ ...questionData, files: [...questionData.files, ...newFiles] })
+      // Объединяем старые и новые файлы (используем functional updater чтобы не потерять state)
+      onQuestionDataChange(prev => ({ ...prev, files: [...prev.files, ...newFiles] }))
 
       // Очищаем input для возможности выбрать те же файлы снова
       e.target.value = ''
     },
-    [questionData, onQuestionDataChange]
+    [onQuestionDataChange]
   )
 
   const handleRemoveFile = useCallback(
     index => {
-      const updatedFiles = questionData.files.filter((_, i) => i !== index)
-      onQuestionDataChange({ ...questionData, files: updatedFiles })
+      onQuestionDataChange(prev => ({ ...prev, files: prev.files.filter((_, i) => i !== index) }))
     },
-    [questionData, onQuestionDataChange]
+    [onQuestionDataChange]
   )
 
   const handleSubmit = useCallback(() => {

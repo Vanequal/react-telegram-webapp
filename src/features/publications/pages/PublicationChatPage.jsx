@@ -75,8 +75,8 @@ const PublicationChatPage = () => {
         views: post.views ?? 0,
         timestamp: post.created_at ?? '',
         created_at: post.created_at, // ✅ Добавлено
-        files: post.media_files_ids || [], // ✅ Исправлено
-        attachments: post.media_files_ids || [], // ✅ Добавлено
+        files: post.attachments || post.media_file_ids || [],
+        attachments: post.attachments || post.media_file_ids || [],
         userReaction: post.user_reaction || null,
         author: post.author, // ✅ Добавлено
       }
@@ -177,7 +177,7 @@ const PublicationChatPage = () => {
 
   const handleFileChange = useCallback(e => {
     const newFiles = Array.from(e.target.files || [])
-    console.log('📎 Файлы выбраны:', newFiles.length)
+    console.log('📎 Файлы выбраны для публикации:', newFiles.length, newFiles.map(f => ({ name: f.name, size: f.size, type: f.type })))
     setPublicationData(prev => ({ ...prev, files: [...prev.files, ...newFiles] }))
     e.target.value = ''
   }, [])
@@ -190,7 +190,8 @@ const PublicationChatPage = () => {
   }, [])
 
   const handleExcerptChange = useCallback(e => {
-    setPublicationData(prev => ({ ...prev, excerpt: e.target.value }))
+    const newExcerpt = e.target.value
+    setPublicationData(prev => ({ ...prev, excerpt: newExcerpt }))
   }, [])
 
   const handlePublish = useCallback(async () => {

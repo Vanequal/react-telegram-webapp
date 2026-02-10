@@ -62,8 +62,8 @@ const QuestionChatPage = () => {
         views: post.views ?? 0,
         timestamp: post.created_at ?? '',
         created_at: post.created_at, // ✅ Добавлено
-        files: post.media_files_ids || [], // ✅ Исправлено
-        attachments: post.media_files_ids || [], // ✅ Добавлено для совместимости
+        files: post.attachments || post.media_file_ids || [],
+        attachments: post.attachments || post.media_file_ids || [],
         userReaction: post.user_reaction || null,
         author: post.author, // ✅ Добавлено
       }

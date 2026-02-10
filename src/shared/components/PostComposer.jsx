@@ -23,9 +23,10 @@ const PostComposer = ({ postData, onPostDataChange, onSubmit }) => {
   // Handlers
   const handleTextChange = useCallback(
     e => {
-      onPostDataChange({ ...postData, text: e.target.value })
+      const newText = e.target.value
+      onPostDataChange(prev => ({ ...prev, text: newText }))
     },
-    [postData, onPostDataChange]
+    [onPostDataChange]
   )
 
   const handleAttachClick = useCallback(() => {
@@ -68,21 +69,20 @@ const PostComposer = ({ postData, onPostDataChange, onSubmit }) => {
           type: f.type,
         })),
       })
-      // ✅ Объединяем старые и новые файлы вместо перезаписи
-      onPostDataChange({ ...postData, files: [...postData.files, ...newFiles] })
+      // Объединяем старые и новые файлы (functional updater чтобы не потерять state)
+      onPostDataChange(prev => ({ ...prev, files: [...prev.files, ...newFiles] }))
 
       // Очищаем input для возможности выбрать те же файлы снова
       e.target.value = ''
     },
-    [postData, onPostDataChange]
+    [onPostDataChange]
   )
 
   const handleRemoveFile = useCallback(
     index => {
-      const updatedFiles = postData.files.filter((_, i) => i !== index)
-      onPostDataChange({ ...postData, files: updatedFiles })
+      onPostDataChange(prev => ({ ...prev, files: prev.files.filter((_, i) => i !== index) }))
     },
-    [postData, onPostDataChange]
+    [onPostDataChange]
   )
 
   const handleSubmit = useCallback(() => {
