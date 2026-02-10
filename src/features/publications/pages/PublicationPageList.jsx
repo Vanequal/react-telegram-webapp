@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchPostComments, fetchPostsInSection } from '@/store/slices/postSlice'
+import { fetchPostComments, fetchPostsInSection, fetchMessageAttachments, fetchMessageReactions } from '@/store/slices/postSlice'
 
 // Components
 import MindVaultHeader from '@/features/mindvault/components/MindVaultHeader'
@@ -72,11 +72,21 @@ const PublicationPageList = () => {
     }
   }, [dispatch, fetchParams, postsLoaded, loading])
 
-  // Load comments for publications
+  // Load attachments, reactions and comments for publications
   useEffect(() => {
     if (!posts || posts.length === 0) return
 
     posts.forEach(post => {
+      // Загружаем вложения если их еще нет
+      if (!post.attachments) {
+        dispatch(fetchMessageAttachments({ message_id: post.id }))
+      }
+
+      // Загружаем реакции если их еще нет
+      if (!post.reactions) {
+        dispatch(fetchMessageReactions({ message_id: post.id }))
+      }
+
       const isLoading = commentsLoadingFlags[post.id]
       const hasComments = postComments[post.id]
 
@@ -141,7 +151,9 @@ const PublicationPageList = () => {
           <p style={{ margin: 0, fontWeight: '600', fontSize: '14px' }}>Публикаций пока нет. Добавьте первую публикацию!</p>
         </div>
       ) : (
-        publications.map(publication => <PublicationCard key={publication.id} publication={publication} onExpand={handlePublicationExpand} commentCount={publication.comments} sectionCode={SECTION_CODE} themeId={themeId} />)
+        <div style={{ paddingBottom: '70px' }}>
+          {publications.map(publication => <PublicationCard key={publication.id} publication={publication} onExpand={handlePublicationExpand} commentCount={publication.comments} sectionCode={SECTION_CODE} themeId={themeId} />)}
+        </div>
       )}
 
       {/* Footer - неактивные элементы, активная только кнопка отправки */}

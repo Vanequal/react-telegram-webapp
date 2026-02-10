@@ -93,6 +93,11 @@
       margin: 0;
     }
   }
+  .publications-list {
+    flex: 1;
+    overflow-y: auto;
+  }
+
   .attachment-hint-box {
     align-self: center;
     width: calc(95% - 32px);
@@ -103,7 +108,7 @@
     font-size: 14px;
     color: black;
     text-align: left;
-    margin-top: 10%;
+    margin-top: 16px;
     margin-bottom: 8px;
   }
 
