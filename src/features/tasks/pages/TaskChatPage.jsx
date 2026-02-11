@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { createTask, fetchTasks, fetchMessageAttachments } from '@/store/slices/postSlice';
+import { createTask, fetchTasks, fetchMessageAttachments, createComment, fetchPostComments, completeTask } from '@/store/slices/postSlice';
 import { SECTION_CODES, DEFAULT_THEME_ID } from '@/shared/constants/sections';
 import logger from '@/shared/utils/logger';
 import { showError } from '@/shared/utils/notifications';
@@ -12,12 +12,17 @@ import TaskComposeForm from '@/features/tasks/components/TaskComposeForm';
 import TaskPreviewScreen from '@/features/tasks/components/TaskPreviewScreen';
 import TaskRatingScreen from '@/features/tasks/components/TaskRatingScreen';
 import TaskFooter from '@/features/tasks/components/TaskFooter';
+import TaskCompletionModal from '@/features/tasks/components/TaskCompletionModal';
+import TaskResultScreen from '@/features/tasks/components/TaskResultScreen';
+import TaskCard from '@/features/tasks/components/TaskCard';
+import CommentThread from '@/features/discussion/components/CommentThread';
 
 import { useTaskForm } from '@/features/tasks/hooks/useTaskForm';
 import { useTaskRating } from '@/features/tasks/hooks/useTaskRating';
 import { useTaskPreview } from '@/features/tasks/hooks/useTaskPreview';
 
 import '@/styles/features/TaskChatPage.scss';
+import '@/styles/features/discussion.scss';
 
 const SECTION_CODE = SECTION_CODES.CHAT_TASKS;
 const THEME_ID = DEFAULT_THEME_ID;
@@ -26,9 +31,25 @@ const TaskChatPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { posts, loading, error } = useSelector((state) => state.post);
+  const { posts, loading, error, commentsLoading } = useSelector((state) => state.post);
+  // step: 'list' | 'compose' | 'preview' | 'rating' | 'detail' | 'result' | 'completing'
   const [step, setStep] = useState('list');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Detail view state (comments)
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [commentText, setCommentText] = useState('');
+  const [commentFiles, setCommentFiles] = useState([]);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
+
+  // Completion state
+  const [completionTaskId, setCompletionTaskId] = useState(null);
+  const [completionItem, setCompletionItem] = useState(null);
+  const [completionFiles, setCompletionFiles] = useState([]);
+  const [completionDescription, setCompletionDescription] = useState('');
+
+  // Result screen state
+  const [resultTaskId, setResultTaskId] = useState(null);
 
   const taskForm = useTaskForm();
   const taskRating = useTaskRating();
@@ -38,11 +59,12 @@ const TaskChatPage = () => {
     (post) => post.type === 'task' && post.section_code === SECTION_CODE
   );
 
-  logger.log('Total posts in store:', posts.length);
-  logger.log('Tasks after filtering:', tasks.length);
+  const selectedTask = tasks.find(t => t.id === selectedTaskId);
+  const resultTask = tasks.find(t => t.id === resultTaskId);
+  const completionTask = tasks.find(t => t.id === completionTaskId);
+  const comments = useSelector(state => state.post.comments[selectedTaskId] || []);
 
   useEffect(() => {
-    logger.log('TaskChatPage mounting, loading tasks...');
     dispatch(
       fetchTasks({
         section_code: SECTION_CODE,
@@ -51,7 +73,7 @@ const TaskChatPage = () => {
     );
   }, [dispatch]);
 
-  // Загружаем вложения для каждой задачи
+  // Load attachments for tasks
   useEffect(() => {
     if (!tasks || tasks.length === 0) return;
 
@@ -62,10 +84,113 @@ const TaskChatPage = () => {
     });
   }, [tasks.length, dispatch]);
 
+  // Load comments when detail view is open
+  useEffect(() => {
+    if (step === 'detail' && selectedTaskId && !commentsLoaded && !commentsLoading) {
+      setCommentsLoaded(true);
+      dispatch(
+        fetchPostComments({
+          post_id: selectedTaskId,
+          section_code: SECTION_CODE,
+          theme_id: THEME_ID,
+        })
+      );
+    }
+  }, [step, selectedTaskId, commentsLoaded, commentsLoading, dispatch]);
+
+  // --- List handlers ---
   const handleInputFocus = useCallback(() => {
     setStep('compose');
   }, []);
 
+  const handleCommentClick = useCallback((taskId) => {
+    setSelectedTaskId(taskId);
+    setCommentsLoaded(false);
+    setCommentText('');
+    setCommentFiles([]);
+    setStep('detail');
+  }, []);
+
+  const handleTaskComplete = useCallback((taskId, item) => {
+    setCompletionTaskId(taskId);
+    setCompletionItem(item);
+    setCompletionFiles([]);
+    setCompletionDescription('');
+    setStep('completing');
+  }, []);
+
+  const handleCompletedClick = useCallback((taskId) => {
+    setResultTaskId(taskId);
+    setStep('result');
+  }, []);
+
+  // --- Detail (comments) handlers ---
+  const handleSendComment = useCallback(async () => {
+    if ((!commentText.trim() && commentFiles.length === 0) || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await dispatch(
+        createComment({
+          post_id: selectedTaskId,
+          message_text: commentText.trim(),
+          section_code: SECTION_CODE,
+          theme_id: THEME_ID,
+          files: commentFiles,
+        })
+      ).unwrap();
+
+      setCommentText('');
+      setCommentFiles([]);
+    } catch (error) {
+      console.error('Ошибка добавления комментария:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [commentText, commentFiles, isSubmitting, dispatch, selectedTaskId]);
+
+  const handleCommentFileSelect = useCallback((files) => {
+    setCommentFiles(prev => [...prev, ...files]);
+  }, []);
+
+  // --- Completion handlers ---
+  const handleCompletionFileSelect = useCallback((files) => {
+    setCompletionFiles(prev => [...prev, ...files]);
+  }, []);
+
+  const handleCompletionSend = useCallback(async () => {
+    if (completionFiles.length === 0 || !completionDescription.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await dispatch(
+        completeTask({
+          task_message_id: completionTaskId,
+          section_code: SECTION_CODE,
+          theme_id: THEME_ID,
+          description: completionDescription.trim(),
+          files: completionFiles,
+        })
+      ).unwrap();
+
+      logger.log('Task completed successfully');
+      setStep('list');
+      setCompletionTaskId(null);
+      setCompletionItem(null);
+      setCompletionFiles([]);
+      setCompletionDescription('');
+
+      // Reload tasks
+      dispatch(fetchTasks({ section_code: SECTION_CODE, theme_id: THEME_ID }));
+    } catch (error) {
+      logger.error('Error completing task:', error);
+      showError(`Ошибка завершения задачи: ${error}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [completionTaskId, completionFiles, completionDescription, isSubmitting, dispatch]);
+
+  // --- Compose/Preview/Rating handlers ---
   const handlePublishClick = useCallback(async () => {
     if (!taskForm.canPublish) return;
 
@@ -80,7 +205,6 @@ const TaskChatPage = () => {
       if (result.success) {
         setStep('preview');
       } else if (result.skipPreview) {
-        logger.warn('OpenAI unavailable, skipping preview');
         setStep('rating');
       } else {
         showError('Ошибка получения preview от GPT');
@@ -117,12 +241,6 @@ const TaskChatPage = () => {
         ? taskPreview.editedGptText
         : `${taskForm.title.trim()}\n\n${taskForm.description.trim()}`;
 
-      logger.log('Publishing task:', {
-        text: taskText,
-        ratio: taskRating.skipRatio ? null : parseInt(taskRating.ratio) || null,
-        files_count: taskForm.selectedFiles.length
-      });
-
       const taskParams = {
         message_text: taskText,
         section_code: SECTION_CODE,
@@ -136,25 +254,14 @@ const TaskChatPage = () => {
 
       await dispatch(createTask(taskParams)).unwrap();
 
-      logger.log('Task created successfully');
-
       taskForm.resetForm();
       taskRating.resetRating();
       taskPreview.resetPreview();
       setStep('list');
 
-      logger.log('Reloading task list...');
-      // Перезагружаем список задач, но игнорируем ошибки (задача уже создана)
       try {
-        await dispatch(
-          fetchTasks({
-            section_code: SECTION_CODE,
-            theme_id: THEME_ID
-          })
-        ).unwrap();
-        logger.log('Task list updated');
+        await dispatch(fetchTasks({ section_code: SECTION_CODE, theme_id: THEME_ID })).unwrap();
       } catch (fetchError) {
-        // Игнорируем ошибки при перезагрузке, задача уже создана
         logger.warn('Error reloading tasks (non-critical):', fetchError);
       }
     } catch (error) {
@@ -163,15 +270,17 @@ const TaskChatPage = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [
-    taskForm,
-    taskRating,
-    taskPreview,
-    dispatch
-  ]);
+  }, [taskForm, taskRating, taskPreview, dispatch]);
 
+  // --- Navigation ---
   const handleBackClick = useCallback(() => {
-    if (step !== 'list') {
+    if (step === 'detail' || step === 'result' || step === 'completing') {
+      setStep('list');
+      setSelectedTaskId(null);
+      setResultTaskId(null);
+      setCompletionTaskId(null);
+      setCommentsLoaded(false);
+    } else if (step !== 'list') {
       setStep('list');
     } else {
       navigate('/');
@@ -179,6 +288,19 @@ const TaskChatPage = () => {
   }, [step, navigate]);
 
   const isRatingStep = step === 'rating';
+  const isCompletingStep = step === 'completing';
+
+  // --- Result screen ---
+  if (step === 'result' && resultTask) {
+    return (
+      <TaskResultScreen
+        task={resultTask}
+        sectionCode={SECTION_CODE}
+        themeId={THEME_ID}
+        onBack={handleBackClick}
+      />
+    );
+  }
 
   return (
     <div
@@ -203,6 +325,7 @@ const TaskChatPage = () => {
         onBackClick={handleBackClick}
       />
 
+      {/* Step: List */}
       {step === 'list' && (
         <>
           <div className="task-chat-page__content">
@@ -212,16 +335,108 @@ const TaskChatPage = () => {
               error={error}
               sectionCode={SECTION_CODE}
               themeId={THEME_ID}
+              onCommentClick={handleCommentClick}
+              onTaskComplete={handleTaskComplete}
+              onCompletedClick={handleCompletedClick}
             />
           </div>
 
           <TaskFooter
+            mode="create"
             onAttachClick={taskForm.handleAttachClick}
             onInputFocus={handleInputFocus}
           />
         </>
       )}
 
+      {/* Step: Detail (comments) */}
+      {step === 'detail' && selectedTask && (
+        <>
+          <div className="task-chat-page__content">
+            <div className="task-chat-page__list">
+              <TaskCard
+                task={selectedTask}
+                sectionCode={SECTION_CODE}
+                themeId={THEME_ID}
+                onCommentClick={handleCommentClick}
+                onTaskComplete={handleTaskComplete}
+                onCompletedClick={handleCompletedClick}
+              />
+            </div>
+
+            <div style={{ margin: '20px 16px', height: '1px', backgroundColor: '#E2E6E9' }} />
+
+            <div style={{ margin: '0 16px', marginBottom: '80px' }}>
+              {commentsLoading && (
+                <p style={{ textAlign: 'center', color: '#666' }}>Загрузка комментариев...</p>
+              )}
+
+              {!commentsLoading && comments.length > 0
+                ? comments.map(comment => (
+                    <CommentThread
+                      key={comment.id}
+                      comment={comment}
+                      sectionCode={SECTION_CODE}
+                      themeId={THEME_ID}
+                    />
+                  ))
+                : !commentsLoading && commentsLoaded && (
+                    <p style={{ textAlign: 'center', color: '#666' }}>Комментариев пока нет</p>
+                  )}
+            </div>
+          </div>
+
+          <TaskFooter
+            mode="comment"
+            value={commentText}
+            onChange={setCommentText}
+            onSend={handleSendComment}
+            onFileSelect={handleCommentFileSelect}
+            hasFiles={commentFiles.length > 0}
+            isSubmitting={isSubmitting}
+          />
+        </>
+      )}
+
+      {/* Step: Completing (modal + footer) */}
+      {isCompletingStep && (
+        <>
+          <div className="task-chat-page__content">
+            <TaskList
+              tasks={tasks}
+              loading={loading}
+              error={error}
+              sectionCode={SECTION_CODE}
+              themeId={THEME_ID}
+              onCommentClick={handleCommentClick}
+              onTaskComplete={handleTaskComplete}
+              onCompletedClick={handleCompletedClick}
+            />
+          </div>
+
+          <TaskCompletionModal
+            selectedFiles={completionFiles}
+            onClose={() => {
+              setStep('list');
+              setCompletionTaskId(null);
+              setCompletionFiles([]);
+              setCompletionDescription('');
+            }}
+          />
+
+          <TaskFooter
+            mode="complete"
+            value={completionDescription}
+            onChange={setCompletionDescription}
+            onSend={handleCompletionSend}
+            onFileSelect={handleCompletionFileSelect}
+            hasFiles={completionFiles.length > 0}
+            isSubmitting={isSubmitting}
+          />
+        </>
+      )}
+
+      {/* Step: Compose */}
       {step === 'compose' && (
         <TaskComposeForm
           title={taskForm.title}
@@ -235,6 +450,7 @@ const TaskChatPage = () => {
         />
       )}
 
+      {/* Step: Preview */}
       {step === 'preview' && (
         <TaskPreviewScreen
           originalData={taskPreview.originalData}
@@ -247,6 +463,7 @@ const TaskChatPage = () => {
         />
       )}
 
+      {/* Step: Rating */}
       {step === 'rating' && (
         <TaskRatingScreen
           ratio={taskRating.ratio}

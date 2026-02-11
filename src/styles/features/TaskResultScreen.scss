@@ -1,0 +1,159 @@
+@import '../variables';
+
+.task-result-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
+  &__content {
+    flex: 1;
+    padding: 0 0 80px 0;
+    overflow-y: auto;
+  }
+
+  &__divider {
+    margin: 20px 16px;
+    height: 1px;
+    background-color: #E2E6E9;
+  }
+
+  &__comments {
+    margin: 0 16px;
+    margin-bottom: 80px;
+  }
+}
+
+.task-result-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0px 4px 4px 0px #00000040;
+  margin: 16px;
+  font-family: $font-montserrat;
+  font-size: 14px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  &__avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+  }
+
+  &__username {
+    font-weight: 600;
+    color: #333;
+    font-size: 15px;
+  }
+
+  &__file-wrapper {
+    margin-bottom: 12px;
+
+    .file-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .file-box {
+      background-color: #D9D9D9;
+      border-radius: 10px;
+      width: 60px;
+      height: 60px;
+      flex-shrink: 0;
+    }
+
+    .file-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .file-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: black;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-size {
+      font-size: 10px;
+      font-weight: 400;
+      color: #ABBBC3;
+    }
+
+    .file-link {
+      font-size: 12px;
+      font-weight: 500;
+      color: #1976D2;
+      cursor: pointer;
+    }
+  }
+
+  &__excerpt-title {
+    font-family: $font-space-grotesk;
+    font-weight: 700;
+    font-size: 20px;
+    display: block;
+    margin-bottom: 4px;
+    color: $text-primary;
+  }
+
+  &__excerpt-text {
+    font-family: $font-space-grotesk;
+    font-weight: 400;
+    font-size: 20px;
+    margin: 0;
+    color: $text-primary;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+
+  &__reactions {
+    display: flex;
+    gap: 10px;
+    margin: 12px 0;
+  }
+
+  &__divider {
+    height: 1px;
+    background-color: #E2E6E9;
+    width: 100%;
+    margin-bottom: 10px;
+    margin-top: 20px;
+  }
+
+  &__footer {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  &__avatar-stack {
+    width: 50px;
+    height: 28px;
+  }
+
+  &__comments {
+    font-family: $font-roboto;
+    font-size: 14px;
+    color: rgba(30, 136, 211, 1);
+  }
+
+  &__icon-donat {
+    width: 56px;
+    height: 30px;
+  }
+}

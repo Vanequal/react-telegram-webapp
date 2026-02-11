@@ -153,21 +153,21 @@
         margin-top: 12px;
         box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+
+        &:hover {
+            opacity: 0.85;
+        }
     }
 
     &__completed-text {
-        font-family: $font-roboto;
-        font-size: 16px;
-        color: $text-primary;
-        font-weight: 500;
-    }
-
-    &__completed-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
+        font-family: $font-montserrat;
+        font-size: 20px;
+        color: rgba(224, 48, 48, 1);
+        font-weight: 700;
     }
 }
 
@@ -191,6 +191,14 @@
         gap: 8px;
         cursor: pointer;
         padding: 8px 0;
+
+        &--completed {
+            background: white;
+            box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+            border-radius: 10px;
+            padding: 12px 16px;
+            justify-content: center;
+        }
     }
 
     &__arrow {
@@ -209,8 +217,15 @@
         font-family: $font-roboto;
         font-size: 14px;
         font-style: italic;
-        color: rgba(224, 48, 48, 1); // ← КРАСНЫЙ ЦВЕТ
-        margin-left: 8px; // ← ОТСТУП ОТ SVG
+        color: rgba(224, 48, 48, 1);
+        margin-left: 8px;
+    }
+
+    &__text-completed {
+        font-family: $font-montserrat;
+        font-size: 20px;
+        font-weight: 700;
+        color: rgba(224, 48, 48, 1);
     }
 
     &__avatar {
@@ -223,8 +238,10 @@
 
     &__details {
         margin-top: 12px;
-        padding: 12px;
-        background: rgba(0, 44, 87, 0.8); // ← ТЕМНЫЙ ФОН
+        margin-left: -16px;
+        margin-right: -16px;
+        padding: 12px 16px;
+        background: rgba(0, 44, 87, 0.8);
     }
 
     &__details-card {
@@ -252,13 +269,13 @@
         @include button-reset;
         background: rgba(21, 101, 192, 1);
         color: white;
-        padding: 12px 24px;
+        padding: 6px 16px;
         border-radius: 4px;
         font-family: $font-roboto;
-        font-size: 16px;
+        font-size: 14px;
         font-weight: 500;
         cursor: pointer;
-        width: 100%;
+        width: auto;
         transition: opacity 0.2s ease;
 
         &:hover {

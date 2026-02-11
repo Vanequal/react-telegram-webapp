@@ -4,7 +4,7 @@ import TaskCard from './TaskCard';
 import LoadingState from '@/shared/components/LoadingState';
 import ErrorState from '@/shared/components/ErrorState';
 
-const TaskList = ({ tasks, loading, error, sectionCode, themeId }) => {
+const TaskList = ({ tasks, loading, error, sectionCode, themeId, onCommentClick, onTaskComplete, onCompletedClick }) => {
   if (loading) {
     return <LoadingState message="Загрузка задач..." />;
   }
@@ -34,6 +34,9 @@ const TaskList = ({ tasks, loading, error, sectionCode, themeId }) => {
           task={task}
           sectionCode={sectionCode}
           themeId={themeId}
+          onCommentClick={onCommentClick}
+          onTaskComplete={onTaskComplete}
+          onCompletedClick={onCompletedClick}
         />
       ))}
     </div>
@@ -45,7 +48,10 @@ TaskList.propTypes = {
   loading: PropTypes.bool.isRequired,
   error: PropTypes.string,
   sectionCode: PropTypes.string.isRequired,
-  themeId: PropTypes.number.isRequired
+  themeId: PropTypes.number.isRequired,
+  onCommentClick: PropTypes.func,
+  onTaskComplete: PropTypes.func,
+  onCompletedClick: PropTypes.func,
 };
 
 export default TaskList;

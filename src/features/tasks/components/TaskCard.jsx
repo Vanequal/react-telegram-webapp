@@ -2,7 +2,7 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
-import { reactToPost, acceptTask, completeTask } from '@/store/slices/postSlice'
+import { reactToPost, acceptTask } from '@/store/slices/postSlice'
 
 // Components
 import ReactionBadges from '@/shared/components/ReactionBadges'
@@ -20,10 +20,10 @@ import donatIcon from '@/assets/images/donatIcon.webp'
 // Styles
 import '@/styles/features/TaskCard.scss'
 
-const TaskCard = ({ task, sectionCode, themeId }) => {
+const TaskCard = ({ task, sectionCode, themeId, onCommentClick, onTaskComplete, onCompletedClick }) => {
     const dispatch = useDispatch()
     const posts = useSelector(state => state.post.posts)
-    const currentUser = useSelector(state => state.me.user) // Предполагаем что есть user в meSlice
+    const currentUser = useSelector(state => state.me.user)
 
     // Local state
     const [showAcceptModal, setShowAcceptModal] = useState(false)
@@ -51,24 +51,22 @@ const TaskCard = ({ task, sectionCode, themeId }) => {
     }, [task.attachments, currentPost?.attachments, task.files])
 
     // Task status from backend
-    const taskStatus = currentPost?.status || task.status || 'idle' // idle, in_progress, completed
+    const taskStatus = currentPost?.status || task.status || 'idle'
     const taskRatio = currentPost?.ratio || task.ratio || null
     const isPartially = currentPost?.is_partially || task.is_partially || false
     const expiresAt = currentPost?.expires_at || task.expires_at || null
 
-    // Формируем массив "в работе" для отображения
+    // Build in-progress items
     const inProgressItems = useMemo(() => {
-        if (taskStatus === 'idle' || taskStatus === 'completed') return []
+        if (taskStatus === 'idle') return []
 
-        // TODO: В идеале нужен отдельный запрос для получения всех исполнителей
-        // Пока показываем одну запись на основе текущих данных
         return [
             {
                 type: isPartially ? 'partial' : 'full',
-                user: task.executor || { username: 'Исполнитель' }, // TODO: данные исполнителя
+                user: task.executor || { username: 'Исполнитель' },
                 deadline: expiresAt,
-                description: task.executor_description || '', // TODO: описание от исполнителя
-                isCurrentUser: currentUser?.id === task.executor?.id, // Проверяем это текущий юзер или нет
+                description: task.executor_description || '',
+                isCurrentUser: currentUser?.id === task.executor?.id,
             },
         ]
     }, [taskStatus, isPartially, expiresAt, task.executor, task.executor_description, currentUser])
@@ -116,25 +114,22 @@ const TaskCard = ({ task, sectionCode, themeId }) => {
         [task.id, sectionCode, themeId, dispatch]
     )
 
-    const handleTaskCompleted = useCallback(
-        async (taskId, item, completionData) => {
-            try {
-                await dispatch(
-                    completeTask({
-                        task_message_id: taskId,
-                        section_code: sectionCode,
-                        theme_id: themeId,
-                        description: completionData.description,
-                        files: completionData.files,
-                    })
-                ).unwrap()
-
-                console.log('✅ Задача успешно завершена')
-            } catch (error) {
-                console.error('Ошибка завершения задачи:', error)
-            }
+    const handleTaskCompleteClick = useCallback(
+        item => {
+            onTaskComplete?.(task.id, item)
         },
-        [sectionCode, themeId, dispatch]
+        [task.id, onTaskComplete]
+    )
+
+    const handleCommentClick = useCallback(() => {
+        onCommentClick?.(task.id)
+    }, [task.id, onCommentClick])
+
+    const handleCompletedClick = useCallback(
+        taskId => {
+            onCompletedClick?.(taskId)
+        },
+        [onCompletedClick]
     )
 
     const formatTimestamp = timestamp => {
@@ -201,12 +196,26 @@ const TaskCard = ({ task, sectionCode, themeId }) => {
                     )}
                 </div>
 
-                {/* In Progress Section */}
+                {/* In Progress / Completed Section */}
                 {(taskStatus === 'in_progress' || taskStatus === 'completed') && inProgressItems.length > 0 && (
-                    <TaskInProgress items={inProgressItems} taskId={task.id} sectionCode={sectionCode} themeId={themeId} onTaskCompleted={handleTaskCompleted} />
+                    <TaskInProgress
+                        items={inProgressItems}
+                        taskId={task.id}
+                        taskStatus={taskStatus}
+                        onTaskComplete={handleTaskCompleteClick}
+                        onCompletedClick={handleCompletedClick}
+                    />
                 )}
+
+                {/* Completed badge for tasks without inProgressItems */}
+                {taskStatus === 'completed' && inProgressItems.length === 0 && (
+                    <div className="task-card__completed-badge" onClick={() => handleCompletedClick(task.id)}>
+                        <div className="task-card__completed-text">Задача выполнена</div>
+                    </div>
+                )}
+
                 <div className="task-card__divider" />
-                <div className="task-card__footer">
+                <div className="task-card__footer" onClick={handleCommentClick}>
                     <img src={avatarStack} alt="Avatars" className="task-card__avatar-stack" />
                     <span className="task-card__comments">
                         {task.comments_count || 0} {task.comments_count === 1 ? 'комментарий' : 'комментариев'}
@@ -215,14 +224,6 @@ const TaskCard = ({ task, sectionCode, themeId }) => {
                 </div>
                 {/* Ratio Badge */}
                 {taskRatio && <div className="task-card__ratio">x{taskRatio}</div>}
-
-                {/* Completed Badge */}
-                {taskStatus === 'completed' && (
-                    <div className="task-card__completed-badge">
-                        <div className="task-card__completed-text">Задача выполнена</div>
-                        <img src={userIcon} alt="User" className="task-card__completed-avatar" />
-                    </div>
-                )}
             </div>
 
             {/* Modals */}
@@ -237,6 +238,9 @@ TaskCard.propTypes = {
     task: PropTypes.object.isRequired,
     sectionCode: PropTypes.string.isRequired,
     themeId: PropTypes.number.isRequired,
+    onCommentClick: PropTypes.func,
+    onTaskComplete: PropTypes.func,
+    onCompletedClick: PropTypes.func,
 }
 
 export default TaskCard

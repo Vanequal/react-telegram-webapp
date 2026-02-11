@@ -457,6 +457,8 @@ export const completeTask = createAsyncThunk(
         task_message_id,
         comment: commentResult,
         uploaded_file_ids: uploadedFileIds,
+        completion_description: description,
+        completion_files: files,
       }
     } catch (err) {
       logger.error('🔥 Ошибка завершения задачи:', err?.response?.data || err.message)
@@ -1034,14 +1036,16 @@ const postSlice = createSlice({
       .addCase(completeTask.fulfilled, (state, action) => {
         state.tasksLoading = false
 
-        const { task_message_id } = action.payload
+        const { task_message_id, completion_description, completion_files } = action.payload
 
-        // Обновляем статус на completed
+        // Обновляем статус на completed и сохраняем данные о выполнении
         const taskIndex = state.posts.findIndex(post => post.id === task_message_id)
         if (taskIndex !== -1) {
           state.posts[taskIndex] = {
             ...state.posts[taskIndex],
             status: 'completed',
+            completion_description: completion_description || '',
+            completion_files: completion_files || [],
           }
         }
       })
