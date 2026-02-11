@@ -168,7 +168,11 @@ export const createComment = createAsyncThunk(
         text: message_text,
         media_file_ids: uploadedFileIds,
         content_id: post_id, // ← ID поста к которому комментарий
-        reply_to_message_id: reply_to_message_id, // ← ID комментария (для replies)
+      }
+
+      // Добавляем reply_to_message_id только если он указан
+      if (reply_to_message_id) {
+        requestData.reply_to_message_id = reply_to_message_id
       }
 
       const res = await axios.post(`/api/v1/messages/comments`, requestData, {
@@ -438,31 +442,35 @@ export const completeTask = createAsyncThunk(
         task_message_id,
         description,
         files_count: uploadedFileIds.length,
+        uploadedFileIds,
       })
 
-      // ✅ Создаем комментарий с результатами выполнения
-      const commentResult = await dispatch(
-        createComment({
-          post_id: task_message_id,
-          message_text: description,
-          section_code,
-          theme_id,
-          files: files,
-        })
-      ).unwrap()
+      // ✅ Создаем комментарий с результатами напрямую (без двойной загрузки файлов)
+      const requestData = {
+        type: 'comment',
+        text: description || '',
+        media_file_ids: uploadedFileIds,
+        content_id: task_message_id,
+      }
 
-      logger.log('✅ Задача отмечена как выполненная')
+      logger.log('📋 Отправляем комментарий завершения:', requestData)
+
+      const res = await axios.post(`/api/v1/messages/comments`, requestData, {
+        params: { theme_id, section_code },
+      })
+
+      logger.log('✅ Задача отмечена как выполненная:', res.data)
 
       return {
         task_message_id,
-        comment: commentResult,
+        comment: res.data,
         uploaded_file_ids: uploadedFileIds,
         completion_description: description,
         completion_files: files,
       }
     } catch (err) {
       logger.error('🔥 Ошибка завершения задачи:', err?.response?.data || err.message)
-      return rejectWithValue(err.response?.data?.detail || 'Ошибка завершения задачи')
+      return rejectWithValue(err.response?.data?.detail || err?.response?.data || 'Ошибка завершения задачи')
     }
   }
 )
