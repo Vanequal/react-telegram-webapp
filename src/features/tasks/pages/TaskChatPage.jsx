@@ -144,6 +144,7 @@ const TaskChatPage = () => {
       setCommentFiles([]);
     } catch (error) {
       console.error('Ошибка добавления комментария:', error);
+      showError(`Ошибка комментария: ${typeof error === 'string' ? error : JSON.stringify(error)}`);
     } finally {
       setIsSubmitting(false);
     }

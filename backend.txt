@@ -1,0 +1,1047 @@
+Auth
+
+
+POST
+/api/v1/auth/telegram/login
+Telegram Login Endpoint
+
+Parameters
+Try it out
+No parameters
+
+Request body
+
+application/json
+Example Value
+Schema
+{
+  "init_data": "string"
+}
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "token": "string",
+  "message": "Authenticated successfully",
+  "status": "ok"
+}
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+Users
+
+
+GET
+/api/v1/users/me
+Me Endpoint
+
+
+Parameters
+Try it out
+No parameters
+
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "first_name": "string",
+  "username": "string",
+  "email": "string",
+  "phone_number": "string",
+  "language_code": "string",
+  "avatar_url": "string",
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "created_at": "2026-02-15T18:42:31.182Z",
+  "updated_at": "2026-02-15T18:42:31.182Z"
+}
+No links
+Themes
+
+
+GET
+/api/v1/themes/{theme_id}
+Get Theme Endpoint
+
+
+Parameters
+Try it out
+Name	Description
+theme_id *
+integer
+(path)
+theme_id
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "id": 0,
+  "parent_id": 0,
+  "author_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "title": "string",
+  "is_group": false,
+  "created_at": "2026-02-15T18:42:31.183Z",
+  "updated_at": "2026-02-15T18:42:31.183Z"
+}
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+
+GET
+/api/v1/themes/{theme_id}/sections
+Get Theme Section Codes Endpoint
+
+
+Parameters
+Try it out
+Name	Description
+theme_id *
+integer
+(path)
+theme_id
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+[
+  "string"
+]
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+
+POST
+/api/v1/themes
+Create Theme Endpoint
+
+
+Parameters
+Try it out
+No parameters
+
+Request body
+
+application/json
+Example Value
+Schema
+{
+  "title": "string",
+  "parent_id": null,
+  "tech_version": "full"
+}
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "id": 0,
+  "parent_id": 0,
+  "author_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "title": "string",
+  "is_group": false,
+  "created_at": "2026-02-15T18:42:31.187Z",
+  "updated_at": "2026-02-15T18:42:31.187Z"
+}
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+Messages
+
+
+GET
+/api/v1/messages/posts
+Get Message Posts Endpoint
+
+
+Parameters
+Try it out
+Name	Description
+limit
+integer
+(query)
+Default value : 100
+
+100
+maximum: 500
+minimum: 1
+offset
+integer
+(query)
+Default value : 0
+
+0
+minimum: 0
+theme_id *
+integer
+(query)
+theme_id
+section_code *
+string
+(query)
+section_code
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+[
+  {
+    "message": {
+      "id": 0,
+      "author_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "theme_id": 0,
+      "section_code": "string",
+      "text": "string",
+      "type": "message",
+      "created_at": "2026-02-15T18:42:31.190Z",
+      "updated_at": "2026-02-15T18:42:31.190Z"
+    },
+    "message_post": {
+      "is_openai_generated": true,
+      "ratio": 99
+    }
+  }
+]
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+
+GET
+/api/v1/messages/tasks/{content_id}
+Get Message Tasks Endpoint
+
+
+Parameters
+Try it out
+Name	Description
+content_id *
+integer
+(path)
+content_id
+limit
+integer
+(query)
+Default value : 100
+
+100
+maximum: 500
+minimum: 1
+offset
+integer
+(query)
+Default value : 0
+
+0
+minimum: 0
+theme_id *
+integer
+(query)
+theme_id
+section_code *
+string
+(query)
+section_code
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+[
+  {
+    "message": {
+      "id": 0,
+      "author_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "theme_id": 0,
+      "section_code": "string",
+      "text": "string",
+      "type": "message",
+      "created_at": "2026-02-15T18:42:31.194Z",
+      "updated_at": "2026-02-15T18:42:31.194Z"
+    },
+    "message_task": {
+      "content_id": 0,
+      "is_partially": true,
+      "status": "in_progress",
+      "expires_at": "2026-02-15T18:42:31.194Z"
+    }
+  }
+]
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+
+GET
+/api/v1/messages/comments/{content_id}
+Get Message Comments Endpoint
+
+
+Parameters
+Try it out
+Name	Description
+content_id *
+integer
+(path)
+content_id
+limit
+integer
+(query)
+Default value : 100
+
+100
+maximum: 500
+minimum: 1
+offset
+integer
+(query)
+Default value : 0
+
+0
+minimum: 0
+theme_id *
+integer
+(query)
+theme_id
+section_code *
+string
+(query)
+section_code
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+[
+  {
+    "message": {
+      "id": 0,
+      "author_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "theme_id": 0,
+      "section_code": "string",
+      "text": "string",
+      "type": "message",
+      "created_at": "2026-02-15T18:42:31.197Z",
+      "updated_at": "2026-02-15T18:42:31.197Z"
+    },
+    "message_comment": {
+      "content_id": 0,
+      "reply_to_message_id": 0
+    }
+  }
+]
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+
+GET
+/api/v1/messages/{message_id}/attachments
+Get Message Media Files Endpoint
+
+
+Parameters
+Try it out
+Name	Description
+message_id *
+integer
+(path)
+message_id
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+[
+  {
+    "file_path": "string",
+    "original_name": "string",
+    "mime_type": "string",
+    "file_size": 0,
+    "created_at": "2026-02-15T18:42:31.199Z"
+  }
+]
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+
+GET
+/api/v1/messages/{message_id}/reactions
+Get Reactions Endpoint
+
+
+Parameters
+Try it out
+Name	Description
+message_id *
+integer
+(path)
+message_id
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+[
+  {
+    "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "reaction": "like",
+    "created_at": "2026-02-15T18:42:31.201Z",
+    "updated_at": "2026-02-15T18:42:31.201Z"
+  }
+]
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+
+PATCH
+/api/v1/messages/{message_id}/reaction
+Create Message Reaction Endpoint
+
+
+Parameters
+Try it out
+Name	Description
+message_id *
+integer
+(path)
+message_id
+Request body
+
+application/json
+Example Value
+Schema
+{
+  "reaction": "like"
+}
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+[
+  {
+    "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "reaction": "like",
+    "created_at": "2026-02-15T18:42:31.202Z",
+    "updated_at": "2026-02-15T18:42:31.202Z"
+  }
+]
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+
+POST
+/api/v1/messages/openai
+Message Openai Generate Text Endpoint
+
+
+Parameters
+Try it out
+Name	Description
+theme_id *
+integer
+(query)
+theme_id
+section_code *
+string
+(query)
+section_code
+Request body
+
+application/json
+Example Value
+Schema
+{
+  "text": "string"
+}
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "original_text": "string",
+  "openai_text": "string"
+}
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+
+POST
+/api/v1/messages/posts
+Create Message Post Endpoint
+
+
+Parameters
+Try it out
+Name	Description
+theme_id *
+integer
+(query)
+theme_id
+section_code *
+string
+(query)
+section_code
+Request body
+
+application/json
+Example Value
+Schema
+{
+  "type": "post",
+  "text": "string",
+  "media_file_ids": [
+    "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  ],
+  "is_openai_generated": false,
+  "ratio": 1
+}
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "message": {
+    "id": 0,
+    "author_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "theme_id": 0,
+    "section_code": "string",
+    "text": "string",
+    "type": "message",
+    "created_at": "2026-02-15T18:42:31.210Z",
+    "updated_at": "2026-02-15T18:42:31.210Z"
+  },
+  "message_post": {
+    "is_openai_generated": true,
+    "ratio": 99
+  }
+}
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+
+POST
+/api/v1/messages/tasks
+Create Message Task Endpoint
+
+
+Parameters
+Try it out
+Name	Description
+theme_id *
+integer
+(query)
+theme_id
+section_code *
+string
+(query)
+section_code
+Request body
+
+application/json
+Example Value
+Schema
+{
+  "type": "task",
+  "text": "string",
+  "media_file_ids": [
+    "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  ],
+  "content_id": 0,
+  "is_partially": false,
+  "expires_at": "2026-02-15T18:42:31.213Z"
+}
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "message": {
+    "id": 0,
+    "author_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "theme_id": 0,
+    "section_code": "string",
+    "text": "string",
+    "type": "message",
+    "created_at": "2026-02-15T18:42:31.213Z",
+    "updated_at": "2026-02-15T18:42:31.213Z"
+  },
+  "message_task": {
+    "content_id": 0,
+    "is_partially": true,
+    "status": "in_progress",
+    "expires_at": "2026-02-15T18:42:31.213Z"
+  }
+}
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+
+POST
+/api/v1/messages/comments
+Create Message Comment Endpoint
+
+
+Parameters
+Try it out
+Name	Description
+theme_id *
+integer
+(query)
+theme_id
+section_code *
+string
+(query)
+section_code
+Request body
+
+application/json
+Example Value
+Schema
+{
+  "type": "comment",
+  "text": "string",
+  "media_file_ids": [
+    "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  ],
+  "content_id": 1,
+  "reply_to_message_id": 1
+}
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "message": {
+    "id": 0,
+    "author_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "theme_id": 0,
+    "section_code": "string",
+    "text": "string",
+    "type": "message",
+    "created_at": "2026-02-15T18:42:31.216Z",
+    "updated_at": "2026-02-15T18:42:31.216Z"
+  },
+  "message_comment": {
+    "content_id": 0,
+    "reply_to_message_id": 0
+  }
+}
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+
+POST
+/api/v1/messages/upload_files
+Message Upload Files Endpoint
+
+
+Parameters
+Try it out
+No parameters
+
+Request body
+
+multipart/form-data
+files *
+array<string>
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+[
+  "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+]
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}

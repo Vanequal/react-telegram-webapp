@@ -153,27 +153,18 @@ export const createComment = createAsyncThunk(
         uploadedFileIds = uploadResult || []
       }
 
-      logger.log('📤 Создание комментария:', {
-        text: message_text,
-        content_id: post_id,
-        reply_to_message_id,
-        section_code,
-        theme_id,
-        files_count: uploadedFileIds.length,
-      })
-
       // ✅ Структура данных согласно Swagger для комментариев
       const requestData = {
         type: 'comment',
-        text: message_text,
+        text: message_text || '',
         media_file_ids: uploadedFileIds,
         content_id: post_id, // ← ID поста к которому комментарий
+        reply_to_message_id: reply_to_message_id || post_id, // ← Обязательное поле, если нет reply — ставим content_id
       }
 
-      // Добавляем reply_to_message_id только если он указан
-      if (reply_to_message_id) {
-        requestData.reply_to_message_id = reply_to_message_id
-      }
+      console.log('📤 [createComment] Отправляемые данные:', JSON.stringify(requestData, null, 2))
+      console.log('📤 [createComment] Query params:', { theme_id, section_code })
+      console.log('📤 [createComment] post_id тип:', typeof post_id, 'значение:', post_id)
 
       const res = await axios.post(`/api/v1/messages/comments`, requestData, {
         params: { theme_id, section_code },
@@ -187,8 +178,14 @@ export const createComment = createAsyncThunk(
         uploaded_file_ids: uploadedFileIds,
       }
     } catch (err) {
-      logger.error('🔥 Ошибка создания комментария:', err?.response?.data || err.message)
-      return rejectWithValue(err.response?.data?.detail || 'Ошибка добавления комментария')
+      console.error('🔥 [createComment] ПОЛНЫЙ ответ ошибки:', JSON.stringify(err?.response?.data, null, 2))
+      console.error('🔥 [createComment] HTTP статус:', err?.response?.status)
+      console.error('🔥 [createComment] Заголовки ответа:', err?.response?.headers)
+      const errorDetail = err.response?.data?.detail
+      const errorMsg = Array.isArray(errorDetail)
+        ? errorDetail.map(e => `${e.loc?.join('.')}: ${e.msg}`).join('; ')
+        : (errorDetail || JSON.stringify(err.response?.data) || 'Ошибка добавления комментария')
+      return rejectWithValue(errorMsg)
     }
   }
 )
@@ -438,22 +435,18 @@ export const completeTask = createAsyncThunk(
         uploadedFileIds = uploadResult || []
       }
 
-      logger.log('📤 Отмечаем задачу выполненной:', {
-        task_message_id,
-        description,
-        files_count: uploadedFileIds.length,
-        uploadedFileIds,
-      })
-
       // ✅ Создаем комментарий с результатами напрямую (без двойной загрузки файлов)
       const requestData = {
         type: 'comment',
         text: description || '',
         media_file_ids: uploadedFileIds,
         content_id: task_message_id,
+        reply_to_message_id: task_message_id, // ← Обязательное поле для API
       }
 
-      logger.log('📋 Отправляем комментарий завершения:', requestData)
+      console.log('📤 [completeTask] Отправляемые данные:', JSON.stringify(requestData, null, 2))
+      console.log('📤 [completeTask] Query params:', { theme_id, section_code })
+      console.log('📤 [completeTask] task_message_id тип:', typeof task_message_id, 'значение:', task_message_id)
 
       const res = await axios.post(`/api/v1/messages/comments`, requestData, {
         params: { theme_id, section_code },
@@ -469,8 +462,13 @@ export const completeTask = createAsyncThunk(
         completion_files: files,
       }
     } catch (err) {
-      logger.error('🔥 Ошибка завершения задачи:', err?.response?.data || err.message)
-      return rejectWithValue(err.response?.data?.detail || err?.response?.data || 'Ошибка завершения задачи')
+      console.error('🔥 [completeTask] ПОЛНЫЙ ответ ошибки:', JSON.stringify(err?.response?.data, null, 2))
+      console.error('🔥 [completeTask] HTTP статус:', err?.response?.status)
+      const errorDetail = err.response?.data?.detail
+      const errorMsg = Array.isArray(errorDetail)
+        ? errorDetail.map(e => `${e.loc?.join('.')}: ${e.msg}`).join('; ')
+        : (errorDetail || JSON.stringify(err.response?.data) || 'Ошибка завершения задачи')
+      return rejectWithValue(errorMsg)
     }
   }
 )
