@@ -1008,8 +1008,40 @@ const postSlice = createSlice({
           const hasExecutions = item.has_executions || item.executions?.length > 0
           const executions = item.executions || []
 
-          // Находим активное исполнение (последнее)
-          const activeExecution = executions.length > 0 ? executions[executions.length - 1] : null
+          // Сортируем исполнения по дате создания (новые первые)
+          const sortedExecutions = [...executions].sort((a, b) =>
+            new Date(b.message?.created_at || 0) - new Date(a.message?.created_at || 0)
+          )
+          const activeExecution = sortedExecutions.length > 0 ? sortedExecutions[0] : null
+
+          // Проверяем, есть ли исполнение со статусом 'completed'
+          const hasCompletedExecution = executions.some(e =>
+            e.message_task?.status === 'completed'
+          )
+
+          // Проверяем, есть ли завершающее исполнение (is_partially === false после принятия)
+          // Если есть 2+ исполнений и новейшее имеет is_partially === false — задача выполнена
+          const isCompletedBySubmission = sortedExecutions.length >= 2 &&
+            activeExecution?.message_task?.is_partially === false
+
+          // Сохраняем статус 'completed' из оптимистичного обновления (completeTask.fulfilled)
+          const existingTask = state.posts.find(p => p.id === item.message.id)
+          const wasCompleted = existingTask?.status === 'completed'
+
+          // Определяем статус задачи
+          let taskStatus
+          if (hasCompletedExecution || isCompletedBySubmission || wasCompleted) {
+            taskStatus = 'completed'
+          } else if (hasExecutions) {
+            taskStatus = activeExecution?.message_task?.status || 'in_progress'
+          } else {
+            taskStatus = 'idle'
+          }
+
+          // Для отображения "в работе" берём исполнение принятия (не завершения)
+          const acceptExecution = sortedExecutions.find(e =>
+            e.message_task?.is_partially !== undefined && e.message_task?.status === 'in_progress'
+          ) || activeExecution
 
           return {
             id: item.message.id,
@@ -1023,17 +1055,21 @@ const postSlice = createSlice({
             media_file_ids: item.message.media_file_ids || [],
             ratio: item.message_post?.ratio || 1,
             is_openai_generated: item.message_post?.is_openai_generated || false,
-            
-            // ✅ Статус задачи определяем по наличию исполнений
-            status: hasExecutions ? (activeExecution?.message_task?.status || 'in_progress') : 'idle',
-            is_partially: activeExecution?.message_task?.is_partially || false,
-            expires_at: activeExecution?.message_task?.expires_at || null,
-            
+
+            // ✅ Статус задачи: проверяем все исполнения + оптимистичное обновление
+            status: taskStatus,
+            is_partially: acceptExecution?.message_task?.is_partially || false,
+            expires_at: acceptExecution?.message_task?.expires_at || null,
+
+            // Сохраняем данные о выполнении из оптимистичного обновления
+            completion_description: existingTask?.completion_description || '',
+            completion_files: existingTask?.completion_files || [],
+
             // Сохраняем массив исполнений для TaskInProgress
             executions: executions,
             comments_count: executions.length,
-            executor: activeExecution?.message?.author || null,
-            executor_description: activeExecution?.message?.text || '',
+            executor: acceptExecution?.message?.author || null,
+            executor_description: acceptExecution?.message?.text || '',
           }
         })
 
