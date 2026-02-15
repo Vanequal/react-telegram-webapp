@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import userIcon from '@/assets/images/userIcon.webp'
 
-const TaskInProgress = ({ items, taskId, taskStatus, onTaskComplete, onCompletedClick }) => {
+const TaskInProgress = ({ items, taskId, taskStatus, onTaskComplete, onCompletedClick, labels = {} }) => {
   const [expandedIndex, setExpandedIndex] = useState(null)
 
   const toggleExpand = useCallback(index => {
@@ -32,7 +32,7 @@ const TaskInProgress = ({ items, taskId, taskStatus, onTaskComplete, onCompleted
             className="task-in-progress__row task-in-progress__row--completed"
             onClick={() => onCompletedClick?.(taskId)}
           >
-            <span className="task-in-progress__text-completed">Задача выполнена</span>
+            <span className="task-in-progress__text-completed">{labels.completed || 'Задача выполнена'}</span>
           </div>
         </div>
       </div>
@@ -50,7 +50,7 @@ const TaskInProgress = ({ items, taskId, taskStatus, onTaskComplete, onCompleted
               <path d="M0.75 0.75L6.75 6.75L12.75 0.75" stroke="#3895D7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <span className="task-in-progress__text">
-              {item.type === 'full' ? 'Задача в работе' : 'Часть задачи в работе'} до {formatDeadline(item.deadline)}
+              {item.type === 'full' ? (labels.fullInProgress || 'Задача в работе') : (labels.partialInProgress || 'Часть задачи в работе')} до {formatDeadline(item.deadline)}
             </span>
             <img src={item.user?.avatar || userIcon} alt="User" className="task-in-progress__avatar" />
           </div>
@@ -63,7 +63,7 @@ const TaskInProgress = ({ items, taskId, taskStatus, onTaskComplete, onCompleted
 
                 {item.isCurrentUser && (
                   <button className="task-in-progress__complete-btn" onClick={() => onTaskComplete?.(item)}>
-                    Задача выполнена
+                    {labels.completed || 'Задача выполнена'}
                   </button>
                 )}
               </div>
@@ -91,6 +91,7 @@ TaskInProgress.propTypes = {
   taskStatus: PropTypes.string,
   onTaskComplete: PropTypes.func,
   onCompletedClick: PropTypes.func,
+  labels: PropTypes.object,
 }
 
 export default TaskInProgress

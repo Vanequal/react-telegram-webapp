@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import '@/styles/features/TaskCompletionModal.scss'
 
-const TaskCompletionModal = ({ selectedFiles = [], onClose }) => {
+const TaskCompletionModal = ({ selectedFiles = [], onClose, labels = {} }) => {
   const getFileInfo = file => {
     const name = (file.name || '').toLowerCase()
     if (file.type?.startsWith('image/') || ['jpg', 'jpeg', 'png', 'gif', 'webp'].some(ext => name.endsWith(`.${ext}`))) {
@@ -17,7 +17,7 @@ const TaskCompletionModal = ({ selectedFiles = [], onClose }) => {
   return (
     <div className="task-completion-modal__overlay" onClick={onClose}>
       <div className="task-completion-modal" onClick={e => e.stopPropagation()}>
-        <h2 className="task-completion-modal__title">Задача выполнена?</h2>
+        <h2 className="task-completion-modal__title">{labels.completionTitle || 'Задача выполнена?'}</h2>
 
         <div className="task-completion-modal__content">
           {selectedFiles.length > 0 && (
@@ -36,7 +36,7 @@ const TaskCompletionModal = ({ selectedFiles = [], onClose }) => {
         </div>
 
         <p className="task-completion-modal__hint">
-          После прикрепления файла добавьте краткий комментарий с описанием результатов выполнения задачи или выделите ключевые выводы, связанные с текущим разделом проекта.
+          {labels.completionHint || 'После прикрепления файла добавьте краткий комментарий с описанием результатов выполнения задачи или выделите ключевые выводы, связанные с текущим разделом проекта.'}
         </p>
       </div>
     </div>
@@ -46,6 +46,7 @@ const TaskCompletionModal = ({ selectedFiles = [], onClose }) => {
 TaskCompletionModal.propTypes = {
   selectedFiles: PropTypes.array,
   onClose: PropTypes.func.isRequired,
+  labels: PropTypes.object,
 }
 
 export default TaskCompletionModal

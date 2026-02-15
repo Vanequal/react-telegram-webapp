@@ -4,9 +4,9 @@ import TaskCard from './TaskCard';
 import LoadingState from '@/shared/components/LoadingState';
 import ErrorState from '@/shared/components/ErrorState';
 
-const TaskList = ({ tasks, loading, error, sectionCode, themeId, onCommentClick, onTaskComplete, onCompletedClick }) => {
+const TaskList = ({ tasks, loading, error, sectionCode, themeId, onCommentClick, onTaskComplete, onCompletedClick, labels = {} }) => {
   if (loading) {
-    return <LoadingState message="Загрузка задач..." />;
+    return <LoadingState message={labels.loading || "Загрузка задач..."} />;
   }
 
   if (error) {
@@ -17,10 +17,10 @@ const TaskList = ({ tasks, loading, error, sectionCode, themeId, onCommentClick,
     return (
       <div className="task-chat-page__empty">
         <p className="task-chat-page__top-text">
-          В [Заголовок раздела] ещё нет опубликованных задач.
+          {labels.emptyTop || 'В [Заголовок раздела] ещё нет опубликованных задач.'}
         </p>
         <p className="task-chat-page__bottom-text">
-          Придумайте заголовок и опишите суть задачи
+          {labels.emptyBottom || 'Придумайте заголовок и опишите суть задачи'}
         </p>
       </div>
     );
@@ -37,6 +37,7 @@ const TaskList = ({ tasks, loading, error, sectionCode, themeId, onCommentClick,
           onCommentClick={onCommentClick}
           onTaskComplete={onTaskComplete}
           onCompletedClick={onCompletedClick}
+          labels={labels}
         />
       ))}
     </div>
@@ -52,6 +53,7 @@ TaskList.propTypes = {
   onCommentClick: PropTypes.func,
   onTaskComplete: PropTypes.func,
   onCompletedClick: PropTypes.func,
+  labels: PropTypes.object,
 };
 
 export default TaskList;

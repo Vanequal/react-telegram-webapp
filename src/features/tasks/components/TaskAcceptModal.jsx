@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 import '@/styles/features/TaskAcceptModal.scss'
 
-const TaskAcceptModal = ({ taskId, taskRatio, onSubmit, onClose }) => {
+const TaskAcceptModal = ({ taskId, taskRatio, onSubmit, onClose, labels = {} }) => {
   const [acceptType, setAcceptType] = useState('') // 'full' or 'partial'
   const [description, setDescription] = useState('')
   const [deadline, setDeadline] = useState('')
@@ -38,7 +38,7 @@ const TaskAcceptModal = ({ taskId, taskRatio, onSubmit, onClose }) => {
             onChange={() => handleAcceptTypeChange('full')}
           />
           <label htmlFor="accept-full" className="task-accept-modal__checkbox-label">
-            Вы готовы выполнить всю задачу
+            {labels.acceptFull || 'Вы готовы выполнить всю задачу'}
           </label>
           {taskRatio && <span className="task-accept-modal__ratio-inline">x{taskRatio}</span>}
         </div>
@@ -53,7 +53,7 @@ const TaskAcceptModal = ({ taskId, taskRatio, onSubmit, onClose }) => {
             onChange={() => handleAcceptTypeChange('partial')}
           />
           <label htmlFor="accept-partial" className="task-accept-modal__checkbox-label">
-            Вы готовы выполнить часть задачи
+            {labels.acceptPartial || 'Вы готовы выполнить часть задачи'}
           </label>
         </div>
 
@@ -99,6 +99,7 @@ TaskAcceptModal.propTypes = {
   taskRatio: PropTypes.number,
   onSubmit: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
+  labels: PropTypes.object,
 }
 
 export default TaskAcceptModal

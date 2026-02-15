@@ -1,5 +1,6 @@
 export const SECTION_CODES = {
   CHAT_TASKS: 'chat_tasks',
+  CHAT_EXPERIMENTS: 'chat_experiments',
   PUBLICATIONS: 'publications',
   QUESTIONS: 'questions',
   DISCUSSIONS: 'discussions',

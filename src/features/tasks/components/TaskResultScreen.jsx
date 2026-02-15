@@ -14,7 +14,7 @@ import donatIcon from '@/assets/images/donatIcon.webp'
 
 import '@/styles/features/TaskResultScreen.scss'
 
-const TaskResultScreen = ({ task, sectionCode, themeId, onBack }) => {
+const TaskResultScreen = ({ task, sectionCode, themeId, onBack, labels = {} }) => {
   const dispatch = useDispatch()
   const posts = useSelector(state => state.post.posts)
 
@@ -115,7 +115,7 @@ const TaskResultScreen = ({ task, sectionCode, themeId, onBack }) => {
       <MindVaultHeader
         bgColor="#EEEFF1"
         textColor="black"
-        title="Задача выполнена"
+        title={labels.completed || "Задача выполнена"}
         hideSectionTitle
         onBackClick={onBack}
       />
@@ -216,6 +216,7 @@ TaskResultScreen.propTypes = {
   sectionCode: PropTypes.string.isRequired,
   themeId: PropTypes.number.isRequired,
   onBack: PropTypes.func.isRequired,
+  labels: PropTypes.object,
 }
 
 export default TaskResultScreen

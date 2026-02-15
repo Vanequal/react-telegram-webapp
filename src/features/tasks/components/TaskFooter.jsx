@@ -14,6 +14,7 @@ const TaskFooter = ({
   onFileSelect,
   hasFiles = false,
   isSubmitting = false,
+  labels = {},
 }) => {
   const fileInputRef = useRef(null)
 
@@ -47,9 +48,9 @@ const TaskFooter = ({
   )
 
   const getPlaceholder = () => {
-    if (mode === 'create') return 'Назвать и сформулировать задачу'
-    if (mode === 'comment') return 'Комментировать'
-    if (mode === 'complete') return hasFiles ? 'Добавить описание' : 'Прикрепить файл'
+    if (mode === 'create') return labels.create || 'Назвать и сформулировать задачу'
+    if (mode === 'comment') return labels.comment || 'Комментировать'
+    if (mode === 'complete') return hasFiles ? (labels.completeDesc || 'Добавить описание') : (labels.completeFile || 'Прикрепить файл')
     return ''
   }
 
@@ -120,6 +121,7 @@ TaskFooter.propTypes = {
   onFileSelect: PropTypes.func,
   hasFiles: PropTypes.bool,
   isSubmitting: PropTypes.bool,
+  labels: PropTypes.object,
 }
 
 export default TaskFooter

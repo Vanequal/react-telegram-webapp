@@ -9,7 +9,8 @@ const TaskComposeForm = ({
   isSubmitting,
   onTitleChange,
   onDescriptionChange,
-  onPublish
+  onPublish,
+  labels = {},
 }) => {
   const titleInputRef = useRef(null);
   const descInputRef = useRef(null);
@@ -17,24 +18,24 @@ const TaskComposeForm = ({
   return (
     <div className="task-compose-page">
       <div className="task-compose-page__inline-field" onClick={() => titleInputRef.current?.focus()}>
-        <span className="task-compose-page__inline-label">Заголовок:</span>
+        <span className="task-compose-page__inline-label">{labels.titleLabel || 'Заголовок:'}</span>
         <input
           ref={titleInputRef}
           type="text"
           className="task-compose-page__inline-input"
-          placeholder="Введите заголовок"
+          placeholder={labels.titlePlaceholder || 'Введите заголовок'}
           value={title}
           onChange={onTitleChange}
         />
       </div>
 
       <div className="task-compose-page__inline-field" onClick={() => descInputRef.current?.focus()}>
-        <span className="task-compose-page__inline-label">Условие задачи:</span>
+        <span className="task-compose-page__inline-label">{labels.descLabel || 'Условие задачи:'}</span>
         <input
           ref={descInputRef}
           type="text"
           className="task-compose-page__inline-input"
-          placeholder="Опишите задачу"
+          placeholder={labels.descPlaceholder || 'Опишите задачу'}
           value={description}
           onChange={onDescriptionChange}
         />
@@ -59,7 +60,8 @@ TaskComposeForm.propTypes = {
   isSubmitting: PropTypes.bool.isRequired,
   onTitleChange: PropTypes.func.isRequired,
   onDescriptionChange: PropTypes.func.isRequired,
-  onPublish: PropTypes.func.isRequired
+  onPublish: PropTypes.func.isRequired,
+  labels: PropTypes.object,
 };
 
 export default TaskComposeForm;

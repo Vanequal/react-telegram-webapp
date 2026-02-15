@@ -20,7 +20,7 @@ import donatIcon from '@/assets/images/donatIcon.webp'
 // Styles
 import '@/styles/features/TaskCard.scss'
 
-const TaskCard = ({ task, sectionCode, themeId, onCommentClick, onTaskComplete, onCompletedClick }) => {
+const TaskCard = ({ task, sectionCode, themeId, onCommentClick, onTaskComplete, onCompletedClick, labels = {} }) => {
     const dispatch = useDispatch()
     const posts = useSelector(state => state.post.posts)
     const currentUser = useSelector(state => state.me.user)
@@ -189,7 +189,7 @@ const TaskCard = ({ task, sectionCode, themeId, onCommentClick, onTaskComplete, 
                     <ReactionBadges likes={currentLikes} dislikes={currentDislikes} userReaction={currentUserReaction} onReaction={handleReaction} />
                     {taskStatus === 'idle' ? (
                         <button className="task-card__help-btn" onClick={handleAcceptTask}>
-                            Готов помочь с задачей
+                            {labels.helpButton || 'Готов помочь с задачей'}
                         </button>
                     ) : (
                         <span className="task-card__timestamp">{formatTimestamp(task.created_at || task.timestamp)}</span>
@@ -204,13 +204,14 @@ const TaskCard = ({ task, sectionCode, themeId, onCommentClick, onTaskComplete, 
                         taskStatus={taskStatus}
                         onTaskComplete={handleTaskCompleteClick}
                         onCompletedClick={handleCompletedClick}
+                        labels={labels}
                     />
                 )}
 
                 {/* Completed badge for tasks without inProgressItems */}
                 {taskStatus === 'completed' && inProgressItems.length === 0 && (
                     <div className="task-card__completed-badge" onClick={() => handleCompletedClick(task.id)}>
-                        <div className="task-card__completed-text">Задача выполнена</div>
+                        <div className="task-card__completed-text">{labels.completed || 'Задача выполнена'}</div>
                     </div>
                 )}
 
@@ -227,7 +228,7 @@ const TaskCard = ({ task, sectionCode, themeId, onCommentClick, onTaskComplete, 
             </div>
 
             {/* Modals */}
-            {showAcceptModal && <TaskAcceptModal taskId={task.id} taskRatio={taskRatio} onClose={() => setShowAcceptModal(false)} onSubmit={handleAcceptSubmit} />}
+            {showAcceptModal && <TaskAcceptModal taskId={task.id} taskRatio={taskRatio} onClose={() => setShowAcceptModal(false)} onSubmit={handleAcceptSubmit} labels={labels} />}
 
             {selectedImage && <ImageModal src={selectedImage.src || selectedImage.downloadUrl || selectedImage.url} alt={selectedImage.alt || selectedImage.original_name || selectedImage.name} onClose={() => setSelectedImage(null)} />}
         </>
@@ -241,6 +242,7 @@ TaskCard.propTypes = {
     onCommentClick: PropTypes.func,
     onTaskComplete: PropTypes.func,
     onCompletedClick: PropTypes.func,
+    labels: PropTypes.object,
 }
 
 export default TaskCard
