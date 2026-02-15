@@ -72,6 +72,7 @@ const TaskChatPage = () => {
     type: 'comment',
     status: exec.message_task?.status,
     is_partially: exec.message_task?.is_partially,
+    reactions: exec.message?.reactions || null,
   }));
 
   useEffect(() => {
@@ -142,7 +143,8 @@ const TaskChatPage = () => {
       dispatch(fetchTasks({ section_code: SECTION_CODE, theme_id: THEME_ID }));
     } catch (error) {
       console.error('Ошибка добавления комментария:', error);
-      showError(`Ошибка комментария: ${typeof error === 'string' ? error : JSON.stringify(error)}`);
+      const msg = typeof error === 'string' ? error : 'Неизвестная ошибка';
+      showError(`Ошибка: ${msg.slice(0, 150)}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -183,7 +185,8 @@ const TaskChatPage = () => {
       dispatch(fetchTasks({ section_code: SECTION_CODE, theme_id: THEME_ID }));
     } catch (error) {
       logger.error('Error completing task:', error);
-      showError(`Ошибка завершения задачи: ${error}`);
+      const msg = typeof error === 'string' ? error : 'Неизвестная ошибка';
+      showError(`Ошибка: ${msg.slice(0, 150)}`);
     } finally {
       setIsSubmitting(false);
     }

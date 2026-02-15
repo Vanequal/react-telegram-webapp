@@ -446,7 +446,7 @@ export const completeTask = createAsyncThunk(
         media_file_ids: uploadedFileIds,
         content_id: task_message_id,
         is_partially: false, // Задача выполнена полностью
-        expires_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // +30 дней
       }
 
       console.log('📤 [completeTask] Отправляемые данные:', JSON.stringify(requestData, null, 2))
@@ -468,11 +468,10 @@ export const completeTask = createAsyncThunk(
     } catch (err) {
       console.error('🔥 [completeTask] ПОЛНЫЙ ответ ошибки:', JSON.stringify(err?.response?.data, null, 2))
       console.error('🔥 [completeTask] HTTP статус:', err?.response?.status)
-      const errorDetail = err.response?.data?.detail
-      const errorMsg = Array.isArray(errorDetail)
-        ? errorDetail.map(e => `${e.loc?.join('.')}: ${e.msg}`).join('; ')
-        : (errorDetail || JSON.stringify(err.response?.data) || 'Ошибка завершения задачи')
-      return rejectWithValue(errorMsg)
+      const errorMsg = err.response?.data?.error?.message
+        || err.response?.data?.detail
+        || 'Ошибка завершения задачи'
+      return rejectWithValue(typeof errorMsg === 'string' ? errorMsg : 'Ошибка завершения задачи')
     }
   }
 )
@@ -516,11 +515,10 @@ export const createTaskComment = createAsyncThunk(
     } catch (err) {
       console.error('🔥 [createTaskComment] ПОЛНЫЙ ответ ошибки:', JSON.stringify(err?.response?.data, null, 2))
       console.error('🔥 [createTaskComment] HTTP статус:', err?.response?.status)
-      const errorDetail = err.response?.data?.detail
-      const errorMsg = Array.isArray(errorDetail)
-        ? errorDetail.map(e => `${e.loc?.join('.')}: ${e.msg}`).join('; ')
-        : (errorDetail || JSON.stringify(err.response?.data) || 'Ошибка добавления комментария к задаче')
-      return rejectWithValue(errorMsg)
+      const errorMsg = err.response?.data?.error?.message
+        || err.response?.data?.detail
+        || 'Ошибка добавления комментария к задаче'
+      return rejectWithValue(typeof errorMsg === 'string' ? errorMsg : 'Ошибка добавления комментария к задаче')
     }
   }
 )
@@ -1033,6 +1031,7 @@ const postSlice = createSlice({
             
             // Сохраняем массив исполнений для TaskInProgress
             executions: executions,
+            comments_count: executions.length,
             executor: activeExecution?.message?.author || null,
             executor_description: activeExecution?.message?.text || '',
           }
@@ -1303,6 +1302,28 @@ const postSlice = createSlice({
                 },
               }
             }
+          }
+        })
+
+        // Обновляем реакции в executions задач (комментарии в чате задач)
+        state.posts.forEach((post, postIdx) => {
+          if (post.executions && Array.isArray(post.executions)) {
+            post.executions.forEach((exec, execIdx) => {
+              if (exec.message?.id === post_id) {
+                state.posts[postIdx].executions[execIdx] = {
+                  ...exec,
+                  message: {
+                    ...exec.message,
+                    reactions: {
+                      count_likes,
+                      count_dislikes,
+                      user_reaction,
+                      reactions: reactionsList,
+                    },
+                  },
+                }
+              }
+            })
           }
         })
       })

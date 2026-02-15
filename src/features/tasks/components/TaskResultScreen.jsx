@@ -32,6 +32,7 @@ const TaskResultScreen = ({ task, sectionCode, themeId, onBack }) => {
     text: exec.message?.text || '',
     created_at: exec.message?.created_at,
     type: 'comment',
+    reactions: exec.message?.reactions || null,
   }))
   const currentLikes = currentPost?.reactions?.count_likes ?? currentPost?.likes ?? task?.likes ?? 0
   const currentDislikes = currentPost?.reactions?.count_dislikes ?? currentPost?.dislikes ?? task?.dislikes ?? 0
