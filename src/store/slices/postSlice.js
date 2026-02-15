@@ -159,7 +159,11 @@ export const createComment = createAsyncThunk(
         text: message_text || '',
         media_file_ids: uploadedFileIds,
         content_id: post_id, // ← ID поста к которому комментарий
-        reply_to_message_id: reply_to_message_id || post_id, // ← Обязательное поле, если нет reply — ставим content_id
+      }
+
+      // reply_to_message_id опциональное поле (integer ≥ 1 или null)
+      if (reply_to_message_id) {
+        requestData.reply_to_message_id = reply_to_message_id
       }
 
       console.log('📤 [createComment] Отправляемые данные:', JSON.stringify(requestData, null, 2))
@@ -441,7 +445,6 @@ export const completeTask = createAsyncThunk(
         text: description || '',
         media_file_ids: uploadedFileIds,
         content_id: task_message_id,
-        reply_to_message_id: task_message_id, // ← Обязательное поле для API
       }
 
       console.log('📤 [completeTask] Отправляемые данные:', JSON.stringify(requestData, null, 2))

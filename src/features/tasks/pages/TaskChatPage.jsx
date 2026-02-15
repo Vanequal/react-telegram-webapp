@@ -24,8 +24,9 @@ import { useTaskPreview } from '@/features/tasks/hooks/useTaskPreview';
 import '@/styles/features/TaskChatPage.scss';
 import '@/styles/features/discussion.scss';
 
-const SECTION_CODE = SECTION_CODES.CHAT_TASKS;
-const COMMENT_SECTION_CODE = 'discussion'; // Бэкенд не поддерживает chat_tasks для комментариев
+// Бэкенд не поддерживает chat_tasks для комментариев, поэтому используем discussion
+// для всего (задачи + комментарии должны быть в одной секции, иначе content_not_found)
+const SECTION_CODE = 'discussion';
 const THEME_ID = DEFAULT_THEME_ID;
 
 const TaskChatPage = () => {
@@ -92,7 +93,7 @@ const TaskChatPage = () => {
       dispatch(
         fetchPostComments({
           post_id: selectedTaskId,
-          section_code: COMMENT_SECTION_CODE,
+          section_code: SECTION_CODE,
           theme_id: THEME_ID,
         })
       );
@@ -135,7 +136,7 @@ const TaskChatPage = () => {
         createComment({
           post_id: selectedTaskId,
           message_text: commentText.trim(),
-          section_code: COMMENT_SECTION_CODE,
+          section_code: SECTION_CODE,
           theme_id: THEME_ID,
           files: commentFiles,
         })
@@ -168,7 +169,7 @@ const TaskChatPage = () => {
       await dispatch(
         completeTask({
           task_message_id: completionTaskId,
-          section_code: COMMENT_SECTION_CODE,
+          section_code: SECTION_CODE,
           theme_id: THEME_ID,
           description: completionDescription.trim(),
           files: completionFiles,
@@ -297,7 +298,7 @@ const TaskChatPage = () => {
     return (
       <TaskResultScreen
         task={resultTask}
-        sectionCode={COMMENT_SECTION_CODE}
+        sectionCode={SECTION_CODE}
         themeId={THEME_ID}
         onBack={handleBackClick}
       />
@@ -378,7 +379,7 @@ const TaskChatPage = () => {
                     <CommentThread
                       key={comment.id}
                       comment={comment}
-                      sectionCode={COMMENT_SECTION_CODE}
+                      sectionCode={SECTION_CODE}
                       themeId={THEME_ID}
                     />
                   ))
