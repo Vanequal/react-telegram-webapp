@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { createTask, fetchTasks, fetchMessageAttachments, createComment, fetchPostComments, completeTask } from '@/store/slices/postSlice';
+import { createTask, fetchTasks, fetchMessageAttachments, createTaskComment, completeTask } from '@/store/slices/postSlice';
 import { SECTION_CODES, DEFAULT_THEME_ID } from '@/shared/constants/sections';
 import logger from '@/shared/utils/logger';
 import { showError } from '@/shared/utils/notifications';
@@ -24,25 +24,22 @@ import { useTaskPreview } from '@/features/tasks/hooks/useTaskPreview';
 import '@/styles/features/TaskChatPage.scss';
 import '@/styles/features/discussion.scss';
 
-// Бэкенд не поддерживает chat_tasks для комментариев, поэтому используем discussion
-// для всего (задачи + комментарии должны быть в одной секции, иначе content_not_found)
-const SECTION_CODE = 'discussion';
+const SECTION_CODE = SECTION_CODES.CHAT_TASKS;
 const THEME_ID = DEFAULT_THEME_ID;
 
 const TaskChatPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { posts, loading, error, commentsLoading } = useSelector((state) => state.post);
+  const { posts, loading, error } = useSelector((state) => state.post);
   // step: 'list' | 'compose' | 'preview' | 'rating' | 'detail' | 'result' | 'completing'
   const [step, setStep] = useState('list');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Detail view state (comments)
+  // Detail view state (comments via task executions)
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [commentText, setCommentText] = useState('');
   const [commentFiles, setCommentFiles] = useState([]);
-  const [commentsLoaded, setCommentsLoaded] = useState(false);
 
   // Completion state
   const [completionTaskId, setCompletionTaskId] = useState(null);
@@ -64,7 +61,18 @@ const TaskChatPage = () => {
   const selectedTask = tasks.find(t => t.id === selectedTaskId);
   const resultTask = tasks.find(t => t.id === resultTaskId);
   const completionTask = tasks.find(t => t.id === completionTaskId);
-  const comments = useSelector(state => state.post.comments[selectedTaskId] || []);
+
+  // Комментарии = executions задачи (т.к. /comments endpoint не поддерживает chat_tasks)
+  const taskExecutions = selectedTask?.executions || [];
+  const comments = taskExecutions.map(exec => ({
+    id: exec.message?.id,
+    author_id: exec.message?.author_id,
+    text: exec.message?.text || '',
+    created_at: exec.message?.created_at,
+    type: 'comment',
+    status: exec.message_task?.status,
+    is_partially: exec.message_task?.is_partially,
+  }));
 
   useEffect(() => {
     dispatch(
@@ -86,20 +94,6 @@ const TaskChatPage = () => {
     });
   }, [tasks.length, dispatch]);
 
-  // Load comments when detail view is open
-  useEffect(() => {
-    if (step === 'detail' && selectedTaskId && !commentsLoaded && !commentsLoading) {
-      setCommentsLoaded(true);
-      dispatch(
-        fetchPostComments({
-          post_id: selectedTaskId,
-          section_code: SECTION_CODE,
-          theme_id: THEME_ID,
-        })
-      );
-    }
-  }, [step, selectedTaskId, commentsLoaded, commentsLoading, dispatch]);
-
   // --- List handlers ---
   const handleInputFocus = useCallback(() => {
     setStep('compose');
@@ -107,7 +101,6 @@ const TaskChatPage = () => {
 
   const handleCommentClick = useCallback((taskId) => {
     setSelectedTaskId(taskId);
-    setCommentsLoaded(false);
     setCommentText('');
     setCommentFiles([]);
     setStep('detail');
@@ -133,7 +126,7 @@ const TaskChatPage = () => {
     setIsSubmitting(true);
     try {
       await dispatch(
-        createComment({
+        createTaskComment({
           post_id: selectedTaskId,
           message_text: commentText.trim(),
           section_code: SECTION_CODE,
@@ -144,6 +137,9 @@ const TaskChatPage = () => {
 
       setCommentText('');
       setCommentFiles([]);
+
+      // Перезагружаем задачи чтобы обновить executions
+      dispatch(fetchTasks({ section_code: SECTION_CODE, theme_id: THEME_ID }));
     } catch (error) {
       console.error('Ошибка добавления комментария:', error);
       showError(`Ошибка комментария: ${typeof error === 'string' ? error : JSON.stringify(error)}`);
@@ -282,7 +278,6 @@ const TaskChatPage = () => {
       setSelectedTaskId(null);
       setResultTaskId(null);
       setCompletionTaskId(null);
-      setCommentsLoaded(false);
     } else if (step !== 'list') {
       setStep('list');
     } else {
@@ -370,11 +365,7 @@ const TaskChatPage = () => {
             <div style={{ margin: '20px 16px', height: '1px', backgroundColor: '#E2E6E9' }} />
 
             <div style={{ margin: '0 16px', marginBottom: '80px' }}>
-              {commentsLoading && (
-                <p style={{ textAlign: 'center', color: '#666' }}>Загрузка комментариев...</p>
-              )}
-
-              {!commentsLoading && comments.length > 0
+              {comments.length > 0
                 ? comments.map(comment => (
                     <CommentThread
                       key={comment.id}
@@ -383,7 +374,7 @@ const TaskChatPage = () => {
                       themeId={THEME_ID}
                     />
                   ))
-                : !commentsLoading && commentsLoaded && (
+                : (
                     <p style={{ textAlign: 'center', color: '#666' }}>Комментариев пока нет</p>
                   )}
             </div>

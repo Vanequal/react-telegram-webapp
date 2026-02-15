@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { useSelector, useDispatch } from 'react-redux'
-import { createComment, fetchPostComments, reactToPost, fetchMessageAttachments } from '@/store/slices/postSlice'
+import { createTaskComment, fetchTasks, reactToPost, fetchMessageAttachments } from '@/store/slices/postSlice'
 
 import MindVaultHeader from '@/features/mindvault/components/MindVaultHeader'
 import CommentThread from '@/features/discussion/components/CommentThread'
@@ -17,15 +17,22 @@ import '@/styles/features/TaskResultScreen.scss'
 const TaskResultScreen = ({ task, sectionCode, themeId, onBack }) => {
   const dispatch = useDispatch()
   const posts = useSelector(state => state.post.posts)
-  const comments = useSelector(state => state.post.comments[task?.id] || [])
-  const { commentsLoading } = useSelector(state => state.post)
 
   const [commentText, setCommentText] = useState('')
   const [commentFiles, setCommentFiles] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [commentsLoaded, setCommentsLoaded] = useState(false)
 
   const currentPost = posts.find(p => p.id === task?.id)
+
+  // Комментарии = executions задачи (т.к. /comments endpoint не поддерживает chat_tasks)
+  const taskExecutions = currentPost?.executions || task?.executions || []
+  const comments = taskExecutions.map(exec => ({
+    id: exec.message?.id,
+    author_id: exec.message?.author_id,
+    text: exec.message?.text || '',
+    created_at: exec.message?.created_at,
+    type: 'comment',
+  }))
   const currentLikes = currentPost?.reactions?.count_likes ?? currentPost?.likes ?? task?.likes ?? 0
   const currentDislikes = currentPost?.reactions?.count_dislikes ?? currentPost?.dislikes ?? task?.dislikes ?? 0
   const currentUserReaction = currentPost?.reactions?.user_reaction ?? currentPost?.user_reaction ?? null
@@ -41,20 +48,6 @@ const TaskResultScreen = ({ task, sectionCode, themeId, onBack }) => {
     : taskAttachments.length > 0
       ? taskAttachments[0]
       : null
-
-  // Load comments
-  useEffect(() => {
-    if (task?.id && !commentsLoaded && !commentsLoading) {
-      setCommentsLoaded(true)
-      dispatch(
-        fetchPostComments({
-          post_id: task.id,
-          section_code: sectionCode,
-          theme_id: themeId,
-        })
-      )
-    }
-  }, [task?.id, commentsLoaded, commentsLoading, dispatch, sectionCode, themeId])
 
   // Load attachments
   useEffect(() => {
@@ -84,7 +77,7 @@ const TaskResultScreen = ({ task, sectionCode, themeId, onBack }) => {
     setIsSubmitting(true)
     try {
       await dispatch(
-        createComment({
+        createTaskComment({
           post_id: task.id,
           message_text: commentText.trim(),
           section_code: sectionCode,
@@ -95,6 +88,9 @@ const TaskResultScreen = ({ task, sectionCode, themeId, onBack }) => {
 
       setCommentText('')
       setCommentFiles([])
+
+      // Перезагружаем задачи чтобы обновить executions
+      dispatch(fetchTasks({ section_code: sectionCode, theme_id: themeId }))
     } catch (error) {
       console.error('Ошибка добавления комментария:', error)
     } finally {
@@ -184,13 +180,9 @@ const TaskResultScreen = ({ task, sectionCode, themeId, onBack }) => {
         {/* Divider */}
         <div className="task-result-screen__divider" />
 
-        {/* Comments */}
+        {/* Comments (task executions) */}
         <div className="task-result-screen__comments">
-          {commentsLoading && (
-            <p style={{ textAlign: 'center', color: '#666' }}>Загрузка комментариев...</p>
-          )}
-
-          {!commentsLoading && comments.length > 0
+          {comments.length > 0
             ? comments.map(comment => (
                 <CommentThread
                   key={comment.id}
@@ -199,7 +191,7 @@ const TaskResultScreen = ({ task, sectionCode, themeId, onBack }) => {
                   themeId={themeId}
                 />
               ))
-            : !commentsLoading && commentsLoaded && (
+            : (
                 <p style={{ textAlign: 'center', color: '#666' }}>Комментариев пока нет</p>
               )}
         </div>

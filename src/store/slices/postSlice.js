@@ -427,7 +427,7 @@ export const acceptTask = createAsyncThunk(
   }
 )
 
-// ✅ Отметить задачу как выполненную (создаем комментарий с результатами)
+// ✅ Отметить задачу как выполненную (через /tasks endpoint, т.к. /comments не поддерживает chat_tasks)
 export const completeTask = createAsyncThunk(
   'post/completeTask',
   async ({ task_message_id, section_code, theme_id, description, files = [] }, { rejectWithValue, dispatch }) => {
@@ -439,19 +439,20 @@ export const completeTask = createAsyncThunk(
         uploadedFileIds = uploadResult || []
       }
 
-      // ✅ Создаем комментарий с результатами напрямую (без двойной загрузки файлов)
+      // ✅ Используем /tasks endpoint (поддерживает chat_tasks)
       const requestData = {
-        type: 'comment',
+        type: 'task',
         text: description || '',
         media_file_ids: uploadedFileIds,
         content_id: task_message_id,
+        is_partially: false, // Задача выполнена полностью
+        expires_at: new Date().toISOString(),
       }
 
       console.log('📤 [completeTask] Отправляемые данные:', JSON.stringify(requestData, null, 2))
       console.log('📤 [completeTask] Query params:', { theme_id, section_code })
-      console.log('📤 [completeTask] task_message_id тип:', typeof task_message_id, 'значение:', task_message_id)
 
-      const res = await axios.post(`/api/v1/messages/comments`, requestData, {
+      const res = await axios.post(`/api/v1/messages/tasks`, requestData, {
         params: { theme_id, section_code },
       })
 
@@ -459,7 +460,7 @@ export const completeTask = createAsyncThunk(
 
       return {
         task_message_id,
-        comment: res.data,
+        result: res.data,
         uploaded_file_ids: uploadedFileIds,
         completion_description: description,
         completion_files: files,
@@ -471,6 +472,54 @@ export const completeTask = createAsyncThunk(
       const errorMsg = Array.isArray(errorDetail)
         ? errorDetail.map(e => `${e.loc?.join('.')}: ${e.msg}`).join('; ')
         : (errorDetail || JSON.stringify(err.response?.data) || 'Ошибка завершения задачи')
+      return rejectWithValue(errorMsg)
+    }
+  }
+)
+
+// ✅ Создание комментария к задаче (через /tasks endpoint, т.к. /comments не поддерживает chat_tasks)
+export const createTaskComment = createAsyncThunk(
+  'post/createTaskComment',
+  async ({ post_id, message_text, section_code, theme_id, files = [] }, { rejectWithValue, dispatch }) => {
+    try {
+      // Загружаем файлы если есть
+      let uploadedFileIds = []
+      if (files && files.length > 0) {
+        const uploadResult = await dispatch(uploadFiles(files)).unwrap()
+        uploadedFileIds = uploadResult || []
+      }
+
+      // ✅ Используем /tasks endpoint (поддерживает chat_tasks)
+      const requestData = {
+        type: 'task',
+        text: message_text || '',
+        media_file_ids: uploadedFileIds,
+        content_id: post_id,
+        is_partially: true,
+        expires_at: new Date().toISOString(),
+      }
+
+      console.log('📤 [createTaskComment] Отправляемые данные:', JSON.stringify(requestData, null, 2))
+      console.log('📤 [createTaskComment] Query params:', { theme_id, section_code })
+
+      const res = await axios.post(`/api/v1/messages/tasks`, requestData, {
+        params: { theme_id, section_code },
+      })
+
+      logger.log('✅ Комментарий к задаче создан:', res.data)
+
+      return {
+        ...res.data,
+        post_id,
+        uploaded_file_ids: uploadedFileIds,
+      }
+    } catch (err) {
+      console.error('🔥 [createTaskComment] ПОЛНЫЙ ответ ошибки:', JSON.stringify(err?.response?.data, null, 2))
+      console.error('🔥 [createTaskComment] HTTP статус:', err?.response?.status)
+      const errorDetail = err.response?.data?.detail
+      const errorMsg = Array.isArray(errorDetail)
+        ? errorDetail.map(e => `${e.loc?.join('.')}: ${e.msg}`).join('; ')
+        : (errorDetail || JSON.stringify(err.response?.data) || 'Ошибка добавления комментария к задаче')
       return rejectWithValue(errorMsg)
     }
   }
@@ -1061,6 +1110,31 @@ const postSlice = createSlice({
       .addCase(completeTask.rejected, (state, action) => {
         state.tasksLoading = false
         state.taskError = action.payload
+      })
+
+      // ========================================================================
+      // КОММЕНТАРИЙ К ЗАДАЧЕ (через /tasks endpoint)
+      // ========================================================================
+      .addCase(createTaskComment.pending, state => {
+        state.commentsLoading = true
+        state.commentError = null
+      })
+      .addCase(createTaskComment.fulfilled, (state, action) => {
+        state.commentsLoading = false
+        const { message, message_task, post_id } = action.payload
+
+        // Добавляем как execution в задачу
+        const taskIndex = state.posts.findIndex(post => post.id === post_id)
+        if (taskIndex !== -1 && state.posts[taskIndex].executions) {
+          state.posts[taskIndex].executions.push({
+            message: message,
+            message_task: message_task,
+          })
+        }
+      })
+      .addCase(createTaskComment.rejected, (state, action) => {
+        state.commentsLoading = false
+        state.commentError = action.payload
       })
 
       // ========================================================================
