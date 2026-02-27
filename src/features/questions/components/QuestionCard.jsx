@@ -48,7 +48,7 @@ const QuestionCard = React.memo(function QuestionCard({ question, onExpand, answ
 
   // Files
   const questionFiles = useMemo(() => {
-    const rawFiles = question.attachments || currentPost?.attachments || question.files || currentPost?.files || []
+    const rawFiles = question.media_files || currentPost?.media_files || question.attachments || currentPost?.attachments || question.files || currentPost?.files || []
 
     if (!rawFiles || rawFiles.length === 0) {
       return []
@@ -56,14 +56,14 @@ const QuestionCard = React.memo(function QuestionCard({ question, onExpand, answ
 
     return rawFiles.map((file, index) => ({
       ...file,
-      file_path: file.file_path || file.stored_path || file.url,
-      url: file.file_path || file.stored_path || file.url,
-      relative_path: file.file_path || file.stored_path || file.relative_path,
+      file_path: file.file_path || file.stored_path || file.url || file.media_file_id,
+      url: file.file_path || file.stored_path || file.url || file.media_file_id,
+      relative_path: file.file_path || file.stored_path || file.relative_path || file.media_file_id,
       original_name: file.original_name || file.name,
       extension: file.extension || (file.original_name ? file.original_name.split('.').pop().toLowerCase() : ''),
       index: index,
     }))
-  }, [question.attachments, currentPost?.attachments, question.files, currentPost?.files, question.id])
+  }, [question.media_files, currentPost?.media_files, question.attachments, currentPost?.attachments, question.files, currentPost?.files, question.id])
 
   // Check if text needs "Read more" button
   useEffect(() => {

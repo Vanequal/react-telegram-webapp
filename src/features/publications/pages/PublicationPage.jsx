@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { createComment, fetchPostComments, reactToPost, fetchPostById, fetchMessageAttachments } from '@/store/slices/postSlice'
+import { createComment, fetchPostComments, reactToPost, fetchPostById } from '@/store/slices/postSlice'
 
 // Components
 import MindVaultHeader from '@/features/mindvault/components/MindVaultHeader'
@@ -127,15 +127,6 @@ const PublicationPage = () => {
       )
     }
   }, [id, publication, loading, dispatch])
-
-  // Effect для загрузки вложений публикации
-  useEffect(() => {
-    const publicationId = id
-    const postInStore = posts.find(p => p.id === publicationId)
-    if (publicationId && !postInStore?.attachments) {
-      dispatch(fetchMessageAttachments({ message_id: publicationId }))
-    }
-  }, [id, posts, dispatch])
 
   // Effect для загрузки комментариев
   useEffect(() => {

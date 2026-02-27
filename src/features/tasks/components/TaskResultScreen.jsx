@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { useSelector, useDispatch } from 'react-redux'
-import { createTaskComment, fetchTasks, reactToPost, fetchMessageAttachments } from '@/store/slices/postSlice'
+import { createTaskComment, fetchTasks, reactToPost } from '@/store/slices/postSlice'
 
 import MindVaultHeader from '@/features/mindvault/components/MindVaultHeader'
 import CommentThread from '@/features/discussion/components/CommentThread'
@@ -41,7 +41,7 @@ const TaskResultScreen = ({ task, sectionCode, themeId, onBack, labels = {} }) =
   // Completion data
   const completionDescription = currentPost?.completion_description || task?.completion_description || ''
   const completionFiles = currentPost?.completion_files || task?.completion_files || []
-  const taskAttachments = currentPost?.attachments || task?.attachments || []
+  const taskAttachments = currentPost?.media_files || task?.media_files || currentPost?.attachments || task?.attachments || []
 
   // Get first completion file for display
   const firstCompletionFile = completionFiles.length > 0
@@ -49,13 +49,6 @@ const TaskResultScreen = ({ task, sectionCode, themeId, onBack, labels = {} }) =
     : taskAttachments.length > 0
       ? taskAttachments[0]
       : null
-
-  // Load attachments
-  useEffect(() => {
-    if (task?.id && !currentPost?.attachments) {
-      dispatch(fetchMessageAttachments({ message_id: task.id }))
-    }
-  }, [task?.id, currentPost?.attachments, dispatch])
 
   const handleReaction = useCallback(
     reaction => {
@@ -66,7 +59,7 @@ const TaskResultScreen = ({ task, sectionCode, themeId, onBack, labels = {} }) =
 
   const handleFileDownload = useCallback(file => {
     const BACKEND_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-    const filePath = file.file_path || file.stored_path || file.url || file.relative_path
+    const filePath = file.file_path || file.stored_path || file.url || file.relative_path || file.media_file_id
     if (filePath) {
       window.open(`${BACKEND_BASE_URL}/static/${filePath}`, '_blank')
     }

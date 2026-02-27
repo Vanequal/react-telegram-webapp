@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchPostComments, fetchPostsInSection, fetchMessageAttachments, fetchMessageReactions } from '@/store/slices/postSlice'
+import { fetchPostComments, fetchPostsInSection, fetchMessageReactions } from '@/store/slices/postSlice'
 
 // Components
 import MindVaultHeader from '@/features/mindvault/components/MindVaultHeader'
@@ -58,7 +58,7 @@ const PublicationPageList = () => {
         comments: actualComments,
         views: post.views ?? 0,
         timestamp: post.created_at ?? '',
-        files: post.attachments || post.files || [],
+        files: post.media_files || post.attachments || post.files || [],
         userReaction: reactions.user_reaction || post.user_reaction || null,
         author: post.author,
       }
@@ -77,13 +77,8 @@ const PublicationPageList = () => {
     if (!posts || posts.length === 0) return
 
     posts.forEach(post => {
-      // Загружаем вложения если их еще нет
-      if (!post.attachments) {
-        dispatch(fetchMessageAttachments({ message_id: post.id }))
-      }
-
-      // Загружаем реакции если их еще нет
-      if (!post.reactions) {
+      // Загружаем реакции если их еще нет (проверяем по likes)
+      if (post.likes === undefined) {
         dispatch(fetchMessageReactions({ message_id: post.id }))
       }
 

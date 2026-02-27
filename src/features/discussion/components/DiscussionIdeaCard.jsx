@@ -22,7 +22,7 @@ const DiscussionIdeaCard = ({ idea, onReaction }) => {
   const currentUserReaction = currentPost?.reactions?.user_reaction ?? currentPost?.user_reaction ?? idea.userReaction ?? null
 
   // Файлы (если есть)
-  const ideaFiles = idea.attachments || currentPost?.attachments || []
+  const ideaFiles = idea.media_files || currentPost?.media_files || idea.attachments || currentPost?.attachments || []
 
   const formatTimestamp = timestamp => {
     if (!timestamp) return ''

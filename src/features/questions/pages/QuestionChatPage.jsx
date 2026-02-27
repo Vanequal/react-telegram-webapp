@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchPostComments, fetchPostsInSection, createPost, fetchMessageAttachments, fetchMessageReactions } from '@/store/slices/postSlice.js'
+import { fetchPostComments, fetchPostsInSection, createPost, fetchMessageReactions } from '@/store/slices/postSlice.js'
 import { getViewedIdeas, markIdeaAsViewed } from '@/shared/utils/utils.js'
 
 // Components
@@ -61,8 +61,8 @@ const QuestionChatPage = () => {
         views: post.views ?? 0,
         timestamp: post.created_at ?? '',
         created_at: post.created_at, // ✅ Добавлено
-        files: post.attachments || post.media_file_ids || [],
-        attachments: post.attachments || post.media_file_ids || [],
+        files: post.media_files || [],
+        attachments: post.media_files || [],
         userReaction: post.user_reaction || null,
         author: post.author, // ✅ Добавлено
       }
@@ -100,13 +100,8 @@ const QuestionChatPage = () => {
     if (!posts || posts.length === 0) return
 
     posts.forEach(post => {
-      // Загружаем вложения если их еще нет
-      if (!post.attachments) {
-        dispatch(fetchMessageAttachments({ message_id: post.id }))
-      }
-
-      // Загружаем реакции если их еще нет
-      if (!post.reactions) {
+      // Загружаем реакции если их еще нет (проверяем по likes, т.к. reactions не ставится в state)
+      if (post.likes === undefined) {
         dispatch(fetchMessageReactions({ message_id: post.id }))
       }
 

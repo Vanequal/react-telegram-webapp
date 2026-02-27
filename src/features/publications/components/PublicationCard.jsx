@@ -44,7 +44,7 @@ const PublicationCard = React.memo(function PublicationCard({ publication, onExp
 
   // Files
   const publicationFiles = useMemo(() => {
-    const rawFiles = publication.attachments || currentPost?.attachments || publication.files || currentPost?.files || []
+    const rawFiles = publication.media_files || currentPost?.media_files || publication.attachments || currentPost?.attachments || publication.files || currentPost?.files || []
 
     if (!rawFiles || rawFiles.length === 0) {
       return []
@@ -52,14 +52,14 @@ const PublicationCard = React.memo(function PublicationCard({ publication, onExp
 
     return rawFiles.map((file, index) => ({
       ...file,
-      file_path: file.file_path || file.stored_path || file.url,
-      url: file.file_path || file.stored_path || file.url,
-      relative_path: file.file_path || file.stored_path || file.relative_path,
+      file_path: file.file_path || file.stored_path || file.url || file.media_file_id,
+      url: file.file_path || file.stored_path || file.url || file.media_file_id,
+      relative_path: file.file_path || file.stored_path || file.relative_path || file.media_file_id,
       original_name: file.original_name || file.name,
       extension: file.extension || (file.original_name ? file.original_name.split('.').pop().toLowerCase() : ''),
       index: index,
     }))
-  }, [publication.attachments, currentPost?.attachments, publication.files, currentPost?.files, publication.id])
+  }, [publication.media_files, currentPost?.media_files, publication.attachments, currentPost?.attachments, publication.files, currentPost?.files, publication.id])
 
   // View tracking with Intersection Observer
   useEffect(() => {

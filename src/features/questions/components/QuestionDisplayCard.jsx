@@ -23,7 +23,7 @@ const QuestionDisplayCard = ({ question, onReaction }) => {
   const currentUserReaction = currentPost?.reactions?.user_reaction ?? currentPost?.user_reaction ?? question.userReaction ?? null
 
   // Файлы (если есть)
-  const questionFiles = question.attachments || currentPost?.attachments || []
+  const questionFiles = question.media_files || currentPost?.media_files || question.attachments || currentPost?.attachments || []
 
   const formatTimestamp = timestamp => {
     if (!timestamp) return ''

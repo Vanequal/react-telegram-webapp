@@ -69,8 +69,8 @@ const CommentThread = ({ comment, isNew, sectionCode, themeId }) => {
     }
   }
 
-  // Обработка файлов комментария
-  const commentFiles = comment.attachments || []
+  // Обработка файлов комментария (новый API: media_files, старый: attachments)
+  const commentFiles = comment.media_files || comment.attachments || []
 
   return (
     <>
@@ -103,13 +103,13 @@ const CommentThread = ({ comment, isNew, sectionCode, themeId }) => {
           )}
 
           <div className="comment-actions-right">
-            <div className={`reaction-badge ${comment.reactions?.user_reaction === 'like' ? 'reaction-badge--active' : ''}`} onClick={() => handleCommentReaction('like')} style={{ cursor: 'pointer' }}>
+            <div className={`reaction-badge ${(comment.user_reaction ?? comment.reactions?.user_reaction) === 'like' ? 'reaction-badge--active' : ''}`} onClick={() => handleCommentReaction('like')} style={{ cursor: 'pointer' }}>
               <img src={likeIcon} alt="Like" />
-              <span>{comment.reactions?.count_likes || 0}</span>
+              <span>{comment.likes ?? comment.reactions?.count_likes ?? 0}</span>
             </div>
-            <div className={`reaction-badge ${comment.reactions?.user_reaction === 'dislike' ? 'reaction-badge--active' : ''}`} onClick={() => handleCommentReaction('dislike')} style={{ cursor: 'pointer' }}>
+            <div className={`reaction-badge ${(comment.user_reaction ?? comment.reactions?.user_reaction) === 'dislike' ? 'reaction-badge--active' : ''}`} onClick={() => handleCommentReaction('dislike')} style={{ cursor: 'pointer' }}>
               <img src={dislikeIcon} alt="Dislike" />
-              <span>{comment.reactions?.count_dislikes || 0}</span>
+              <span>{comment.dislikes ?? comment.reactions?.count_dislikes ?? 0}</span>
             </div>
           </div>
 
@@ -125,7 +125,7 @@ const CommentThread = ({ comment, isNew, sectionCode, themeId }) => {
         {showReplies && comment.replies?.length > 0 && (
           <div className="replies-container">
             {comment.replies.map(reply => {
-              const replyFiles = reply.attachments || []
+              const replyFiles = reply.media_files || reply.attachments || []
 
               return (
                 <div key={reply.id} className="reply-thread">
@@ -154,13 +154,13 @@ const CommentThread = ({ comment, isNew, sectionCode, themeId }) => {
                   )}
 
                   <div className="comment-actions-right">
-                    <div className={`reaction-badge ${reply.reactions?.user_reaction === 'like' ? 'reaction-badge--active' : ''}`} onClick={() => handleReplyReaction(reply.id, 'like')} style={{ cursor: 'pointer' }}>
+                    <div className={`reaction-badge ${(reply.user_reaction ?? reply.reactions?.user_reaction) === 'like' ? 'reaction-badge--active' : ''}`} onClick={() => handleReplyReaction(reply.id, 'like')} style={{ cursor: 'pointer' }}>
                       <img src={likeIcon} alt="Like" />
-                      <span>{reply.reactions?.count_likes || 0}</span>
+                      <span>{reply.likes ?? reply.reactions?.count_likes ?? 0}</span>
                     </div>
-                    <div className={`reaction-badge ${reply.reactions?.user_reaction === 'dislike' ? 'reaction-badge--active' : ''}`} onClick={() => handleReplyReaction(reply.id, 'dislike')} style={{ cursor: 'pointer' }}>
+                    <div className={`reaction-badge ${(reply.user_reaction ?? reply.reactions?.user_reaction) === 'dislike' ? 'reaction-badge--active' : ''}`} onClick={() => handleReplyReaction(reply.id, 'dislike')} style={{ cursor: 'pointer' }}>
                       <img src={dislikeIcon} alt="Dislike" />
-                      <span>{reply.reactions?.count_dislikes || 0}</span>
+                      <span>{reply.dislikes ?? reply.reactions?.count_dislikes ?? 0}</span>
                     </div>
                   </div>
                 </div>

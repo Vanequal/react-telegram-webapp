@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { createPostPreview, fetchPostComments, fetchPostsInSection, createPost, fetchMessageAttachments, fetchMessageReactions } from '@/store/slices/postSlice.js'
+import { createPostPreview, fetchPostComments, fetchPostsInSection, createPost, fetchMessageReactions } from '@/store/slices/postSlice.js'
 import { getViewedIdeas, markIdeaAsViewed } from '@/shared/utils/utils.js'
 
 // Components
@@ -67,8 +67,8 @@ const MindVaultPage = () => {
         pinned: post.pinned ?? false,
         timestamp: post.created_at ?? '',
         created_at: post.created_at, // ✅ Добавлено
-        files: post.attachments || [], // ✅ Используем attachments из API
-        attachments: post.attachments || [], // ✅ Используем attachments из API
+        files: post.media_files || [],
+        attachments: post.media_files || [],
         userReaction: post.user_reaction || null,
         author: post.author, // ✅ Добавлено
         reactions: post.reactions, // ✅ Добавлено
@@ -107,13 +107,8 @@ const MindVaultPage = () => {
     if (!posts || posts.length === 0) return
 
     posts.forEach(post => {
-      // Загружаем вложения если их еще нет
-      if (!post.attachments) {
-        dispatch(fetchMessageAttachments({ message_id: post.id }))
-      }
-
-      // Загружаем реакции если их еще нет
-      if (!post.reactions) {
+      // Загружаем реакции если их еще нет (проверяем по likes, т.к. reactions не ставится в state)
+      if (post.likes === undefined) {
         dispatch(fetchMessageReactions({ message_id: post.id }))
       }
 
@@ -125,7 +120,7 @@ const MindVaultPage = () => {
         dispatch(
           fetchPostComments({
             post_id: post.id,
-            section_code: SECTION_CODE, // ✅ Изменено
+            section_code: SECTION_CODE,
             theme_id: themeId,
           })
         )

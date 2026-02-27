@@ -56,8 +56,8 @@ const FileAttachments = ({ files, onImageClick }) => {
     const others = []
 
     files.forEach((file, index) => {
-      // Поддерживаем и старую, и новую структуру API
-      const filePath = file.file_path || file.stored_path || file.url || file.relative_path
+      // Поддерживаем и старую, и новую структуру API (media_file_id — новый формат)
+      const filePath = file.file_path || file.stored_path || file.url || file.relative_path || file.media_file_id
       const fileName = file.original_name || file.name || `file-${index}`
       const mimeType = file.mime_type || file.type || ''
 

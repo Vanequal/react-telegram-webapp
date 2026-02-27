@@ -69,8 +69,8 @@ const AnswerThread = ({ answer, isNew, sectionKey, themeId, isFirstAnswer = fals
     }
   }
 
-  // Обработка файлов ответа
-  const answerFiles = answer.attachments || []
+  // Обработка файлов ответа (media_files — новый API, attachments — старый)
+  const answerFiles = answer.media_files || answer.attachments || []
 
   // Проверяем, является ли это первым ответом
   const isFirst = isFirstAnswer || answer.id === 1
@@ -113,13 +113,13 @@ const AnswerThread = ({ answer, isNew, sectionKey, themeId, isFirstAnswer = fals
           )}
 
           <div className="question-comment-actions-right">
-            <div className={`question-reaction-badge ${answer.reactions?.user_reaction === 'like' ? 'question-reaction-badge--active' : ''}`} onClick={() => handleAnswerReaction('like')} style={{ cursor: 'pointer' }}>
+            <div className={`question-reaction-badge ${(answer.user_reaction ?? answer.reactions?.user_reaction) === 'like' ? 'question-reaction-badge--active' : ''}`} onClick={() => handleAnswerReaction('like')} style={{ cursor: 'pointer' }}>
               <img src={likeIcon} alt="Like" />
-              <span>{answer.reactions?.count_likes || answer.likes || 0}</span>
+              <span>{answer.likes ?? answer.reactions?.count_likes ?? 0}</span>
             </div>
-            <div className={`question-reaction-badge ${answer.reactions?.user_reaction === 'dislike' ? 'question-reaction-badge--active' : ''}`} onClick={() => handleAnswerReaction('dislike')} style={{ cursor: 'pointer' }}>
+            <div className={`question-reaction-badge ${(answer.user_reaction ?? answer.reactions?.user_reaction) === 'dislike' ? 'question-reaction-badge--active' : ''}`} onClick={() => handleAnswerReaction('dislike')} style={{ cursor: 'pointer' }}>
               <img src={dislikeIcon} alt="Dislike" />
-              <span>{answer.reactions?.count_dislikes || answer.dislikes || 0}</span>
+              <span>{answer.dislikes ?? answer.reactions?.count_dislikes ?? 0}</span>
             </div>
           </div>
 
@@ -146,7 +146,7 @@ const AnswerThread = ({ answer, isNew, sectionKey, themeId, isFirstAnswer = fals
         {showReplies && answer.replies?.length > 0 && (
           <div className="replies-container">
             {answer.replies.map((reply, index) => {
-              const replyFiles = reply.attachments || []
+              const replyFiles = reply.media_files || reply.attachments || []
 
               return (
                 <div key={reply.id} className="question-reply-thread" style={{ marginTop: '6%' }}>
@@ -169,13 +169,13 @@ const AnswerThread = ({ answer, isNew, sectionKey, themeId, isFirstAnswer = fals
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div className="question-subcomment-text">{reply.text}</div>
                           <div className="question-subcomment-reactions">
-                            <div className={`question-subcomment-reaction ${reply.reactions?.user_reaction === 'like' ? 'active' : ''}`} onClick={() => handleReplyReaction(reply.id, 'like')} style={{ cursor: 'pointer' }}>
+                            <div className={`question-subcomment-reaction ${(reply.user_reaction ?? reply.reactions?.user_reaction) === 'like' ? 'active' : ''}`} onClick={() => handleReplyReaction(reply.id, 'like')} style={{ cursor: 'pointer' }}>
                               <img src={likeIcon} alt="Like" />
-                              <span>{reply.reactions?.count_likes || reply.likes || 0}</span>
+                              <span>{reply.likes ?? reply.reactions?.count_likes ?? 0}</span>
                             </div>
-                            <div className={`question-subcomment-reaction ${reply.reactions?.user_reaction === 'dislike' ? 'active' : ''}`} onClick={() => handleReplyReaction(reply.id, 'dislike')} style={{ cursor: 'pointer' }}>
+                            <div className={`question-subcomment-reaction ${(reply.user_reaction ?? reply.reactions?.user_reaction) === 'dislike' ? 'active' : ''}`} onClick={() => handleReplyReaction(reply.id, 'dislike')} style={{ cursor: 'pointer' }}>
                               <img src={dislikeIcon} alt="Dislike" />
-                              <span>{reply.reactions?.count_dislikes || reply.dislikes || 0}</span>
+                              <span>{reply.dislikes ?? reply.reactions?.count_dislikes ?? 0}</span>
                             </div>
                           </div>
                         </div>

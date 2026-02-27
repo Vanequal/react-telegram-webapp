@@ -37,18 +37,19 @@ const TaskCard = ({ task, sectionCode, themeId, onCommentClick, onTaskComplete, 
     const currentUserReaction = currentPost?.reactions?.user_reaction ?? currentPost?.user_reaction ?? task.userReaction ?? null
 
     const taskFiles = useMemo(() => {
-        const rawFiles = task.attachments || currentPost?.attachments || task.files || []
+        const rawFiles = task.media_files || currentPost?.media_files || task.attachments || currentPost?.attachments || task.files || []
         if (!rawFiles || rawFiles.length === 0) return []
 
         return rawFiles.map((file, index) => ({
             ...file,
-            url: file.stored_path || file.url,
-            relative_path: file.stored_path || file.relative_path,
+            file_path: file.file_path || file.stored_path || file.url || file.media_file_id,
+            url: file.stored_path || file.url || file.media_file_id,
+            relative_path: file.stored_path || file.relative_path || file.media_file_id,
             original_name: file.original_name || file.name,
             extension: file.extension || (file.original_name ? file.original_name.split('.').pop().toLowerCase() : ''),
             index: index,
         }))
-    }, [task.attachments, currentPost?.attachments, task.files])
+    }, [task.media_files, currentPost?.media_files, task.attachments, currentPost?.attachments, task.files])
 
     // Task status from backend
     const taskStatus = currentPost?.status || task.status || 'idle'

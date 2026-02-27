@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { createTask, fetchTasks, fetchMessageAttachments, createTaskComment, completeTask } from '@/store/slices/postSlice';
+import { createTask, fetchTasks, createTaskComment, completeTask } from '@/store/slices/postSlice';
 import { SECTION_CODES, DEFAULT_THEME_ID } from '@/shared/constants/sections';
 import logger from '@/shared/utils/logger';
 import { showError } from '@/shared/utils/notifications';
@@ -84,16 +84,7 @@ const TaskChatPage = () => {
     );
   }, [dispatch]);
 
-  // Load attachments for tasks
-  useEffect(() => {
-    if (!tasks || tasks.length === 0) return;
-
-    tasks.forEach(task => {
-      if (!task.attachments) {
-        dispatch(fetchMessageAttachments({ message_id: task.id }));
-      }
-    });
-  }, [tasks.length, dispatch]);
+  // Вложения задач хранятся в media_files внутри самой задачи — отдельный запрос не нужен
 
   // --- List handlers ---
   const handleInputFocus = useCallback(() => {

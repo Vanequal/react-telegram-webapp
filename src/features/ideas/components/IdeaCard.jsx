@@ -51,41 +51,27 @@ const IdeaCard = React.memo(function IdeaCard({ idea, onExpand, isExpanded = fal
 
   // Правильно извлекаем файлы из новой структуры API
   const ideaFiles = useMemo(() => {
-    // Проверяем разные источники файлов для совместимости
-    const rawFiles = idea.attachments || currentPost?.attachments || idea.files || currentPost?.files || []
-
-    console.log('📁 IdeaCard - Обработка файлов для поста:', {
-      postId: idea.id,
-      rawFiles: rawFiles,
-      rawFilesLength: rawFiles.length,
-      ideaHasAttachments: !!idea.attachments,
-      currentPostHasAttachments: !!currentPost?.attachments,
-      ideaHasFiles: !!idea.files,
-      currentPostHasFiles: !!currentPost?.files,
-    })
+    // Проверяем разные источники файлов (media_files — новый API, attachments/files — старый)
+    const rawFiles = idea.media_files || currentPost?.media_files || idea.attachments || currentPost?.attachments || idea.files || currentPost?.files || []
 
     if (!rawFiles || rawFiles.length === 0) {
-      console.log('📁 IdeaCard - Нет файлов для обработки')
       return []
     }
 
     // Возвращаем файлы в том формате, который ожидает FileAttachments
     const processedFiles = rawFiles.map((file, index) => ({
-      // Сохраняем оригинальную структуру
       ...file,
-      // Добавляем поля для совместимости со старым FileAttachments
-      file_path: file.file_path || file.stored_path || file.url,
-      url: file.file_path || file.stored_path || file.url,
-      relative_path: file.file_path || file.stored_path || file.relative_path,
+      // Поддержка нового формата API (media_file_id) и старого (file_path/stored_path/url)
+      file_path: file.file_path || file.stored_path || file.url || file.media_file_id,
+      url: file.file_path || file.stored_path || file.url || file.media_file_id,
+      relative_path: file.file_path || file.stored_path || file.relative_path || file.media_file_id,
       original_name: file.original_name || file.name,
       extension: file.extension || (file.original_name ? file.original_name.split('.').pop().toLowerCase() : ''),
-      // Индекс для ключей
       index: index,
     }))
 
-    console.log('📁 IdeaCard - Обработанные файлы:', processedFiles)
     return processedFiles
-  }, [idea.attachments, currentPost?.attachments, idea.files, currentPost?.files, idea.id])
+  }, [idea.media_files, currentPost?.media_files, idea.attachments, currentPost?.attachments, idea.files, currentPost?.files, idea.id])
 
   // Check if text needs "Read more" button
   useEffect(() => {

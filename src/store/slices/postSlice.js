@@ -146,6 +146,7 @@ export const createComment = createAsyncThunk(
 
       const requestData = {
         text: message_text || '',
+        is_openai_generated: false,
         media_file_ids: uploadedFileIds,
       }
       if (reply_to_message_id) {
@@ -954,6 +955,16 @@ const postSlice = createSlice({
             user_reaction: reaction,
           }
         }
+        // Обновляем реакцию в комментариях
+        Object.keys(state.comments).forEach(parentId => {
+          const commentIndex = state.comments[parentId].findIndex(c => c.id === post_id)
+          if (commentIndex !== -1) {
+            state.comments[parentId][commentIndex] = {
+              ...state.comments[parentId][commentIndex],
+              user_reaction: reaction,
+            }
+          }
+        })
       })
       .addCase(reactToPost.rejected, (state, action) => {
         state.error = action.payload

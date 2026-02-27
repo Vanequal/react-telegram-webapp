@@ -22,15 +22,15 @@ const PublicationDisplayCard = ({ publication, onReaction }) => {
 
   const currentUserReaction = currentPost?.reactions?.user_reaction ?? currentPost?.user_reaction ?? publication.userReaction ?? null
 
-  // Файлы (если есть)
-  const publicationFiles = publication.attachments || currentPost?.attachments || []
+  // Файлы (media_files — новый API, attachments — старый)
+  const publicationFiles = publication.media_files || currentPost?.media_files || publication.attachments || currentPost?.attachments || []
 
   // Получаем первый файл для отображения
   const firstFile = publicationFiles[0]
 
   const handleFileDownload = useCallback(file => {
     const BACKEND_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-    const filePath = file.file_path || file.stored_path || file.url || file.relative_path
+    const filePath = file.file_path || file.stored_path || file.url || file.relative_path || file.media_file_id
     const downloadUrl = `${BACKEND_BASE_URL}/static/${filePath}`
     window.open(downloadUrl, '_blank')
   }, [])
