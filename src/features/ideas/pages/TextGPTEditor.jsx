@@ -9,7 +9,7 @@ import '@/styles/features/TextGPTEditor.scss'
 
 // Constants
 const DEFAULT_SECTION_CODE = 'chat_ideas' // ✅ Переименовано
-const DEFAULT_THEME_ID = 1
+const DEFAULT_THEME_ID = null
 
 const TextGPTEditor = () => {
   const location = useNavigate()

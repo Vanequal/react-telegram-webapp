@@ -7,7 +7,9 @@ export const SECTION_CODES = {
   IDEAS: 'ideas'
 };
 
-export const DEFAULT_THEME_ID = 1;
+// theme_id теперь UUID, получается из root theme через store.theme.theme.id
+// Оставлено для обратной совместимости, thunks автоматически берут правильный UUID
+export const DEFAULT_THEME_ID = null;
 
 export const DEFAULT_PAGINATION = {
   LIMIT: 100,

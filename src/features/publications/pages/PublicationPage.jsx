@@ -15,7 +15,7 @@ import '@/styles/features/PublicationPage.scss'
 
 // Constants
 const SECTION_CODE = 'chat_publications' // ✅ Переименовано
-const DEFAULT_THEME_ID = 1
+const DEFAULT_THEME_ID = null
 
 const PublicationPage = () => {
   const { id } = useParams()
@@ -25,7 +25,7 @@ const PublicationPage = () => {
 
   // Redux selectors
   const { posts, selectedPost } = useSelector(state => state.post)
-  const postComments = useSelector(state => state.post.comments[+id] || [])
+  const postComments = useSelector(state => state.post.comments[id] || [])
   const { commentsLoading, loading } = useSelector(state => state.post)
 
   // Local state
@@ -52,13 +52,13 @@ const PublicationPage = () => {
         console.log('📤 Отправка комментария:', {
           text: commentText.trim(),
           filesCount: files.length,
-          post_id: +id,
+          post_id: id,
           section_code: SECTION_CODE,
         })
 
         await dispatch(
           createComment({
-            post_id: +id,
+            post_id: id,
             message_text: commentText.trim(),
             section_code: SECTION_CODE, // ✅ Изменено
             theme_id: DEFAULT_THEME_ID,
@@ -115,7 +115,7 @@ const PublicationPage = () => {
 
   // Effect для загрузки публикации, если её нет в состоянии
   useEffect(() => {
-    const publicationId = +id
+    const publicationId = id
     if (publicationId && !publication && !loading) {
       console.log('🔄 Загружаем публикацию по ID:', publicationId)
       dispatch(
@@ -130,7 +130,7 @@ const PublicationPage = () => {
 
   // Effect для загрузки вложений публикации
   useEffect(() => {
-    const publicationId = +id
+    const publicationId = id
     const postInStore = posts.find(p => p.id === publicationId)
     if (publicationId && !postInStore?.attachments) {
       dispatch(fetchMessageAttachments({ message_id: publicationId }))
@@ -139,7 +139,7 @@ const PublicationPage = () => {
 
   // Effect для загрузки комментариев
   useEffect(() => {
-    const publicationId = +id
+    const publicationId = id
 
     const shouldLoadComments = publicationId && !commentsLoaded && !commentsLoading && (!comments || comments.length === 0)
 

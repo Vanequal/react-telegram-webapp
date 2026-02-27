@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { authWithTelegram } from '../store/slices/authSlice'
 import { fetchCurrentUser } from '../store/slices/meSlice'
+import { fetchRootTheme, fetchThemeSections } from '../store/slices/themeSlice'
 import axios from '../shared/api/axios'
 import logger from '@/shared/utils/logger'
 
@@ -43,22 +44,27 @@ function App() {
     const initData = tg?.initData
     const savedToken = sessionStorage.getItem('token')
 
+    const loadCoreData = () =>
+      dispatch(fetchRootTheme())
+        .unwrap()
+        .then((rootTheme) => dispatch(fetchThemeSections(rootTheme.id)))
+        .catch((err) => logger.warn('⚠️ Не удалось загрузить root theme:', err))
+
     // Локальная разработка
     if (import.meta.env.DEV && window.location.hostname === 'localhost') {
       const mockToken = 'mock-token'
       sessionStorage.setItem('token', mockToken)
       axios.defaults.headers.common['Authorization'] = `Bearer ${mockToken}`
-      setAuthReady(true)
+      loadCoreData().finally(() => setAuthReady(true))
       return
     }
 
     // Если токен уже есть в sessionStorage
     if (savedToken) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
-      // ✅ Загружаем данные пользователя
-      dispatch(fetchCurrentUser()).finally(() => {
-        setAuthReady(true)
-      })
+      dispatch(fetchCurrentUser())
+        .finally(() => loadCoreData())
+        .finally(() => setAuthReady(true))
       return
     }
 
@@ -66,14 +72,8 @@ function App() {
     if (initData && tg?.initDataUnsafe?.user) {
       dispatch(authWithTelegram(initData))
         .unwrap()
-        .then((result) => {
-          logger.log('✅ Авторизация успешна:', result)
-          // ✅ После успешной авторизации загружаем данные пользователя
-          return dispatch(fetchCurrentUser()).unwrap()
-        })
-        .then((userData) => {
-          logger.log('✅ Данные пользователя загружены:', userData)
-        })
+        .then(() => dispatch(fetchCurrentUser()))
+        .then(() => loadCoreData())
         .catch((error) => {
           logger.error('❌ Ошибка авторизации:', error)
         })

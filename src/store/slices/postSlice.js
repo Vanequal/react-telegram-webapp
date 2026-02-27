@@ -6,7 +6,20 @@ import logger from '@/shared/utils/logger'
 // ФАЙЛЫ
 // ============================================================================
 
-// ✅ Загрузка файлов через /upload_files
+// Вспомогательная функция: получить section_id и theme_id из state
+const resolveIds = (state, section_code, section_id, theme_id) => {
+  const sections = state.theme?.sections || []
+  const resolvedSectionId = section_id
+    || sections.find(s => s.section_code === section_code)?.section_id
+  const rootThemeId = state.theme?.theme?.id
+  // Если theme_id — не UUID (например число 1), используем id корневой темы
+  const resolvedThemeId = (theme_id && typeof theme_id === 'string' && theme_id.length > 10)
+    ? theme_id
+    : rootThemeId
+  return { resolvedSectionId, resolvedThemeId }
+}
+
+// Загрузка файлов через /api/v1/media_files/uploads
 export const uploadFiles = createAsyncThunk('post/uploadFiles', async (files, { rejectWithValue }) => {
   try {
     if (!files || files.length === 0) {
@@ -17,12 +30,12 @@ export const uploadFiles = createAsyncThunk('post/uploadFiles', async (files, { 
 
     const formData = new FormData()
     files.forEach(file => {
-      formData.append('files', file) // ← Согласно Swagger параметр называется 'files'
+      formData.append('files', file)
     })
 
-    const res = await axios.post('/api/v1/messages/upload_files', formData, {
+    const res = await axios.post('/api/v1/media_files/uploads', formData, {
       headers: {
-        'Content-Type': undefined, // Позволяем браузеру установить multipart/form-data с boundary
+        'Content-Type': undefined,
       },
     })
 
@@ -38,43 +51,38 @@ export const uploadFiles = createAsyncThunk('post/uploadFiles', async (files, { 
 // ПОСТЫ (POSTS)
 // ============================================================================
 
-// ✅ Создание поста
+// Создание поста
 export const createPost = createAsyncThunk(
   'post/create',
-  async ({ message_text, section_code, theme_id, is_openai_generated = false, ratio = 1, files = [] }, { rejectWithValue, dispatch }) => {
+  async ({ message_text, section_code, section_id, theme_id, is_openai_generated = false, files = [] }, { rejectWithValue, dispatch, getState }) => {
     try {
-      // Сначала загружаем файлы, если они есть
+      const { resolvedSectionId, resolvedThemeId } = resolveIds(getState(), section_code, section_id, theme_id)
+
       let uploadedFileIds = []
       if (files && files.length > 0) {
         const uploadResult = await dispatch(uploadFiles(files)).unwrap()
         uploadedFileIds = uploadResult || []
       }
 
-      // ✅ Готовим данные согласно Swagger
       const requestData = {
-        type: 'post',
         text: message_text,
         media_file_ids: uploadedFileIds,
         is_openai_generated: is_openai_generated,
-        ratio: ratio,
       }
 
-      logger.log('📤 Создание поста:', {
-        url: `/api/v1/messages/posts`,
-        data: requestData,
-        params: { theme_id, section_code },
+      logger.log('📤 Создание поста:', { theme_id: resolvedThemeId, section_id: resolvedSectionId })
+
+      const res = await axios.post('/api/v1/messages/posts', requestData, {
+        params: { theme_id: resolvedThemeId, section_id: resolvedSectionId },
       })
 
-      const res = await axios.post(`/api/v1/messages/posts`, requestData, {
-        params: { theme_id, section_code },
+      // API возвращает только { id }, загружаем полный пост
+      const postRes = await axios.get(`/api/v1/messages/posts/${res.data.id}`, {
+        params: { post_id: res.data.id },
       })
 
-      logger.log('✅ Пост создан:', res.data)
-
-      return {
-        ...res.data,
-        uploaded_file_ids: uploadedFileIds,
-      }
+      logger.log('✅ Пост создан:', postRes.data)
+      return { post: postRes.data, section_code }
     } catch (err) {
       logger.error('🔥 Ошибка создания поста:', err?.response?.data || err.message)
       return rejectWithValue(err?.response?.data?.detail || 'Ошибка создания поста')
@@ -82,20 +90,16 @@ export const createPost = createAsyncThunk(
   }
 )
 
-// ✅ Получение постов в секции
+// Получение постов в секции
 export const fetchPostsInSection = createAsyncThunk(
   'post/fetchPostsInSection',
-  async ({ section_code, theme_id, limit = 100, offset = 0 }, { rejectWithValue }) => {
+  async ({ section_code, section_id, theme_id, limit = 100, offset = 0 }, { rejectWithValue, getState }) => {
     try {
-      logger.log('📥 Загрузка постов:', { section_code, theme_id, limit, offset })
+      const { resolvedSectionId, resolvedThemeId } = resolveIds(getState(), section_code, section_id, theme_id)
+      logger.log('📥 Загрузка постов:', { section_code, section_id: resolvedSectionId, theme_id: resolvedThemeId })
 
-      const res = await axios.get(`/api/v1/messages/posts`, {
-        params: {
-          theme_id,
-          section_code,
-          limit,
-          offset,
-        },
+      const res = await axios.get('/api/v1/messages/posts', {
+        params: { theme_id: resolvedThemeId, section_id: resolvedSectionId, limit, offset },
       })
 
       logger.log('✅ Посты загружены:', res.data?.length || 0)
@@ -107,29 +111,15 @@ export const fetchPostsInSection = createAsyncThunk(
   }
 )
 
-// ✅ Получение конкретного поста
-// Загружаем все посты и фильтруем нужный, так как отдельного endpoint для одного поста нет в swagger
+// Получение конкретного поста
 export const fetchPostById = createAsyncThunk(
   'post/fetchPostById',
-  async ({ message_id, section_code, theme_id }, { rejectWithValue }) => {
+  async ({ message_id }, { rejectWithValue }) => {
     try {
-      // Загружаем все посты секции
-      const res = await axios.get(`/api/v1/messages/posts`, {
-        params: {
-          theme_id,
-          section_code,
-          limit: 500, // Максимальный лимит
-        },
+      const res = await axios.get(`/api/v1/messages/posts/${message_id}`, {
+        params: { post_id: message_id },
       })
-
-      // Находим нужный пост
-      const post = (res.data || []).find(item => item.message?.id === message_id)
-
-      if (!post) {
-        throw new Error('Пост не найден')
-      }
-
-      return post
+      return res.data
     } catch (err) {
       logger.error('🔥 Ошибка загрузки поста:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || err?.message || 'Ошибка загрузки поста')
@@ -141,86 +131,59 @@ export const fetchPostById = createAsyncThunk(
 // КОММЕНТАРИИ (COMMENTS)
 // ============================================================================
 
-// ✅ Создание комментария
+// Создание комментария
 export const createComment = createAsyncThunk(
   'post/createComment',
-  async ({ post_id, message_text, section_code, theme_id, reply_to_message_id = null, files = [] }, { rejectWithValue, dispatch }) => {
+  async ({ post_id, message_text, section_code, section_id, theme_id, reply_to_message_id = null, files = [] }, { rejectWithValue, dispatch, getState }) => {
     try {
-      // Загружаем файлы если есть
+      const { resolvedSectionId, resolvedThemeId } = resolveIds(getState(), section_code, section_id, theme_id)
+
       let uploadedFileIds = []
       if (files && files.length > 0) {
         const uploadResult = await dispatch(uploadFiles(files)).unwrap()
         uploadedFileIds = uploadResult || []
       }
 
-      // ✅ Структура данных согласно Swagger для комментариев
       const requestData = {
-        type: 'comment',
         text: message_text || '',
         media_file_ids: uploadedFileIds,
-        content_id: post_id, // ← ID поста к которому комментарий
       }
-
-      // reply_to_message_id опциональное поле (integer ≥ 1 или null)
       if (reply_to_message_id) {
         requestData.reply_to_message_id = reply_to_message_id
       }
 
-      console.log('📤 [createComment] Отправляемые данные:', JSON.stringify(requestData, null, 2))
-      console.log('📤 [createComment] Query params:', { theme_id, section_code })
-      console.log('📤 [createComment] post_id тип:', typeof post_id, 'значение:', post_id)
-
-      const res = await axios.post(`/api/v1/messages/comments`, requestData, {
-        params: { theme_id, section_code },
+      // POST /api/v1/messages/{content_id}/comments?theme_id=...&section_id=...&message_id=...
+      const res = await axios.post(`/api/v1/messages/${post_id}/comments`, requestData, {
+        params: { theme_id: resolvedThemeId, section_id: resolvedSectionId, message_id: post_id },
       })
 
       logger.log('✅ Комментарий создан:', res.data)
-
-      return {
-        ...res.data,
-        post_id: post_id,
-        uploaded_file_ids: uploadedFileIds,
-      }
+      return { id: res.data.id, post_id }
     } catch (err) {
-      console.error('🔥 [createComment] ПОЛНЫЙ ответ ошибки:', JSON.stringify(err?.response?.data, null, 2))
-      console.error('🔥 [createComment] HTTP статус:', err?.response?.status)
-      console.error('🔥 [createComment] Заголовки ответа:', err?.response?.headers)
+      logger.error('🔥 Ошибка создания комментария:', err?.response?.data || err.message)
       const errorDetail = err.response?.data?.detail
       const errorMsg = Array.isArray(errorDetail)
         ? errorDetail.map(e => `${e.loc?.join('.')}: ${e.msg}`).join('; ')
-        : (errorDetail || JSON.stringify(err.response?.data) || 'Ошибка добавления комментария')
+        : (errorDetail || 'Ошибка добавления комментария')
       return rejectWithValue(errorMsg)
     }
   }
 )
 
-// ✅ Получение комментариев
+// Получение комментариев
 export const fetchPostComments = createAsyncThunk(
   'post/fetchComments',
-  async ({ post_id, section_code, theme_id, limit = 100, offset = 0 }, { rejectWithValue }) => {
+  async ({ post_id, section_code, section_id, theme_id, limit = 100, offset = 0 }, { rejectWithValue, getState }) => {
     try {
-      logger.log('📥 Загрузка комментариев:', {
-        post_id,
-        section_code,
-        theme_id,
-      })
+      logger.log('📥 Загрузка комментариев:', { post_id })
 
-      // ✅ Согласно Swagger: GET /api/v1/messages/comments/{content_id}
-      const res = await axios.get(`/api/v1/messages/comments/${post_id}`, {
-        params: {
-          theme_id,
-          section_code,
-          limit,
-          offset,
-        },
+      // GET /api/v1/messages/{content_id}/comments?message_id=...
+      const res = await axios.get(`/api/v1/messages/${post_id}/comments`, {
+        params: { message_id: post_id, limit, offset },
       })
 
       const postComments = res.data || []
-
-      logger.log('✅ Комментарии загружены:', {
-        count: postComments.length,
-      })
-
+      logger.log('✅ Комментарии загружены:', postComments.length)
       return { postId: post_id, comments: postComments }
     } catch (err) {
       logger.error('🔥 Ошибка загрузки комментариев:', err?.response?.data || err.message)
@@ -233,58 +196,39 @@ export const fetchPostComments = createAsyncThunk(
 // ЗАДАЧИ (TASKS)
 // ============================================================================
 
-// ✅ Создание задачи (через /posts endpoint!)
-// Endpoint /tasks используется только для принятия в работу!
+// Создание задачи через /api/v1/messages/tasks
 export const createTask = createAsyncThunk(
   'post/createTask',
-  async ({ message_text, section_code, theme_id, ratio = null, files = [] }, { rejectWithValue, dispatch }) => {
+  async ({ message_text, section_code, section_id, theme_id, ratio = 1, files = [] }, { rejectWithValue, dispatch, getState }) => {
     try {
-      // Сначала загружаем файлы
+      const { resolvedSectionId, resolvedThemeId } = resolveIds(getState(), section_code, section_id, theme_id)
+
       let uploadedFileIds = []
       if (files && files.length > 0) {
-        logger.log('📤 Загружаем файлы для задачи:', files.length)
         const uploadResult = await dispatch(uploadFiles(files)).unwrap()
         uploadedFileIds = uploadResult || []
-        logger.log('✅ Файлы загружены, IDs:', uploadedFileIds)
       }
 
-      logger.log('📤 Создание задачи через /posts:', {
-        text: message_text,
-        section_code,
-        theme_id,
-        ratio,
-        files_count: uploadedFileIds.length,
-      })
-
-      // ✅ Создаем задачу через /posts endpoint!
-      // Задача = это пост с ratio
       const requestData = {
-        type: 'post',
         text: message_text,
         media_file_ids: uploadedFileIds,
         is_openai_generated: false,
-        ratio: ratio || 1, // Задача отличается от обычного поста наличием ratio
+        ratio: ratio || 1,
       }
 
-      logger.log('📋 Отправляем данные в /posts:', requestData)
+      logger.log('📤 Создание задачи:', { theme_id: resolvedThemeId, section_id: resolvedSectionId })
 
-      // ⚠️ ВАЖНО: Создаем через /posts, а не через /tasks!
-      const res = await axios.post(`/api/v1/messages/posts`, requestData, {
-        params: { theme_id, section_code },
+      const res = await axios.post('/api/v1/messages/tasks', requestData, {
+        params: { theme_id: resolvedThemeId, section_id: resolvedSectionId },
       })
 
-      logger.log('✅ Задача создана через /posts, ответ от API:', res.data)
-      logger.log('📊 Структура ответа:', {
-        message: res.data.message,
-        message_post: res.data.message_post,
-        ratio: res.data.message_post?.ratio,
+      // API возвращает только { id }, загружаем полную задачу
+      const taskRes = await axios.get(`/api/v1/messages/tasks/${res.data.id}`, {
+        params: { task_id: res.data.id },
       })
 
-      return {
-        ...res.data,
-        ratio: ratio, // Сохраняем для совместимости
-        uploaded_file_ids: uploadedFileIds,
-      }
+      logger.log('✅ Задача создана:', taskRes.data)
+      return { task: taskRes.data, section_code }
     } catch (err) {
       logger.error('🔥 Ошибка создания задачи:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка создания задачи')
@@ -292,84 +236,35 @@ export const createTask = createAsyncThunk(
   }
 )
 
-// ✅ Получение задач
-// Задачи = это посты с ratio, получаем через /posts endpoint
-// + получаем исполнения через /tasks/{content_id} endpoint для каждой задачи
+// Получение задач
 export const fetchTasks = createAsyncThunk(
   'post/fetchTasks',
-  async ({ section_code, theme_id, limit = 100, offset = 0 }, { rejectWithValue }) => {
+  async ({ section_code, section_id, theme_id, limit = 100, offset = 0 }, { rejectWithValue, getState }) => {
     try {
-      logger.log('📥 Загрузка задач:', {
-        section_code,
-        theme_id,
-        limit,
-        offset
+      const { resolvedSectionId, resolvedThemeId } = resolveIds(getState(), section_code, section_id, theme_id)
+      logger.log('📥 Загрузка задач:', { section_code, section_id: resolvedSectionId })
+
+      const tasksRes = await axios.get('/api/v1/messages/tasks', {
+        params: { theme_id: resolvedThemeId, section_id: resolvedSectionId, limit, offset },
       })
 
-      // 1. Получаем все посты
-      const postsRes = await axios.get(`/api/v1/messages/posts`, {
-        params: {
-          theme_id,
-          section_code,
-          limit,
-          offset,
-        },
-      })
+      const tasks = tasksRes.data || []
+      logger.log('✅ Получено задач:', tasks.length)
 
-      const allPosts = postsRes.data || []
-      logger.log('✅ Получено постов:', allPosts.length)
-
-      // 2. Фильтруем посты с ratio (это задачи)
-      const taskPosts = allPosts.filter(item => {
-        const ratio = item.message_post?.ratio
-        return ratio && ratio > 0
-      })
-
-      logger.log('✅ Найдено задач с ratio:', taskPosts.length)
-
-      // 3. Для каждой задачи получаем её исполнения
-      const tasksWithExecutions = await Promise.all(
-        taskPosts.map(async (taskPost) => {
+      // Для каждой задачи загружаем assignments (исполнения)
+      const tasksWithAssignments = await Promise.all(
+        tasks.map(async (task) => {
           try {
-            // ✅ Согласно Swagger: GET /api/v1/messages/tasks/{content_id}
-            const executionsRes = await axios.get(`/api/v1/messages/tasks/${taskPost.message.id}`, {
-              params: {
-                theme_id,
-                section_code,
-                limit: 100,
-                offset: 0,
-              },
-            })
-
-            const executions = executionsRes.data || []
-            const hasExecutions = executions.length > 0
-
-            logger.log(`✅ Задача ${taskPost.message.id}: ${executions.length} исполнений`)
-
-            return {
-              ...taskPost,
-              executions: executions,
-              has_executions: hasExecutions,
-            }
-          } catch (err) {
-            // Если ошибка при получении исполнений, возвращаем задачу без исполнений
-            logger.warn(`⚠️ Не удалось загрузить исполнения для задачи ${taskPost.message.id}:`, err.message)
-            return {
-              ...taskPost,
-              executions: [],
-              has_executions: false,
-            }
+            const assignmentsRes = await axios.get(`/api/v1/messages/tasks/${task.id}/assignments`)
+            const assignments = assignmentsRes.data || []
+            return { ...task, assignments }
+          } catch {
+            return { ...task, assignments: [] }
           }
         })
       )
 
-      logger.log('📊 Статистика исполнений:', {
-        total: tasksWithExecutions.length,
-        with_executions: tasksWithExecutions.filter(t => t.has_executions).length,
-        idle: tasksWithExecutions.filter(t => !t.has_executions).length,
-      })
-
-      return tasksWithExecutions
+      return { tasks: tasksWithAssignments, section_code }
     } catch (err) {
       logger.error('🔥 Ошибка загрузки задач:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка загрузки задач')
@@ -377,49 +272,27 @@ export const fetchTasks = createAsyncThunk(
   }
 )
 
-// ✅ Взять задачу в работу (или создать исполнение задачи)
+// Взять задачу в работу (assignment)
 export const acceptTask = createAsyncThunk(
   'post/acceptTask',
-  async ({ task_message_id, section_code, theme_id, is_partially, description = '', expires_at }, { rejectWithValue }) => {
+  async ({ task_message_id, section_code, section_id, theme_id, is_partially, description = '', expires_at }, { rejectWithValue, getState }) => {
     try {
-      logger.log('📤 Берем задачу в работу:', {
-        task_message_id,
-        section_code,
-        theme_id,
-        is_partially,
-        description,
-        expires_at,
-      })
+      const { resolvedSectionId, resolvedThemeId } = resolveIds(getState(), section_code, section_id, theme_id)
 
-      // ✅ Структура данных согласно Swagger
-      // POST /api/v1/messages/tasks для создания исполнения задачи
       const requestData = {
-        type: 'task',
-        text: description, // Описание того, что будет делать исполнитель
+        text: description,
         media_file_ids: [],
-        content_id: task_message_id, // ← ID задачи которую берем
-        is_partially: is_partially,
+        is_partially: !!is_partially,
       }
+      if (expires_at) requestData.expires_at = expires_at
 
-      // ✅ Добавляем expires_at только если он указан
-      if (expires_at) {
-        requestData.expires_at = expires_at
-      }
-
-      // ✅ Согласно Swagger: POST /api/v1/messages/tasks
-      const res = await axios.post(`/api/v1/messages/tasks`, requestData, {
-        params: {
-          theme_id,
-          section_code,
-        },
+      // POST /api/v1/messages/tasks/{task_id}/assignment
+      const res = await axios.post(`/api/v1/messages/tasks/${task_message_id}/assignment`, requestData, {
+        params: { theme_id: resolvedThemeId, section_id: resolvedSectionId },
       })
 
       logger.log('✅ Задача взята в работу:', res.data)
-
-      return {
-        ...res.data,
-        task_message_id,
-      }
+      return { id: res.data.id, task_message_id }
     } catch (err) {
       logger.error('🔥 Ошибка принятия задачи:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка принятия задачи')
@@ -427,97 +300,69 @@ export const acceptTask = createAsyncThunk(
   }
 )
 
-// ✅ Отметить задачу как выполненную (через /tasks endpoint, т.к. /comments не поддерживает chat_tasks)
+// Отметить задачу как выполненную
 export const completeTask = createAsyncThunk(
   'post/completeTask',
-  async ({ task_message_id, section_code, theme_id, description, files = [] }, { rejectWithValue, dispatch }) => {
+  async ({ task_message_id, section_code, section_id, theme_id, description, files = [] }, { rejectWithValue, dispatch, getState }) => {
     try {
-      // Загружаем файлы результата
+      const { resolvedSectionId, resolvedThemeId } = resolveIds(getState(), section_code, section_id, theme_id)
+
       let uploadedFileIds = []
       if (files && files.length > 0) {
         const uploadResult = await dispatch(uploadFiles(files)).unwrap()
         uploadedFileIds = uploadResult || []
       }
 
-      // ✅ Используем /tasks endpoint (поддерживает chat_tasks)
       const requestData = {
-        type: 'task',
         text: description || '',
         media_file_ids: uploadedFileIds,
-        content_id: task_message_id,
-        is_partially: false, // Задача выполнена полностью
-        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // +30 дней
+        is_partially: false,
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       }
 
-      console.log('📤 [completeTask] Отправляемые данные:', JSON.stringify(requestData, null, 2))
-      console.log('📤 [completeTask] Query params:', { theme_id, section_code })
-
-      const res = await axios.post(`/api/v1/messages/tasks`, requestData, {
-        params: { theme_id, section_code },
+      const res = await axios.post(`/api/v1/messages/tasks/${task_message_id}/assignment`, requestData, {
+        params: { theme_id: resolvedThemeId, section_id: resolvedSectionId },
       })
 
-      logger.log('✅ Задача отмечена как выполненная:', res.data)
-
-      return {
-        task_message_id,
-        result: res.data,
-        uploaded_file_ids: uploadedFileIds,
-        completion_description: description,
-        completion_files: files,
-      }
+      logger.log('✅ Задача выполнена:', res.data)
+      return { task_message_id, completion_description: description, completion_files: files }
     } catch (err) {
-      console.error('🔥 [completeTask] ПОЛНЫЙ ответ ошибки:', JSON.stringify(err?.response?.data, null, 2))
-      console.error('🔥 [completeTask] HTTP статус:', err?.response?.status)
-      const errorMsg = err.response?.data?.error?.message
-        || err.response?.data?.detail
-        || 'Ошибка завершения задачи'
+      logger.error('🔥 Ошибка завершения задачи:', err?.response?.data || err.message)
+      const errorMsg = err.response?.data?.detail || 'Ошибка завершения задачи'
       return rejectWithValue(typeof errorMsg === 'string' ? errorMsg : 'Ошибка завершения задачи')
     }
   }
 )
 
-// ✅ Создание комментария к задаче (через /tasks endpoint, т.к. /comments не поддерживает chat_tasks)
+// Создание комментария к задаче (через assignments endpoint)
 export const createTaskComment = createAsyncThunk(
   'post/createTaskComment',
-  async ({ post_id, message_text, section_code, theme_id, files = [] }, { rejectWithValue, dispatch }) => {
+  async ({ post_id, message_text, section_code, section_id, theme_id, files = [] }, { rejectWithValue, dispatch, getState }) => {
     try {
-      // Загружаем файлы если есть
+      const { resolvedSectionId, resolvedThemeId } = resolveIds(getState(), section_code, section_id, theme_id)
+
       let uploadedFileIds = []
       if (files && files.length > 0) {
         const uploadResult = await dispatch(uploadFiles(files)).unwrap()
         uploadedFileIds = uploadResult || []
       }
 
-      // ✅ Используем /tasks endpoint (поддерживает chat_tasks)
       const requestData = {
-        type: 'task',
         text: message_text || '',
         media_file_ids: uploadedFileIds,
-        content_id: post_id,
         is_partially: true,
-        expires_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       }
 
-      console.log('📤 [createTaskComment] Отправляемые данные:', JSON.stringify(requestData, null, 2))
-      console.log('📤 [createTaskComment] Query params:', { theme_id, section_code })
-
-      const res = await axios.post(`/api/v1/messages/tasks`, requestData, {
-        params: { theme_id, section_code },
+      const res = await axios.post(`/api/v1/messages/tasks/${post_id}/assignment`, requestData, {
+        params: { theme_id: resolvedThemeId, section_id: resolvedSectionId },
       })
 
       logger.log('✅ Комментарий к задаче создан:', res.data)
-
-      return {
-        ...res.data,
-        post_id,
-        uploaded_file_ids: uploadedFileIds,
-      }
+      return { id: res.data.id, post_id }
     } catch (err) {
-      console.error('🔥 [createTaskComment] ПОЛНЫЙ ответ ошибки:', JSON.stringify(err?.response?.data, null, 2))
-      console.error('🔥 [createTaskComment] HTTP статус:', err?.response?.status)
-      const errorMsg = err.response?.data?.error?.message
-        || err.response?.data?.detail
-        || 'Ошибка добавления комментария к задаче'
+      logger.error('🔥 Ошибка добавления комментария к задаче:', err?.response?.data || err.message)
+      const errorMsg = err.response?.data?.detail || 'Ошибка добавления комментария к задаче'
       return rejectWithValue(typeof errorMsg === 'string' ? errorMsg : 'Ошибка добавления комментария к задаче')
     }
   }
@@ -527,35 +372,31 @@ export const createTaskComment = createAsyncThunk(
 // OPENAI / ПРЕВЬЮ
 // ============================================================================
 
-// ✅ Создание превью поста через OpenAI
+// Улучшение текста через AI
 export const createPostPreview = createAsyncThunk(
   'post/createPreview',
-  async ({ section_code, theme_id, text }, { rejectWithValue }) => {
+  async ({ section_code, section_id, theme_id, text }, { rejectWithValue, getState }) => {
     try {
-      logger.log('📤 Запрос превью от OpenAI:', { section_code, theme_id, text })
+      const { resolvedSectionId, resolvedThemeId } = resolveIds(getState(), section_code, section_id, theme_id)
+      logger.log('📤 Запрос AI улучшения текста')
 
       const res = await axios.post(
-        `/api/v1/messages/openai`,
+        '/api/v1/messages/ai/improve_text',
         { text },
-        {
-          params: {
-            section_code,
-            theme_id,
-          },
-        }
+        { params: { theme_id: resolvedThemeId, section_id: resolvedSectionId } }
       )
 
-      logger.log('✅ Превью получено:', res.data)
+      logger.log('✅ AI ответ получен:', res.data)
 
+      // API возвращает { input_text, output_text }
       return {
-        original_text: res.data.original_text,
-        openai_text: res.data.openai_text,
+        original_text: res.data.input_text,
+        openai_text: res.data.output_text,
       }
     } catch (err) {
-      logger.error('🔥 Ошибка создания превью:', err?.response?.data || err.message)
+      logger.error('🔥 Ошибка AI улучшения текста:', err?.response?.data || err.message)
 
-      // ✅ Обработка случая когда OpenAI отключен (status 403)
-      if (err?.response?.status === 403) {
+      if (err?.response?.status === 403 || err?.response?.status === 503) {
         return rejectWithValue('OpenAI временно недоступен')
       }
 
@@ -568,23 +409,21 @@ export const createPostPreview = createAsyncThunk(
 // РЕАКЦИИ
 // ============================================================================
 
-// ✅ Получение реакций на сообщение
+// Получение статистики реакций на сообщение
 export const fetchMessageReactions = createAsyncThunk(
   'post/fetchMessageReactions',
   async ({ message_id }, { rejectWithValue }) => {
     try {
-      logger.log('📥 Загрузка реакций для сообщения:', message_id)
-
-      const res = await axios.get(`/api/v1/messages/${message_id}/reactions`)
-
-      logger.log('✅ Реакции загружены:', {
-        message_id,
-        count: res.data?.length || 0,
+      // GET /api/v1/messages/{id}/reactions?message_id=...
+      // Возвращает { reactions: {like: N, dislike: N}, total: N }
+      const res = await axios.get(`/api/v1/messages/${message_id}/reactions`, {
+        params: { message_id },
       })
 
       return {
         message_id,
-        reactions: res.data || []
+        reactions: res.data?.reactions || {},
+        total: res.data?.total || 0,
       }
     } catch (err) {
       logger.error('🔥 Ошибка загрузки реакций:', err?.response?.data || err.message)
@@ -593,28 +432,21 @@ export const fetchMessageReactions = createAsyncThunk(
   }
 )
 
-// ✅ Реакция на пост/комментарий
+// Реакция на пост/комментарий
 export const reactToPost = createAsyncThunk(
   'post/reactToPost',
   async ({ post_id, reaction }, { rejectWithValue }) => {
     try {
-      logger.log('📤 Отправляем реакцию:', {
-        message_id: post_id,
-        reaction,
-      })
-
-      // ✅ Согласно Swagger: PATCH /api/v1/messages/{message_id}/reaction
+      // PATCH /api/v1/messages/{id}/reaction?message_id=...
+      // reaction = "like" | "dislike" | null (null = удалить реакцию)
       const res = await axios.patch(
         `/api/v1/messages/${post_id}/reaction`,
-        { reaction }
+        { reaction },
+        { params: { message_id: post_id } }
       )
 
-      logger.log('📥 Получен ответ на реакцию:', res.data)
-
-      return {
-        post_id,
-        reactions: res.data, // Swagger возвращает массив всех реакций
-      }
+      logger.log('📥 Реакция установлена:', res.data)
+      return { post_id, reaction }
     } catch (err) {
       logger.error('🔥 Ошибка реакции:', err?.response?.data || err.message)
       return rejectWithValue(err.response?.data?.detail || 'Ошибка при отправке реакции')
@@ -626,27 +458,18 @@ export const reactToPost = createAsyncThunk(
 // ФАЙЛЫ / ССЫЛКИ
 // ============================================================================
 
-// ✅ Получение вложений сообщения
+// Получение вложений сообщения
+// Примечание: медиафайлы теперь приходят в составе поста в поле media_files
+// Этот метод оставлен для совместимости
 export const fetchMessageAttachments = createAsyncThunk(
   'post/fetchMessageAttachments',
   async ({ message_id }, { rejectWithValue }) => {
     try {
-      logger.log('📥 Загрузка вложений для сообщения:', message_id)
-
-      const res = await axios.get(`/api/v1/messages/${message_id}/attachments`)
-
-      logger.log('✅ Вложения загружены:', {
-        message_id,
-        count: res.data?.length || 0,
-      })
-
-      return {
-        message_id,
-        attachments: res.data || []
-      }
+      // Медиафайлы теперь включены в ответ поста (media_files: [{media_file_id, sort_order}])
+      // Возвращаем пустой массив, чтобы не ломать существующий код
+      return { message_id, attachments: [] }
     } catch (err) {
-      logger.error('🔥 Ошибка загрузки вложений:', err?.response?.data || err.message)
-      return rejectWithValue(err?.response?.data?.detail || 'Ошибка загрузки вложений')
+      return rejectWithValue('Ошибка загрузки вложений')
     }
   }
 )
@@ -670,6 +493,87 @@ export const fetchDownloadUrl = createAsyncThunk(
     }
   }
 )
+
+// ============================================================================
+// SLICE
+// ============================================================================
+
+// ============================================================================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ МАППИНГА (новый плоский формат ответа API)
+// ============================================================================
+
+// Маппинг поста из нового API формата
+const mapPost = (item, section_code = null) => ({
+  id: item.id,
+  author_id: item.author_id,
+  theme_id: item.theme_id,
+  section_id: item.section_id,
+  section_code: section_code || null,
+  text: item.text,
+  type: 'post',
+  created_at: item.created_at,
+  updated_at: item.updated_at,
+  media_files: item.media_files || [],
+  is_openai_generated: item.is_openai_generated || false,
+})
+
+// Маппинг задачи из нового API формата с assignments
+const mapTask = (item, assignments = [], section_code = null, existingTask = null) => {
+  // assignments — плоский формат: { id, text, author_id, status, is_partially, expires_at, content_id }
+  const sortedAssignments = [...assignments].sort((a, b) =>
+    new Date(b.created_at || 0) - new Date(a.created_at || 0)
+  )
+  const activeAssignment = sortedAssignments[0] || null
+
+  const hasCompleted = assignments.some(a => a.status === 'completed' || a.is_partially === false)
+  const wasCompleted = existingTask?.status === 'completed'
+
+  let taskStatus = 'idle'
+  if (hasCompleted || wasCompleted) {
+    taskStatus = 'completed'
+  } else if (assignments.length > 0) {
+    taskStatus = activeAssignment?.status || 'in_progress'
+  }
+
+  // Формируем executions в виде совместимом со старым кодом страниц
+  const executions = assignments.map(a => ({
+    message: {
+      id: a.id,
+      author_id: a.author_id,
+      text: a.text || '',
+      created_at: a.created_at,
+    },
+    message_task: {
+      status: a.status || 'in_progress',
+      is_partially: a.is_partially,
+      expires_at: a.expires_at,
+    },
+  }))
+
+  return {
+    id: item.id,
+    author_id: item.author_id,
+    theme_id: item.theme_id,
+    section_id: item.section_id,
+    section_code: section_code || null,
+    text: item.text,
+    type: 'task',
+    created_at: item.created_at,
+    updated_at: item.updated_at,
+    media_files: item.media_files || [],
+    ratio: item.ratio || 1,
+    is_openai_generated: item.is_openai_generated || false,
+    status: taskStatus,
+    is_partially: activeAssignment?.is_partially || false,
+    expires_at: activeAssignment?.expires_at || null,
+    executions,
+    comments_count: assignments.length,
+    executor: activeAssignment ? { id: activeAssignment.author_id } : null,
+    executor_description: activeAssignment?.text || '',
+    completion_description: existingTask?.completion_description || '',
+    completion_files: existingTask?.completion_files || [],
+  }
+}
 
 // ============================================================================
 // SLICE
@@ -751,24 +655,11 @@ const postSlice = createSlice({
       })
       .addCase(createPost.fulfilled, (state, action) => {
         state.loading = false
-
-        const { message, message_post } = action.payload
-
-        const newPost = {
-          id: message.id,
-          author_id: message.author_id,
-          theme_id: message.theme_id,
-          section_code: message.section_code,
-          text: message.text,
-          type: 'post', // Локально ставим тип для фильтрации
-          created_at: message.created_at,
-          updated_at: message.updated_at,
-          media_file_ids: message.media_file_ids || [],
-          is_openai_generated: message_post?.is_openai_generated || false,
-          ratio: message_post?.ratio || 1,
+        const { post, section_code } = action.payload
+        if (post) {
+          const newPost = mapPost(post, section_code)
+          state.posts.unshift(newPost)
         }
-
-        state.posts.unshift(newPost)
         state.preview = null
         state.uploadedFiles = []
       })
@@ -787,22 +678,8 @@ const postSlice = createSlice({
       .addCase(fetchPostsInSection.fulfilled, (state, action) => {
         state.loading = false
         state.postsLoaded = true
-
-        const newPosts = (action.payload || []).map(item => ({
-          id: item.message.id,
-          author_id: item.message.author_id,
-          theme_id: item.message.theme_id,
-          section_code: item.message.section_code,
-          text: item.message.text,
-          type: 'post', // Локально ставим тип
-          created_at: item.message.created_at,
-          updated_at: item.message.updated_at,
-          media_file_ids: item.message.media_file_ids || [],
-          is_openai_generated: item.message_post?.is_openai_generated || false,
-          ratio: item.message_post?.ratio || 1,
-        }))
-
-        state.posts = newPosts
+        const section_code = action.meta.arg.section_code
+        state.posts = (action.payload || []).map(item => mapPost(item, section_code))
       })
       .addCase(fetchPostsInSection.rejected, (state, action) => {
         state.loading = false
@@ -820,21 +697,7 @@ const postSlice = createSlice({
       })
       .addCase(fetchPostById.fulfilled, (state, action) => {
         state.loading = false
-        const { message, message_post } = action.payload
-
-        state.selectedPost = {
-          id: message.id,
-          author_id: message.author_id,
-          theme_id: message.theme_id,
-          section_code: message.section_code,
-          text: message.text,
-          type: 'post',
-          created_at: message.created_at,
-          updated_at: message.updated_at,
-          media_file_ids: message.media_file_ids || [],
-          is_openai_generated: message_post?.is_openai_generated || false,
-          ratio: message_post?.ratio || 1,
-        }
+        state.selectedPost = action.payload ? mapPost(action.payload) : null
       })
       .addCase(fetchPostById.rejected, (state, action) => {
         state.loading = false
@@ -855,21 +718,21 @@ const postSlice = createSlice({
         state.commentsLoading = false
         state.commentsLoadingFlags[postId] = false
 
+        // Новый плоский формат комментариев
         state.comments[postId] = (comments || []).map(item => ({
-          id: item.message.id,
-          author_id: item.message.author_id,
-          theme_id: item.message.theme_id,
-          section_code: item.message.section_code,
-          text: item.message.text,
+          id: item.id,
+          author_id: item.author_id,
+          theme_id: item.theme_id,
+          section_id: item.section_id,
+          text: item.text,
           type: 'comment',
-          created_at: item.message.created_at,
-          updated_at: item.message.updated_at,
-          media_file_ids: item.message.media_file_ids || [],
-          content_id: item.message_comment?.content_id || null,
-          reply_to_message_id: item.message_comment?.reply_to_message_id || null,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+          media_files: item.media_files || [],
+          content_id: item.content_id || null,
+          reply_to_message_id: item.reply_to_message_id || null,
         }))
 
-        // Обновляем счетчик комментариев в посте
         const postIndex = state.posts.findIndex(post => post.id === postId)
         if (postIndex !== -1) {
           state.posts[postIndex] = {
@@ -877,11 +740,6 @@ const postSlice = createSlice({
             comments_count: state.comments[postId].length,
           }
         }
-
-        logger.log('✅ Комментарии сохранены в store:', {
-          postId,
-          commentsCount: state.comments[postId].length,
-        })
       })
       .addCase(fetchPostComments.rejected, (state, action) => {
         const postId = action.meta.arg?.post_id
@@ -901,29 +759,12 @@ const postSlice = createSlice({
       })
       .addCase(createComment.fulfilled, (state, action) => {
         state.commentsLoading = false
-        const { message, message_comment, post_id } = action.payload
-
-        const newComment = {
-          id: message.id,
-          author_id: message.author_id,
-          theme_id: message.theme_id,
-          section_code: message.section_code,
-          text: message.text,
-          type: 'comment',
-          created_at: message.created_at,
-          updated_at: message.updated_at,
-          media_file_ids: message.media_file_ids || [],
-          content_id: message_comment?.content_id || null,
-          reply_to_message_id: message_comment?.reply_to_message_id || null,
-        }
+        const { post_id } = action.payload
 
         if (!state.comments[post_id]) {
           state.comments[post_id] = []
         }
 
-        state.comments[post_id].push(newComment)
-
-        // Обновляем счетчик комментариев в постах
         const postIndex = state.posts.findIndex(post => post.id === post_id)
         if (postIndex !== -1) {
           state.posts[postIndex] = {
@@ -946,46 +787,13 @@ const postSlice = createSlice({
       })
       .addCase(createTask.fulfilled, (state, action) => {
         state.tasksLoading = false
-
-        // ⚠️ Теперь создание через /posts, поэтому структура ответа другая
-        const { message, message_post, ratio } = action.payload
-
-        logger.log('✅ Сохраняем задачу в store (создана через /posts):', {
-          id: message.id,
-          text: message.text,
-          ratio: ratio || message_post?.ratio,
-        })
-
-        const newTask = {
-          id: message.id,
-          author_id: message.author_id,
-          theme_id: message.theme_id,
-          section_code: message.section_code,
-          text: message.text,
-          type: 'task', // Локально ставим тип task (хотя создано через /posts)
-          created_at: message.created_at,
-          updated_at: message.updated_at,
-          media_file_ids: message.media_file_ids || [],
-          ratio: ratio || message_post?.ratio || 1, // Из payload или message_post
-          
-          // ✅ Статус по умолчанию 'idle' т.к. задача только создана
-          // message_post не содержит информации о статусе задачи
-          status: 'idle',
-          is_partially: false,
-          expires_at: null, // При создании через /posts нет expires_at
-          
-          // Дополнительные поля от message_post
-          is_openai_generated: message_post?.is_openai_generated || false,
+        const { task, section_code } = action.payload
+        if (task) {
+          const newTask = mapTask(task, [], section_code)
+          state.posts.unshift(newTask)
         }
-
-        logger.log('📦 Объект задачи для store:', newTask)
-
-        state.posts.unshift(newTask)
         state.preview = null
         state.uploadedFiles = []
-
-        logger.log('✅ Задача добавлена в store, всего постов:', state.posts.length)
-        logger.log('🔍 Статус добавленной задачи:', newTask.status)
       })
       .addCase(createTask.rejected, (state, action) => {
         state.tasksLoading = false
@@ -1002,86 +810,17 @@ const postSlice = createSlice({
       })
       .addCase(fetchTasks.fulfilled, (state, action) => {
         state.tasksLoading = false
+        const { tasks, section_code } = action.payload
 
-        // ⚠️ Теперь задачи приходят с полем executions
-        const tasks = (action.payload || []).map(item => {
-          const hasExecutions = item.has_executions || item.executions?.length > 0
-          const executions = item.executions || []
-
-          // Сортируем исполнения по дате создания (новые первые)
-          const sortedExecutions = [...executions].sort((a, b) =>
-            new Date(b.message?.created_at || 0) - new Date(a.message?.created_at || 0)
-          )
-          const activeExecution = sortedExecutions.length > 0 ? sortedExecutions[0] : null
-
-          // Проверяем, есть ли исполнение со статусом 'completed'
-          const hasCompletedExecution = executions.some(e =>
-            e.message_task?.status === 'completed'
-          )
-
-          // Проверяем, есть ли завершающее исполнение (is_partially === false после принятия)
-          // Если есть 2+ исполнений и новейшее имеет is_partially === false — задача выполнена
-          const isCompletedBySubmission = sortedExecutions.length >= 2 &&
-            activeExecution?.message_task?.is_partially === false
-
-          // Сохраняем статус 'completed' из оптимистичного обновления (completeTask.fulfilled)
-          const existingTask = state.posts.find(p => p.id === item.message.id)
-          const wasCompleted = existingTask?.status === 'completed'
-
-          // Определяем статус задачи
-          let taskStatus
-          if (hasCompletedExecution || isCompletedBySubmission || wasCompleted) {
-            taskStatus = 'completed'
-          } else if (hasExecutions) {
-            taskStatus = activeExecution?.message_task?.status || 'in_progress'
-          } else {
-            taskStatus = 'idle'
-          }
-
-          // Для отображения "в работе" берём исполнение принятия (не завершения)
-          const acceptExecution = sortedExecutions.find(e =>
-            e.message_task?.is_partially !== undefined && e.message_task?.status === 'in_progress'
-          ) || activeExecution
-
-          return {
-            id: item.message.id,
-            author_id: item.message.author_id,
-            theme_id: item.message.theme_id,
-            section_code: item.message.section_code,
-            text: item.message.text,
-            type: 'task', // Локально ставим тип task для фильтрации
-            created_at: item.message.created_at,
-            updated_at: item.message.updated_at,
-            media_file_ids: item.message.media_file_ids || [],
-            ratio: item.message_post?.ratio || 1,
-            is_openai_generated: item.message_post?.is_openai_generated || false,
-
-            // ✅ Статус задачи: проверяем все исполнения + оптимистичное обновление
-            status: taskStatus,
-            is_partially: acceptExecution?.message_task?.is_partially || false,
-            expires_at: acceptExecution?.message_task?.expires_at || null,
-
-            // Сохраняем данные о выполнении из оптимистичного обновления
-            completion_description: existingTask?.completion_description || '',
-            completion_files: existingTask?.completion_files || [],
-
-            // Сохраняем массив исполнений для TaskInProgress
-            executions: executions,
-            comments_count: executions.length,
-            executor: acceptExecution?.message?.author || null,
-            executor_description: acceptExecution?.message?.text || '',
-          }
+        const mappedTasks = tasks.map(item => {
+          const assignments = item.assignments || []
+          const existingTask = state.posts.find(p => p.id === item.id)
+          return mapTask(item, assignments, section_code, existingTask)
         })
 
-        logger.log('✅ Загружено задач:', tasks.length)
-        logger.log('📊 Статусы задач:', tasks.map(t => ({
-          id: t.id,
-          status: t.status,
-          has_executions: t.executions?.length > 0
-        })))
-
+        logger.log('✅ Загружено задач:', mappedTasks.length)
         // Заменяем только задачи, оставляя другие типы постов
-        state.posts = state.posts.filter(p => p.type !== 'task').concat(tasks)
+        state.posts = state.posts.filter(p => p.type !== 'task').concat(mappedTasks)
       })
       .addCase(fetchTasks.rejected, (state, action) => {
         state.tasksLoading = false
@@ -1097,20 +836,12 @@ const postSlice = createSlice({
       })
       .addCase(acceptTask.fulfilled, (state, action) => {
         state.tasksLoading = false
-
-        const { task_message_id, message, message_task } = action.payload
-
-        logger.log('✅ Обновляем задачу в store после принятия:', task_message_id)
-
-        // Обновляем задачу в списке
+        const { task_message_id } = action.payload
         const taskIndex = state.posts.findIndex(post => post.id === task_message_id)
         if (taskIndex !== -1) {
           state.posts[taskIndex] = {
             ...state.posts[taskIndex],
-            status: message_task?.status || 'in_progress',
-            is_partially: message_task?.is_partially || false,
-            expires_at: message_task?.expires_at || null,
-            executor_description: message?.text || '',
+            status: 'in_progress',
           }
         }
       })
@@ -1156,15 +887,13 @@ const postSlice = createSlice({
       })
       .addCase(createTaskComment.fulfilled, (state, action) => {
         state.commentsLoading = false
-        const { message, message_task, post_id } = action.payload
-
-        // Добавляем как execution в задачу
+        const { post_id } = action.payload
         const taskIndex = state.posts.findIndex(post => post.id === post_id)
-        if (taskIndex !== -1 && state.posts[taskIndex].executions) {
-          state.posts[taskIndex].executions.push({
-            message: message,
-            message_task: message_task,
-          })
+        if (taskIndex !== -1) {
+          state.posts[taskIndex] = {
+            ...state.posts[taskIndex],
+            comments_count: (state.posts[taskIndex].comments_count || 0) + 1,
+          }
         }
       })
       .addCase(createTaskComment.rejected, (state, action) => {
@@ -1192,250 +921,47 @@ const postSlice = createSlice({
       // РЕАКЦИИ
       // ========================================================================
       .addCase(fetchMessageReactions.fulfilled, (state, action) => {
-        const { message_id, reactions } = action.payload
+        const { message_id, reactions, total } = action.payload
+        // reactions = { like: N, dislike: N }, total = N
+        const count_likes = reactions?.like || 0
+        const count_dislikes = reactions?.dislike || 0
 
-        // Пересчитываем статистику реакций
-        const reactionsList = reactions || []
-        const count_likes = reactionsList.filter(r => r.reaction === 'like').length
-        const count_dislikes = reactionsList.filter(r => r.reaction === 'dislike').length
-
-        // TODO: Определить user_reaction на основе user_id из meSlice
-        const user_reaction = null
-
-        const reactionsData = {
-          count_likes,
-          count_dislikes,
-          user_reaction,
-          reactions: reactionsList,
-        }
-
-        // Обновляем в постах
         const postIndex = state.posts.findIndex(post => post.id === message_id)
         if (postIndex !== -1) {
           state.posts[postIndex] = {
             ...state.posts[postIndex],
             likes: count_likes,
             dislikes: count_dislikes,
-            user_reaction,
-            reactions: reactionsData,
           }
         }
-
-        // Обновляем в выбранном посте
-        if (state.selectedPost && state.selectedPost.id === message_id) {
-          state.selectedPost = {
-            ...state.selectedPost,
-            likes: count_likes,
-            dislikes: count_dislikes,
-            user_reaction,
-            reactions: reactionsData,
-          }
-        }
-
-        // Обновляем в комментариях
-        Object.keys(state.comments).forEach(postKey => {
-          const postComments = state.comments[postKey]
-          if (postComments && Array.isArray(postComments)) {
-            const commentIndex = postComments.findIndex(comment => comment.id === message_id)
-            if (commentIndex !== -1) {
-              state.comments[postKey][commentIndex] = {
-                ...state.comments[postKey][commentIndex],
-                likes: count_likes,
-                dislikes: count_dislikes,
-                user_reaction,
-                reactions: reactionsData,
-              }
-            }
-          }
-        })
-
-        logger.log('✅ Реакции обновлены в store:', message_id)
       })
       .addCase(fetchMessageReactions.rejected, (state, action) => {
-        logger.warn('⚠️ Ошибка загрузки реакций:', action.payload)
-
-        // Ставим пустой объект реакций чтобы useEffect не диспатчил повторно
+        // Помечаем как загруженные чтобы не повторять запрос
         const messageId = action.meta?.arg?.message_id
         if (messageId) {
-          const emptyReactions = { count_likes: 0, count_dislikes: 0, user_reaction: null, reactions: [] }
           const postIndex = state.posts.findIndex(post => post.id === messageId)
           if (postIndex !== -1) {
-            state.posts[postIndex] = {
-              ...state.posts[postIndex],
-              reactions: emptyReactions,
-            }
+            state.posts[postIndex] = { ...state.posts[postIndex], likes: 0, dislikes: 0 }
           }
         }
       })
       .addCase(reactToPost.fulfilled, (state, action) => {
-        const { post_id, reactions } = action.payload
-
-        // ✅ Swagger возвращает массив реакций, нужно пересчитать статистику
-        const reactionsList = reactions || []
-        const count_likes = reactionsList.filter(r => r.reaction === 'like').length
-        const count_dislikes = reactionsList.filter(r => r.reaction === 'dislike').length
-
-        // Находим реакцию текущего пользователя (если есть)
-        // TODO: Получить user_id из meSlice для определения user_reaction
-        const user_reaction = null // Временно, нужно добавить логику
-
-        logger.log('📊 Обновляем реакции:', {
-          post_id,
-          count_likes,
-          count_dislikes,
-          total_reactions: reactionsList.length,
-        })
-
-        // Обновляем в списке постов
+        const { post_id, reaction } = action.payload
         const postIndex = state.posts.findIndex(post => post.id === post_id)
         if (postIndex !== -1) {
           state.posts[postIndex] = {
             ...state.posts[postIndex],
-            likes: count_likes,
-            dislikes: count_dislikes,
-            user_reaction: user_reaction,
-            reactions: {
-              count_likes,
-              count_dislikes,
-              user_reaction,
-              reactions: reactionsList,
-            },
+            user_reaction: reaction,
           }
         }
-
-        // Обновляем выбранный пост
-        if (state.selectedPost && state.selectedPost.id === post_id) {
-          state.selectedPost = {
-            ...state.selectedPost,
-            likes: count_likes,
-            dislikes: count_dislikes,
-            user_reaction: user_reaction,
-            reactions: {
-              count_likes,
-              count_dislikes,
-              user_reaction,
-              reactions: reactionsList,
-            },
-          }
-        }
-
-        // Обновляем реакции в комментариях
-        Object.keys(state.comments).forEach(postKey => {
-          const postComments = state.comments[postKey]
-          if (postComments && Array.isArray(postComments)) {
-            const commentIndex = postComments.findIndex(comment => comment.id === post_id)
-            if (commentIndex !== -1) {
-              state.comments[postKey][commentIndex] = {
-                ...state.comments[postKey][commentIndex],
-                likes: count_likes,
-                dislikes: count_dislikes,
-                user_reaction: user_reaction,
-                reactions: {
-                  count_likes,
-                  count_dislikes,
-                  user_reaction,
-                  reactions: reactionsList,
-                },
-              }
-            }
-          }
-        })
-
-        // Обновляем реакции в executions задач (комментарии в чате задач)
-        state.posts.forEach((post, postIdx) => {
-          if (post.executions && Array.isArray(post.executions)) {
-            post.executions.forEach((exec, execIdx) => {
-              if (exec.message?.id === post_id) {
-                state.posts[postIdx].executions[execIdx] = {
-                  ...exec,
-                  message: {
-                    ...exec.message,
-                    reactions: {
-                      count_likes,
-                      count_dislikes,
-                      user_reaction,
-                      reactions: reactionsList,
-                    },
-                  },
-                }
-              }
-            })
-          }
-        })
       })
       .addCase(reactToPost.rejected, (state, action) => {
-        logger.error('❌ Ошибка при отправке реакции:', action.payload)
         state.error = action.payload
       })
 
-      // ========================================================================
-      // ЗАГРУЗКА ВЛОЖЕНИЙ СООБЩЕНИЙ
-      // ========================================================================
-      .addCase(fetchMessageAttachments.fulfilled, (state, action) => {
-        const { message_id, attachments } = action.payload
-
-        // Обновляем attachments в постах
-        const postIndex = state.posts.findIndex(post => post.id === message_id)
-        if (postIndex !== -1) {
-          state.posts[postIndex] = {
-            ...state.posts[postIndex],
-            attachments: attachments,
-          }
-        }
-
-        // Обновляем в выбранном посте
-        if (state.selectedPost && state.selectedPost.id === message_id) {
-          state.selectedPost = {
-            ...state.selectedPost,
-            attachments: attachments,
-          }
-        }
-
-        // Обновляем в комментариях
-        Object.keys(state.comments).forEach(postKey => {
-          const postComments = state.comments[postKey]
-          if (postComments && Array.isArray(postComments)) {
-            const commentIndex = postComments.findIndex(comment => comment.id === message_id)
-            if (commentIndex !== -1) {
-              state.comments[postKey][commentIndex] = {
-                ...state.comments[postKey][commentIndex],
-                attachments: attachments,
-              }
-            }
-          }
-        })
-
-        logger.log('✅ Вложения добавлены в store для сообщения:', message_id)
-      })
-      .addCase(fetchMessageAttachments.rejected, (state, action) => {
-        logger.warn('⚠️ Ошибка загрузки вложений:', action.payload)
-
-        // Ставим пустой массив чтобы useEffect не диспатчил повторно
-        const messageId = action.meta?.arg?.message_id
-        if (messageId) {
-          const postIndex = state.posts.findIndex(post => post.id === messageId)
-          if (postIndex !== -1) {
-            state.posts[postIndex] = {
-              ...state.posts[postIndex],
-              attachments: [],
-            }
-          }
-
-          // Обновляем в комментариях
-          Object.keys(state.comments).forEach(postKey => {
-            const postComments = state.comments[postKey]
-            if (postComments && Array.isArray(postComments)) {
-              const commentIndex = postComments.findIndex(comment => comment.id === messageId)
-              if (commentIndex !== -1) {
-                state.comments[postKey][commentIndex] = {
-                  ...state.comments[postKey][commentIndex],
-                  attachments: [],
-                }
-              }
-            }
-          })
-        }
-      })
+      // Вложения теперь включены в media_files поста — reducer ничего не делает
+      .addCase(fetchMessageAttachments.fulfilled, () => {})
+      .addCase(fetchMessageAttachments.rejected, () => {})
 
       // ========================================================================
       // ЗАГРУЗКА ССЫЛОК НА ФАЙЛЫ

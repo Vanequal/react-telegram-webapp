@@ -3,7 +3,6 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { createPostPreview, fetchPostComments, fetchPostsInSection, createPost, fetchMessageAttachments, fetchMessageReactions } from '@/store/slices/postSlice.js'
-import { fetchTheme } from '@/store/slices/themeSlice' // ✅ Добавлено
 import { getViewedIdeas, markIdeaAsViewed } from '@/shared/utils/utils.js'
 
 // Components
@@ -19,7 +18,6 @@ import '@/styles/features/mind-vault.scss'
 
 // Constants
 const SECTION_CODE = 'chat_ideas' // ✅ Переименовано
-const DEFAULT_THEME_ID = 1
 
 const MindVaultPage = () => {
   const navigate = useNavigate()
@@ -37,9 +35,10 @@ const MindVaultPage = () => {
   const { posts, loading, error, postsLoaded } = useSelector(state => state.post)
   const postComments = useSelector(state => state.post.comments)
   const commentsLoadingFlags = useSelector(state => state.post.commentsLoadingFlags)
+  const rootThemeId = useSelector(state => state.theme.theme?.id)
 
-  // Derived values
-  const themeId = Number(searchParams.get('id')) || DEFAULT_THEME_ID
+  // Derived values — theme UUID from store (root theme loaded in App.jsx)
+  const themeId = rootThemeId || null
 
   const fetchParams = useMemo(
     () => ({
@@ -94,11 +93,6 @@ const MindVaultPage = () => {
 
     initTelegram()
   }, [])
-
-  // ✅ Загружаем тему при монтировании
-  useEffect(() => {
-    dispatch(fetchTheme(themeId))
-  }, [dispatch, themeId])
 
   // Fetch posts if not loaded
   useEffect(() => {

@@ -15,7 +15,7 @@ import '@/styles/features/discussion.scss'
 
 // Constants
 const SECTION_CODE = 'chat_ideas'
-const DEFAULT_THEME_ID = 1
+const DEFAULT_THEME_ID = null
 
 const DiscussionPage = () => {
   const { id } = useParams()
@@ -25,7 +25,7 @@ const DiscussionPage = () => {
 
   // Redux selectors
   const { posts, selectedPost } = useSelector(state => state.post)
-  const postComments = useSelector(state => state.post.comments[+id] || [])
+  const postComments = useSelector(state => state.post.comments[id] || [])
   const { commentsLoading, loading } = useSelector(state => state.post)
 
   // Local state
@@ -57,7 +57,7 @@ const DiscussionPage = () => {
 
         await dispatch(
           createComment({
-            post_id: +id,
+            post_id: id,
             message_text: commentText.trim(),
             section_code: SECTION_CODE,
             theme_id: DEFAULT_THEME_ID,
@@ -112,7 +112,7 @@ const DiscussionPage = () => {
 
   // Effect для загрузки поста, если его нет в состоянии
   useEffect(() => {
-    const postId = +id
+    const postId = id
     if (postId && !idea && !loading) {
       console.log('🔄 Загружаем пост по ID:', postId)
       dispatch(
@@ -127,7 +127,7 @@ const DiscussionPage = () => {
 
   // Effect для загрузки комментариев
   useEffect(() => {
-    const postId = +id
+    const postId = id
 
     // Проверяем, нужно ли загружать комментарии
     const shouldLoadComments = postId && !commentsLoaded && !commentsLoading && (!comments || comments.length === 0)
@@ -189,7 +189,7 @@ const DiscussionPage = () => {
   // Debug логи
   useEffect(() => {
     console.log('🐛 DiscussionPage Debug:', {
-      postId: +id,
+      postId: id,
       ideaExists: !!idea,
       commentsCount: comments.length,
       commentsLoading,

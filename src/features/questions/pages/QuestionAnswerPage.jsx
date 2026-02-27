@@ -15,7 +15,7 @@ import '@/styles/features/QuestionAnswerPage.scss'
 
 // Constants
 const SECTION_CODE = 'chat_qa' // ✅ Переименовано
-const DEFAULT_THEME_ID = 1
+const DEFAULT_THEME_ID = null
 
 const QuestionAnswerPage = () => {
   const { id } = useParams()
@@ -25,7 +25,7 @@ const QuestionAnswerPage = () => {
 
   // Redux selectors
   const { posts, selectedPost } = useSelector(state => state.post)
-  const postAnswers = useSelector(state => state.post.comments[+id] || [])
+  const postAnswers = useSelector(state => state.post.comments[id] || [])
   const { commentsLoading, loading } = useSelector(state => state.post)
 
   // Local state
@@ -52,13 +52,13 @@ const QuestionAnswerPage = () => {
         console.log('📤 Отправка ответа:', {
           text: answerText.trim(),
           filesCount: files.length,
-          post_id: +id,
+          post_id: id,
           section_code: SECTION_CODE,
         })
 
         await dispatch(
           createComment({
-            post_id: +id,
+            post_id: id,
             message_text: answerText.trim(),
             section_code: SECTION_CODE, // ✅ Изменено
             theme_id: DEFAULT_THEME_ID,
@@ -115,7 +115,7 @@ const QuestionAnswerPage = () => {
 
   // Effect для загрузки вопроса, если его нет в состоянии
   useEffect(() => {
-    const questionId = +id
+    const questionId = id
     if (questionId && !question && !loading) {
       console.log('🔄 Загружаем вопрос по ID:', questionId)
       dispatch(
@@ -130,7 +130,7 @@ const QuestionAnswerPage = () => {
 
   // Effect для загрузки ответов
   useEffect(() => {
-    const questionId = +id
+    const questionId = id
 
     const shouldLoadAnswers = questionId && !answersLoaded && !commentsLoading && (!answers || answers.length === 0)
 

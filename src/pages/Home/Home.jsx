@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchTheme } from '@/store/slices/themeSlice'
+import { selectTheme } from '@/store/slices/themeSlice'
 
 import HomeIcons from '@/shared/ui/HomeIcons'
 import FooterIcons from '@/shared/ui/FooterIcons'
@@ -16,7 +16,7 @@ function Home() {
   const [animate, setAnimate] = useState(false)
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { theme, loading, error } = useSelector(state => state.theme)
+  const theme = useSelector(selectTheme)
 
   const handleClick = () => {
     setAnimate(true)
@@ -60,9 +60,7 @@ function Home() {
     }
   }, [])
 
-  useEffect(() => {
-    dispatch(fetchTheme(1))
-  }, [dispatch])
+  // Root theme уже загружается в App.jsx, здесь ничего дополнительно грузить не нужно
 
   return (
     <>
@@ -86,14 +84,12 @@ function Home() {
           <HomeIcons />
 
           <div className="home__buttons">
-            {theme?.locale_texts?.buttons?.experience_exchange && (
-              <button className={`home__button home__button--primary ${animate ? 'animate' : ''}`} onClick={handleClick}>
-                {theme.locale_texts.buttons.experience_exchange}
-              </button>
-            )}
-            {theme?.locale_texts?.buttons?.description && <button className="home__button home__button--secondary">{theme.locale_texts.buttons.description}</button>}
-            {theme?.locale_texts?.buttons?.perfect_result && <button className="home__button home__button--tertiary">{theme.locale_texts.buttons.perfect_result}</button>}
-            {theme?.locale_texts?.buttons?.project_modules && <button className="home__button home__button--quaternary">{theme.locale_texts.buttons.project_modules}</button>}
+            <button className={`home__button home__button--primary ${animate ? 'animate' : ''}`} onClick={handleClick}>
+              Обмен опытом
+            </button>
+            <button className="home__button home__button--secondary">Описание</button>
+            <button className="home__button home__button--tertiary">Идеальный результат</button>
+            <button className="home__button home__button--quaternary">Модули проекта</button>
           </div>
         </div>
         <FooterIcons />

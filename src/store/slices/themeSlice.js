@@ -1,6 +1,18 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from '@/shared/api/axios'
 
+// Получение корневой (главной) темы
+export const fetchRootTheme = createAsyncThunk('theme/fetchRootTheme', async (_, { rejectWithValue }) => {
+  try {
+    const response = await axios.get('/api/v1/themes/root')
+    console.log('✅ Корневая тема загружена:', response.data)
+    return response.data
+  } catch (err) {
+    console.error('❌ Root theme fetch error:', err?.response?.data || err.message)
+    return rejectWithValue(err.response?.data?.detail || 'Fetch root theme error')
+  }
+})
+
 // Получение данных темы
 export const fetchTheme = createAsyncThunk('theme/fetchTheme', async (theme_id, { rejectWithValue }) => {
   try {
@@ -77,14 +89,27 @@ const themeSlice = createSlice({
         state.error = action.payload
       })
 
-      // ✅ Получение секций темы
+      // Корневая тема
+      .addCase(fetchRootTheme.pending, state => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(fetchRootTheme.fulfilled, (state, action) => {
+        state.loading = false
+        state.theme = action.payload
+      })
+      .addCase(fetchRootTheme.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+
+      // Получение секций темы (API возвращает [{section_id, section_code}])
       .addCase(fetchThemeSections.pending, state => {
         state.sectionsLoading = true
         state.error = null
       })
       .addCase(fetchThemeSections.fulfilled, (state, action) => {
         state.sectionsLoading = false
-        // API возвращает массив строк - section_code'ов
         state.sections = action.payload
       })
       .addCase(fetchThemeSections.rejected, (state, action) => {
@@ -111,11 +136,15 @@ const themeSlice = createSlice({
 
 export const { clearError, clearTheme } = themeSlice.actions
 
-// ✅ Селекторы
+// Селекторы
 export const selectTheme = state => state.theme.theme
 export const selectThemeSections = state => state.theme.sections
 export const selectThemeLoading = state => state.theme.loading
 export const selectSectionsLoading = state => state.theme.sectionsLoading
 export const selectThemeError = state => state.theme.error
+
+// Получить section_id по section_code
+export const selectSectionIdByCode = (code) => (state) =>
+  state.theme.sections.find(s => s.section_code === code)?.section_id
 
 export default themeSlice.reducer

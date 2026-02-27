@@ -13,7 +13,7 @@ import '@/styles/features/edit-idea-gpt.scss'
 
 // Constants
 const DEFAULT_SECTION_CODE = 'chat_ideas' // ✅ Переименовано
-const DEFAULT_THEME_ID = 1
+const DEFAULT_THEME_ID = null
 
 const EditIdeaPageGPT = () => {
   const navigate = useNavigate()

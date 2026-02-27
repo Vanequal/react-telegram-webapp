@@ -17,7 +17,6 @@ import '@/styles/features/PublicationPage.scss'
 
 // Constants
 const SECTION_CODE = 'chat_publications'
-const DEFAULT_THEME_ID = 1
 
 const PublicationPageList = () => {
   const navigate = useNavigate()
@@ -28,9 +27,10 @@ const PublicationPageList = () => {
   const { posts, loading, error, postsLoaded } = useSelector(state => state.post)
   const postComments = useSelector(state => state.post.comments)
   const commentsLoadingFlags = useSelector(state => state.post.commentsLoadingFlags)
+  const rootThemeId = useSelector(state => state.theme.theme?.id)
 
-  // Derived values
-  const themeId = Number(searchParams.get('id')) || DEFAULT_THEME_ID
+  // Derived values — theme UUID from store (root theme loaded in App.jsx)
+  const themeId = rootThemeId || null
 
   const fetchParams = useMemo(
     () => ({

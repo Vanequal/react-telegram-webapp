@@ -1,6 +1,6 @@
 export const CONSTANTS = {
     SECTION_KEY: 'chat_ideas',
-    DEFAULT_THEME_ID: 1,
+    DEFAULT_THEME_ID: null, // theme_id берётся из store.theme.theme.id (UUID)
     VIEW_THRESHOLD_MS: 30000,
     INTERSECTION_THRESHOLD: 0.75,
     TEXT_EXPAND_THRESHOLD: 160,
