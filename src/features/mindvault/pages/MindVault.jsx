@@ -17,7 +17,7 @@ import ErrorState from '@/shared/components/ErrorState.jsx'
 import '@/styles/features/mind-vault.scss'
 
 // Constants
-const SECTION_CODE = 'chat_ideas' // ✅ Переименовано
+const SECTION_CODE = 'ideas'
 
 const MindVaultPage = () => {
   const navigate = useNavigate()
