@@ -20,11 +20,13 @@ const FileAttachments = ({ files, onImageClick }) => {
     loadingRef.current[fileId] = true
 
     try {
+      const token = sessionStorage.getItem('token')
       const response = await fetch(url, {
         method: 'GET',
         headers: {
           'ngrok-skip-browser-warning': 'true',
           Accept: 'image/*',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       })
 
@@ -65,8 +67,10 @@ const FileAttachments = ({ files, onImageClick }) => {
         return
       }
 
-      // Формируем URL для скачивания - статика отдаётся через /static/
-      const downloadUrl = `${BACKEND_BASE_URL}/static/${filePath}`
+      // Формируем URL для скачивания через API
+      const downloadUrl = filePath?.startsWith('http')
+        ? filePath
+        : `${BACKEND_BASE_URL}/api/v1/media_files/${filePath}`
 
       // Определяем расширение файла
       let ext = ''

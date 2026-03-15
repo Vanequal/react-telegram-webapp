@@ -67,6 +67,9 @@ const DiscussionPage = () => {
 
         setCommentText('')
 
+        // Перезагружаем комментарии чтобы показать новый
+        dispatch(fetchPostComments({ post_id: id, section_code: SECTION_CODE, theme_id: DEFAULT_THEME_ID }))
+
         // Scroll to bottom after adding comment
         setTimeout(() => {
           const commentsContainer = document.querySelector('.comment-list')

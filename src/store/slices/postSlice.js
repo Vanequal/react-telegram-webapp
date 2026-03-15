@@ -440,7 +440,7 @@ export const fetchMessageReactions = createAsyncThunk(
 // Реакция на пост/комментарий
 export const reactToPost = createAsyncThunk(
   'post/reactToPost',
-  async ({ post_id, reaction }, { rejectWithValue }) => {
+  async ({ post_id, reaction }, { rejectWithValue, dispatch }) => {
     try {
       // PATCH /api/v1/messages/{id}/reaction?message_id=...
       // reaction = "like" | "dislike" | null (null = удалить реакцию)
@@ -451,6 +451,8 @@ export const reactToPost = createAsyncThunk(
       )
 
       logger.log('📥 Реакция установлена:', res.data)
+      // Обновляем счётчики реакций после отправки
+      dispatch(fetchMessageReactions({ message_id: post_id }))
       return { post_id, reaction }
     } catch (err) {
       logger.error('🔥 Ошибка реакции:', err?.response?.data || err.message)
@@ -939,6 +941,18 @@ const postSlice = createSlice({
             dislikes: count_dislikes,
           }
         }
+
+        // Обновляем счётчики реакций в комментариях
+        Object.keys(state.comments).forEach(parentId => {
+          const commentIndex = state.comments[parentId].findIndex(c => c.id === message_id)
+          if (commentIndex !== -1) {
+            state.comments[parentId][commentIndex] = {
+              ...state.comments[parentId][commentIndex],
+              likes: count_likes,
+              dislikes: count_dislikes,
+            }
+          }
+        })
       })
       .addCase(fetchMessageReactions.rejected, (state, action) => {
         // Помечаем как загруженные чтобы не повторять запрос
