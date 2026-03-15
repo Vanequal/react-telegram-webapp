@@ -397,11 +397,15 @@ export const createPostPreview = createAsyncThunk(
     } catch (err) {
       logger.error('🔥 Ошибка AI улучшения текста:', err?.response?.data || err.message)
 
-      if (err?.response?.status === 403 || err?.response?.status === 503) {
+      if (err?.response?.status === 400 || err?.response?.status === 403 || err?.response?.status === 503) {
         return rejectWithValue('OpenAI временно недоступен')
       }
 
-      return rejectWithValue(err.response?.data?.detail || 'Ошибка предпросмотра поста')
+      const detail = err.response?.data?.detail
+      const errorMsg = Array.isArray(detail)
+        ? detail.map(e => `${e.loc?.join('.')}: ${e.msg}`).join('; ')
+        : (detail || 'Ошибка предпросмотра поста')
+      return rejectWithValue(errorMsg)
     }
   }
 )

@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { createPostPreview, fetchPostComments, fetchPostsInSection, createPost, fetchMessageReactions } from '@/store/slices/postSlice.js'
+import { createPostPreview, fetchPostComments, fetchPostsInSection, createPost, fetchMessageReactions, clearError } from '@/store/slices/postSlice.js'
 import { getViewedIdeas, markIdeaAsViewed } from '@/shared/utils/utils.js'
 
 // Components
@@ -17,7 +17,7 @@ import ErrorState from '@/shared/components/ErrorState.jsx'
 import '@/styles/features/mind-vault.scss'
 
 // Constants
-const SECTION_CODE = 'ideas'
+const SECTION_CODE = 'chat_ideas'
 
 const MindVaultPage = () => {
   const navigate = useNavigate()
@@ -180,8 +180,8 @@ const MindVaultPage = () => {
       setPostData({ text: '', files: [] })
     } catch (error) {
       console.error('❌ Error creating post preview:', error)
-      
-      // ✅ Обработка ошибки 403 (OpenAI отключен)
+      dispatch(clearError())
+
       if (error === 'OpenAI временно недоступен') {
         // Публикуем без GPT версии
         try {
@@ -196,7 +196,7 @@ const MindVaultPage = () => {
               files: postData.files,
             })
           ).unwrap()
-          
+
           alert('Пост опубликован без AI обработки')
           setPostData({ text: '', files: [] })
         } catch (postError) {
