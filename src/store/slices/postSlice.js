@@ -421,14 +421,15 @@ export const createPostPreview = createAsyncThunk(
     } catch (err) {
       logger.error('🔥 Ошибка AI улучшения текста:', err?.response?.data || err.message)
 
-      if (err?.response?.status === 400 || err?.response?.status === 403 || err?.response?.status === 503) {
+      // No response (CORS/network error) or known unavailability statuses → treat as unavailable
+      if (!err?.response || err?.response?.status === 400 || err?.response?.status === 403 || err?.response?.status === 500 || err?.response?.status === 503) {
         return rejectWithValue('OpenAI временно недоступен')
       }
 
       const detail = err.response?.data?.detail
       const errorMsg = Array.isArray(detail)
         ? detail.map(e => `${e.loc?.join('.')}: ${e.msg}`).join('; ')
-        : (detail || 'Ошибка предпросмотра поста')
+        : (detail || 'OpenAI временно недоступен')
       return rejectWithValue(errorMsg)
     }
   }

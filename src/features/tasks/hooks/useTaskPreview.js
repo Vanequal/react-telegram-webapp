@@ -40,13 +40,8 @@ export const useTaskPreview = (sectionCode, themeId) => {
       return { success: true };
     } catch (error) {
       logger.error('Error getting preview:', error);
-
-      if (error === 'OpenAI временно недоступен') {
-        dispatch(clearError());
-        return { success: false, skipPreview: true };
-      }
-
-      return { success: false, error };
+      dispatch(clearError());
+      return { success: false, skipPreview: true };
     }
   }, [dispatch, sectionCode, themeId]);
 

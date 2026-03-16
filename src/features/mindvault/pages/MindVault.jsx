@@ -182,28 +182,23 @@ const MindVaultPage = () => {
       console.error('❌ Error creating post preview:', error)
       dispatch(clearError())
 
-      if (error === 'OpenAI временно недоступен') {
-        // Публикуем без GPT версии
-        try {
-          await dispatch(
-            createPost({
-              message_text: postData.text.trim(),
-              section_code: SECTION_CODE,
-              theme_id: themeId,
-              type: 'post',
-              is_openai_generated: false,
-              ratio: 99,
-              files: postData.files,
-            })
-          ).unwrap()
+      // Публикуем без GPT версии при любой ошибке
+      try {
+        await dispatch(
+          createPost({
+            message_text: postData.text.trim(),
+            section_code: SECTION_CODE,
+            theme_id: themeId,
+            type: 'post',
+            is_openai_generated: false,
+            ratio: 99,
+            files: postData.files,
+          })
+        ).unwrap()
 
-          alert('Пост опубликован без AI обработки')
-          setPostData({ text: '', files: [] })
-        } catch (postError) {
-          alert(`Ошибка публикации: ${postError}`)
-        }
-      } else {
-        alert(`Ошибка создания превью: ${error}`)
+        setPostData({ text: '', files: [] })
+      } catch (postError) {
+        alert(`Ошибка публикации: ${postError}`)
       }
     }
   }, [postData, dispatch, themeId, navigate])
