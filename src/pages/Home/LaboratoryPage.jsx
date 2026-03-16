@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { createTask, fetchTasks, createTaskComment, completeTask } from '@/store/slices/postSlice';
+import { createTask, fetchTasks, createComment, fetchPostComments, completeTask } from '@/store/slices/postSlice';
 import { SECTION_CODES, DEFAULT_THEME_ID } from '@/shared/constants/sections';
 import logger from '@/shared/utils/logger';
 import { showError } from '@/shared/utils/notifications';
@@ -56,7 +56,7 @@ const LaboratoryPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { posts, loading, error } = useSelector((state) => state.post);
+  const { posts, loading, error, comments: allComments } = useSelector((state) => state.post);
   // step: 'list' | 'compose' | 'preview' | 'detail' | 'result' | 'completing'
   const [step, setStep] = useState('list');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,18 +85,8 @@ const LaboratoryPage = () => {
   const selectedTask = tasks.find(t => t.id === selectedTaskId);
   const resultTask = tasks.find(t => t.id === resultTaskId);
 
-  // Comments = executions
-  const taskExecutions = selectedTask?.executions || [];
-  const comments = taskExecutions.map(exec => ({
-    id: exec.message?.id,
-    author_id: exec.message?.author_id,
-    text: exec.message?.text || '',
-    created_at: exec.message?.created_at,
-    type: 'comment',
-    status: exec.message_task?.status,
-    is_partially: exec.message_task?.is_partially,
-    reactions: exec.message?.reactions || null,
-  }));
+  // Комментарии из реального endpoint /messages/{id}/comments
+  const comments = allComments[selectedTaskId] || [];
 
   useEffect(() => {
     dispatch(
@@ -119,7 +109,8 @@ const LaboratoryPage = () => {
     setCommentText('');
     setCommentFiles([]);
     setStep('detail');
-  }, []);
+    dispatch(fetchPostComments({ post_id: taskId, section_code: SECTION_CODE, theme_id: THEME_ID }));
+  }, [dispatch]);
 
   const handleTaskComplete = useCallback((taskId, item) => {
     setCompletionTaskId(taskId);
@@ -141,7 +132,7 @@ const LaboratoryPage = () => {
     setIsSubmitting(true);
     try {
       await dispatch(
-        createTaskComment({
+        createComment({
           post_id: selectedTaskId,
           message_text: commentText.trim(),
           section_code: SECTION_CODE,
@@ -153,7 +144,8 @@ const LaboratoryPage = () => {
       setCommentText('');
       setCommentFiles([]);
 
-      dispatch(fetchTasks({ section_code: SECTION_CODE, theme_id: THEME_ID }));
+      // Перезагружаем комментарии
+      dispatch(fetchPostComments({ post_id: selectedTaskId, section_code: SECTION_CODE, theme_id: THEME_ID }));
     } catch (error) {
       console.error('Ошибка добавления комментария:', error);
       const msg = typeof error === 'string' ? error : 'Неизвестная ошибка';
