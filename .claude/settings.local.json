@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:oleg-forum-site.matthew-0203.ru)"
+      "WebFetch(domain:oleg-forum-site.matthew-0203.ru)",
+      "Bash(cd:*)"
     ]
   }
 }

@@ -22,6 +22,7 @@ function Home() {
     setAnimate(true)
     setTimeout(() => {
       setAnimate(false)
+      navigate('/experiencepage')
     }, 300)
   }
 

@@ -30,6 +30,7 @@ import PublicationPageList from '@/features/publications/pages/PublicationPageLi
 import PublicationPage from '@/features/publications/pages/PublicationPage'
 import TaskChatPage from '@/features/tasks/pages/TaskChatPage'
 import LaboratoryPage from '@/pages/Home/LaboratoryPage'
+import ExperienceExchangePage from '@/features/experience/pages/ExperienceExchangePage'
 
 import '@/styles/global.scss'
 
@@ -126,6 +127,7 @@ function App() {
         <Route path="/publicationpage/:id" element={<PublicationPage />} />
         <Route path="/taskchatpage" element={<TaskChatPage />} />
         <Route path="/laboratorypage" element={<LaboratoryPage />} />
+        <Route path="/experiencepage" element={<ExperienceExchangePage />} />
       </Routes>
     </Router>
   )

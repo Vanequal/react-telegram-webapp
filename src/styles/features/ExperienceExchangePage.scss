@@ -1,0 +1,144 @@
+@import '../variables';
+
+.experience-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: $background-main;
+
+  &__content {
+    flex: 1;
+    padding: 16px 0 80px 0;
+    overflow-y: auto;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+
+  &__empty-text {
+    text-align: center;
+    color: $text-secondary;
+    font-family: $font-roboto;
+    font-size: 16px;
+    padding: 32px 16px;
+  }
+
+  &__hint {
+    font-family: $font-space-grotesk;
+    font-size: 20px;
+    font-weight: 400;
+    color: $text-primary;
+    line-height: 1.5;
+    padding: 24px 16px 8px 16px;
+    text-align: left;
+  }
+
+  &__divider {
+    height: 1px;
+    background-color: $border-color;
+    margin: 20px 16px;
+  }
+
+  &__comments {
+    padding: 0 16px;
+    margin-bottom: 80px;
+  }
+
+  &__no-comments {
+    text-align: center;
+    color: $text-secondary;
+    font-family: $font-roboto;
+    font-size: 16px;
+  }
+
+  &__attached-files {
+    position: fixed;
+    bottom: 56px;
+    left: 0;
+    right: 0;
+    background: $background-secondary;
+    padding: 6px 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    z-index: 101;
+  }
+
+  &__attached-file {
+    font-family: $font-roboto;
+    font-size: 13px;
+    background: white;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    padding: 2px 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__attached-file-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $error-color;
+    font-size: 12px;
+    padding: 0 2px;
+    line-height: 1;
+  }
+
+  &__footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: $background-secondary;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+    z-index: 100;
+  }
+
+  &__footer-icon {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  &__footer-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid $border-color;
+    border-radius: 20px;
+    box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
+    font-family: $font-roboto;
+    font-size: 16px;
+    color: $text-muted;
+    background-color: #fff;
+    outline: none;
+
+    &::placeholder {
+      color: $text-muted;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+    }
+  }
+
+  &__footer-send {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+}

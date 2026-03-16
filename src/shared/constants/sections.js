@@ -4,7 +4,8 @@ export const SECTION_CODES = {
   PUBLICATIONS: 'publications',
   QUESTIONS: 'questions',
   DISCUSSIONS: 'discussions',
-  IDEAS: 'ideas'
+  IDEAS: 'ideas',
+  CHAT_EXPERIENCE: 'chat_experience',
 };
 
 // theme_id теперь UUID, получается из root theme через store.theme.theme.id
