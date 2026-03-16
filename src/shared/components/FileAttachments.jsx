@@ -8,6 +8,17 @@ const getBackendBaseUrl = () => {
   return axios.defaults.baseURL || import.meta.env.VITE_API_URL || 'http://localhost:8000'
 }
 
+// Возвращает сохранённое имя файла по UUID (если оно было сохранено при загрузке)
+const getStoredFileName = (uuid) => {
+  if (!uuid) return undefined
+  try {
+    const map = JSON.parse(sessionStorage.getItem('mediaFileNames') || '{}')
+    return map[uuid]
+  } catch (_) {
+    return undefined
+  }
+}
+
 const FileAttachments = ({ files, onImageClick }) => {
   const BACKEND_BASE_URL = useMemo(() => getBackendBaseUrl(), [])
   const [imageCache, setImageCache] = useState({})
@@ -60,7 +71,7 @@ const FileAttachments = ({ files, onImageClick }) => {
     files.forEach((file, index) => {
       // Поддерживаем и старую, и новую структуру API (media_file_id — новый формат)
       const filePath = file.file_path || file.stored_path || file.url || file.relative_path || file.media_file_id
-      const fileName = file.original_name || file.name || `file-${index}`
+      const fileName = file.original_name || file.name || getStoredFileName(file.media_file_id) || `file-${index}`
       const mimeType = file.mime_type || file.type || ''
 
       if (!filePath) {

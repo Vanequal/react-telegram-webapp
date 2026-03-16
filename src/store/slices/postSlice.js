@@ -33,14 +33,38 @@ export const uploadFiles = createAsyncThunk('post/uploadFiles', async (files, { 
       formData.append('files', file)
     })
 
-    const res = await axios.post('/api/v1/media_files/uploads', formData, {
+    // Используем fetch напрямую, чтобы браузер сам выставил Content-Type: multipart/form-data с boundary
+    const baseURL = axios.defaults.baseURL || import.meta.env.VITE_API_URL || 'http://localhost:8000'
+    const token = sessionStorage.getItem('token')
+
+    const fetchRes = await fetch(`${baseURL}/api/v1/media_files/uploads`, {
+      method: 'POST',
       headers: {
-        'Content-Type': undefined,
+        'ngrok-skip-browser-warning': 'true',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
+      body: formData,
     })
 
-    logger.log('✅ Файлы загружены, получены IDs:', res.data)
-    return res.data // Возвращает массив UUID
+    if (!fetchRes.ok) {
+      const errorData = await fetchRes.json().catch(() => ({}))
+      logger.error('🔥 Ошибка загрузки файлов:', fetchRes.status, errorData)
+      return rejectWithValue(errorData?.detail || `Ошибка загрузки файлов (${fetchRes.status})`)
+    }
+
+    const uuids = await fetchRes.json()
+    logger.log('✅ Файлы загружены, получены IDs:', uuids)
+
+    // Сохраняем соответствие UUID → оригинальное имя файла в sessionStorage
+    try {
+      const existing = JSON.parse(sessionStorage.getItem('mediaFileNames') || '{}')
+      files.forEach((file, idx) => {
+        if (uuids[idx]) existing[uuids[idx]] = file.name
+      })
+      sessionStorage.setItem('mediaFileNames', JSON.stringify(existing))
+    } catch (_) {}
+
+    return uuids
   } catch (err) {
     logger.error('🔥 Ошибка загрузки файлов:', err?.response?.data || err.message)
     return rejectWithValue(err?.response?.data?.detail || 'Ошибка загрузки файлов')

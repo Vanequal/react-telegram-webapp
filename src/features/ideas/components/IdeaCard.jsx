@@ -58,17 +58,27 @@ const IdeaCard = React.memo(function IdeaCard({ idea, onExpand, isExpanded = fal
       return []
     }
 
+    // Получаем сохранённые имена файлов (UUID → имя), записанные при загрузке
+    let fileNameMap = {}
+    try {
+      fileNameMap = JSON.parse(sessionStorage.getItem('mediaFileNames') || '{}')
+    } catch (_) {}
+
     // Возвращаем файлы в том формате, который ожидает FileAttachments
-    const processedFiles = rawFiles.map((file, index) => ({
-      ...file,
-      // Поддержка нового формата API (media_file_id) и старого (file_path/stored_path/url)
-      file_path: file.file_path || file.stored_path || file.url || file.media_file_id,
-      url: file.file_path || file.stored_path || file.url || file.media_file_id,
-      relative_path: file.file_path || file.stored_path || file.relative_path || file.media_file_id,
-      original_name: file.original_name || file.name,
-      extension: file.extension || (file.original_name ? file.original_name.split('.').pop().toLowerCase() : ''),
-      index: index,
-    }))
+    const processedFiles = rawFiles.map((file, index) => {
+      const storedName = fileNameMap[file.media_file_id]
+      const resolvedName = file.original_name || file.name || storedName
+      return {
+        ...file,
+        // Поддержка нового формата API (media_file_id) и старого (file_path/stored_path/url)
+        file_path: file.file_path || file.stored_path || file.url || file.media_file_id,
+        url: file.file_path || file.stored_path || file.url || file.media_file_id,
+        relative_path: file.file_path || file.stored_path || file.relative_path || file.media_file_id,
+        original_name: resolvedName,
+        extension: file.extension || (resolvedName ? resolvedName.split('.').pop().toLowerCase() : ''),
+        index: index,
+      }
+    })
 
     return processedFiles
   }, [idea.media_files, currentPost?.media_files, idea.attachments, currentPost?.attachments, idea.files, currentPost?.files, idea.id])
