@@ -89,7 +89,7 @@ function Home() {
               Обмен опытом
             </button>
             <button className="home__button home__button--secondary" onClick={() => navigate('/descriptionpage')}>Описание</button>
-            <button className="home__button home__button--tertiary">Идеальный результат</button>
+            <button className="home__button home__button--tertiary" onClick={() => navigate('/ikrpage')}>Идеальный результат</button>
             <button className="home__button home__button--quaternary">Модули проекта</button>
           </div>
         </div>

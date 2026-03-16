@@ -33,6 +33,7 @@ import LaboratoryPage from '@/pages/Home/LaboratoryPage'
 import ExperienceExchangePage from '@/features/experience/pages/ExperienceExchangePage'
 import DescriptionChatPage from '@/features/description/pages/DescriptionChatPage'
 import DescriptionComposePage from '@/features/description/pages/DescriptionComposePage'
+import IKRPage from '@/features/ikr/pages/IKRPage'
 
 import '@/styles/global.scss'
 
@@ -132,6 +133,7 @@ function App() {
         <Route path="/experiencepage" element={<ExperienceExchangePage />} />
         <Route path="/descriptionpage" element={<DescriptionChatPage />} />
         <Route path="/descriptioncompose" element={<DescriptionComposePage />} />
+        <Route path="/ikrpage" element={<IKRPage />} />
       </Routes>
     </Router>
   )

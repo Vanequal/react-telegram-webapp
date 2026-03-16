@@ -86,7 +86,7 @@ Schema
   "username": "string",
   "about": "string",
   "location": "string",
-  "birthday": "2026-02-27",
+  "birthday": "2026-03-16",
   "language_code": "string",
   "avatar_path": "string"
 }
@@ -181,8 +181,8 @@ Schema
   "author_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "title": "string",
   "is_group": true,
-  "created_at": "2026-02-27T15:22:04.623Z",
-  "updated_at": "2026-02-27T15:22:04.623Z"
+  "created_at": "2026-03-16T20:50:21.329Z",
+  "updated_at": "2026-03-16T20:50:21.329Z"
 }
 No links
 
@@ -217,8 +217,8 @@ Schema
   "author_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "title": "string",
   "is_group": true,
-  "created_at": "2026-02-27T15:22:04.624Z",
-  "updated_at": "2026-02-27T15:22:04.624Z"
+  "created_at": "2026-03-16T20:50:21.330Z",
+  "updated_at": "2026-03-16T20:50:21.330Z"
 }
 No links
 422	
@@ -415,8 +415,8 @@ Schema
     "theme_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "section_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "is_openai_generated": false,
-    "created_at": "2026-02-27T15:22:04.630Z",
-    "updated_at": "2026-02-27T15:22:04.630Z",
+    "created_at": "2026-03-16T20:50:21.336Z",
+    "updated_at": "2026-03-16T20:50:21.336Z",
     "media_files": [
       {
         "media_file_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -479,8 +479,8 @@ Schema
   "theme_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "section_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "is_openai_generated": false,
-  "created_at": "2026-02-27T15:22:04.632Z",
-  "updated_at": "2026-02-27T15:22:04.632Z",
+  "created_at": "2026-03-16T20:50:21.338Z",
+  "updated_at": "2026-03-16T20:50:21.338Z",
   "media_files": [
     {
       "media_file_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -628,8 +628,8 @@ Schema
     "theme_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "section_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "is_openai_generated": false,
-    "created_at": "2026-02-27T15:22:04.636Z",
-    "updated_at": "2026-02-27T15:22:04.636Z",
+    "created_at": "2026-03-16T20:50:21.344Z",
+    "updated_at": "2026-03-16T20:50:21.344Z",
     "media_files": [
       {
         "media_file_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -693,8 +693,8 @@ Schema
   "theme_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "section_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "is_openai_generated": false,
-  "created_at": "2026-02-27T15:22:04.638Z",
-  "updated_at": "2026-02-27T15:22:04.638Z",
+  "created_at": "2026-03-16T20:50:21.345Z",
+  "updated_at": "2026-03-16T20:50:21.345Z",
   "media_files": [
     {
       "media_file_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -757,7 +757,7 @@ Schema
   "media_file_ids": [
     "3fa85f64-5717-4562-b3fc-2c963f66afa6"
   ],
-  "expires_at": "2026-02-27T15:22:04.640Z",
+  "expires_at": "2026-03-16T20:50:21.352Z",
   "is_partially": false
 }
 Responses
@@ -844,8 +844,8 @@ Schema
     "theme_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "section_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "is_openai_generated": false,
-    "created_at": "2026-02-27T15:22:04.643Z",
-    "updated_at": "2026-02-27T15:22:04.643Z",
+    "created_at": "2026-03-16T20:50:21.355Z",
+    "updated_at": "2026-03-16T20:50:21.355Z",
     "media_files": [
       {
         "media_file_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -855,7 +855,7 @@ Schema
     "content_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "is_partially": false,
     "status": "string",
-    "expires_at": "2026-02-27T15:22:04.643Z"
+    "expires_at": "2026-03-16T20:50:21.355Z"
   }
 ]
 No links
@@ -912,8 +912,8 @@ Schema
   "theme_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "section_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "is_openai_generated": false,
-  "created_at": "2026-02-27T15:22:04.645Z",
-  "updated_at": "2026-02-27T15:22:04.645Z",
+  "created_at": "2026-03-16T20:50:21.358Z",
+  "updated_at": "2026-03-16T20:50:21.358Z",
   "media_files": [
     {
       "media_file_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -923,7 +923,7 @@ Schema
   "content_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "is_partially": false,
   "status": "string",
-  "expires_at": "2026-02-27T15:22:04.645Z"
+  "expires_at": "2026-03-16T20:50:21.358Z"
 }
 No links
 422	
@@ -1065,8 +1065,8 @@ Schema
     "theme_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "section_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "is_openai_generated": false,
-    "created_at": "2026-02-27T15:22:04.652Z",
-    "updated_at": "2026-02-27T15:22:04.652Z",
+    "created_at": "2026-03-16T20:50:21.363Z",
+    "updated_at": "2026-03-16T20:50:21.363Z",
     "media_files": [
       {
         "media_file_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -1131,8 +1131,8 @@ Schema
   "theme_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "section_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "is_openai_generated": false,
-  "created_at": "2026-02-27T15:22:04.654Z",
-  "updated_at": "2026-02-27T15:22:04.654Z",
+  "created_at": "2026-03-16T20:50:21.364Z",
+  "updated_at": "2026-03-16T20:50:21.364Z",
   "media_files": [
     {
       "media_file_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -1206,7 +1206,7 @@ Schema
   "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "message_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "reaction": "like",
-  "updated_at": "2026-02-27T15:22:04.657Z"
+  "updated_at": "2026-03-16T20:50:21.367Z"
 }
 No links
 201	
@@ -1221,7 +1221,7 @@ Schema
   "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "message_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "reaction": "like",
-  "updated_at": "2026-02-27T15:22:04.657Z"
+  "updated_at": "2026-03-16T20:50:21.368Z"
 }
 No links
 204	
@@ -1280,7 +1280,7 @@ Schema
   "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "message_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "reaction": "like",
-  "updated_at": "2026-02-27T15:22:04.659Z"
+  "updated_at": "2026-03-16T20:50:21.372Z"
 }
 No links
 422	

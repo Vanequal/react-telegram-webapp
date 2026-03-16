@@ -1,0 +1,370 @@
+@import '../variables';
+
+.ikr-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: $background-main;
+
+  &__content {
+    flex: 1;
+    padding: 16px 0 100px 0;
+    overflow-y: auto;
+  }
+
+  // EMPTY SCREEN
+  &__intro-text {
+    font-family: $font-space-grotesk;
+    font-size: 20px;
+    font-weight: 400;
+    color: $text-primary;
+    line-height: 1.5;
+    padding: 0 16px;
+    margin-bottom: 20px;
+  }
+
+  &__hint-text {
+    font-family: $font-space-grotesk;
+    font-size: 20px;
+    font-weight: 400;
+    color: $text-primary;
+    line-height: 1.5;
+    padding: 0 16px;
+    margin-top: auto;
+    padding-top: 40px;
+  }
+
+  // COMPOSE SCREEN
+  &__compose-area {
+    width: 100%;
+    flex: 1;
+    min-height: calc(100vh - 200px);
+    padding: 24px 16px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: $font-space-grotesk;
+    font-size: 20px;
+    font-weight: 400;
+    color: $text-primary;
+    line-height: 1.5;
+    resize: none;
+    box-sizing: border-box;
+    &::placeholder { color: $text-secondary; }
+  }
+
+  &__publish-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 122, 255, 1);
+    color: white;
+    border: none;
+    padding: 14px 48px;
+    border-radius: 4px;
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.2s ease;
+    z-index: 100;
+    white-space: nowrap;
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+    &:hover:not(:disabled) { opacity: 0.9; }
+  }
+
+  // GPT PREVIEW
+  &__preview-card {
+    @include card-style;
+    margin: 16px;
+  }
+  &__preview-label {
+    font-family: $font-space-grotesk;
+    font-size: 16px;
+    font-weight: 700;
+    color: $text-primary;
+    display: block;
+    margin-bottom: 8px;
+  }
+  &__preview-text {
+    font-family: $font-space-grotesk;
+    font-size: 16px;
+    font-weight: 400;
+    color: $text-primary;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  &__preview-textarea {
+    width: 100%;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    padding: 8px;
+    font-family: $font-space-grotesk;
+    font-size: 16px;
+    color: $text-primary;
+    resize: vertical;
+    min-height: 120px;
+    outline: none;
+    box-sizing: border-box;
+  }
+  &__preview-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 16px 100px 16px;
+    margin-top: 16px;
+  }
+  &__preview-btn {
+    background: white;
+    color: $text-primary;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    text-align: left;
+    transition: opacity 0.2s ease;
+    &:hover { opacity: 0.9; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  // HUB
+  &__hub-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 40px;
+  }
+
+  &__accordion {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  &__accordion-header {
+    background: #EEEFF1;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    border-radius: 10px;
+    &.open {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+  &__accordion-title {
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333333;
+    &--blue { color: #007AFF; }
+  }
+  &__accordion-arrow {
+    transition: transform 0.2s ease;
+    &--open { transform: rotate(90deg); }
+  }
+  &__accordion-body {
+    background: rgba(248, 251, 255, 0.1);
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    overflow: hidden;
+  }
+  &__accordion-post-text {
+    font-family: $font-space-grotesk;
+    font-size: 20px;
+    font-weight: 400;
+    color: $text-primary;
+    line-height: 1.5;
+    padding: 12px 16px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  &__accordion-reactions {
+    padding: 4px 16px 8px 16px;
+  }
+  &__accordion-divider {
+    height: 1px;
+    background: $border-color;
+    margin: 0 16px;
+  }
+  &__accordion-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    cursor: pointer;
+    &:hover { opacity: 0.8; }
+  }
+
+  // POST DETAIL
+  &__post-body {
+    padding: 16px;
+  }
+  &__post-text-line {
+    font-family: $font-roboto;
+    font-size: 24px;
+    font-weight: 400;
+    color: $text-primary;
+    line-height: 1.5;
+    display: block;
+  }
+  &__post-text-heading {
+    font-family: $font-roboto;
+    font-size: 24px;
+    font-weight: 700;
+    color: $text-primary;
+    display: block;
+    margin-top: 12px;
+  }
+  &__gpt-label {
+    font-family: $font-space-grotesk;
+    font-size: 20px;
+    font-weight: 400;
+    color: #FF0707;
+    display: block;
+    margin-bottom: 8px;
+  }
+  &__reactions-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    margin-bottom: 4px;
+  }
+  &__comment-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  &__comment-count {
+    font-family: $font-roboto;
+    font-size: 14px;
+    color: $primary-color;
+  }
+  &__avatar-stack { width: 50px; height: 28px; }
+  &__donat { width: 48px; height: 28px; }
+  &__discussion-badge {
+    background: #EEEFF1;
+    color: #666;
+    font-family: $font-roboto;
+    font-size: 14px;
+    border-radius: 20px;
+    padding: 4px 16px;
+    text-align: center;
+    display: block;
+    margin: 12px auto;
+    width: fit-content;
+  }
+  &__comments-section {
+    padding: 0 16px;
+    margin-bottom: 80px;
+  }
+
+  // ACTION BAR
+  &__action-bar {
+    background: white;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 16px;
+  }
+  &__action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 700;
+    color: $primary-color;
+    padding: 0;
+    &:hover { opacity: 0.8; }
+  }
+
+  // UNDESIRABLE CARD
+  &__nj-card {
+    @include card-style;
+    margin: 8px 16px;
+  }
+  &__nj-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  &__nj-avatar { width: 24px; height: 24px; border-radius: 50%; }
+  &__nj-username { font-family: $font-telegram; font-size: 16px; color: $text-primary; }
+  &__nj-text {
+    font-family: $font-roboto;
+    font-size: 24px;
+    font-weight: 400;
+    color: $text-primary;
+    line-height: 1.5;
+    word-break: break-word;
+    margin-bottom: 8px;
+  }
+  &__nj-reactions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 4px 0;
+  }
+
+  // SECTION EMPTY
+  &__section-text {
+    font-family: $font-space-grotesk;
+    font-size: 20px;
+    font-weight: 400;
+    color: $text-primary;
+    line-height: 1.6;
+    padding: 16px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  &__section-text-bold {
+    font-weight: 700;
+  }
+
+  // FOOTER
+  &__footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: $background-secondary;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+    z-index: 100;
+  }
+  &__footer-icon { width: 24px; height: 24px; cursor: pointer; flex-shrink: 0; }
+  &__footer-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid $border-color;
+    border-radius: 20px;
+    box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
+    font-family: $font-roboto;
+    font-size: 16px;
+    color: #00000099;
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+    &::placeholder { color: #00000099; }
+    &:disabled { opacity: 0.6; }
+  }
+  &__footer-send { width: 28px; height: 28px; flex-shrink: 0; }
+}
