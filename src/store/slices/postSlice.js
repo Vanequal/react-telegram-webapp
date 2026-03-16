@@ -305,7 +305,7 @@ export const acceptTask = createAsyncThunk(
       const { resolvedSectionId, resolvedThemeId } = resolveIds(getState(), section_code, section_id, theme_id)
 
       const requestData = {
-        text: description,
+        text: description || 'Берусь за задачу',
         media_file_ids: [],
         is_partially: !!is_partially,
       }

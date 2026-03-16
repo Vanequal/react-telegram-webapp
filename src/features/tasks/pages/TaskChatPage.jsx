@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { createTask, fetchTasks, createTaskComment, completeTask } from '@/store/slices/postSlice';
+import { createTask, fetchTasks, createComment, fetchPostComments, completeTask } from '@/store/slices/postSlice';
 import { SECTION_CODES, DEFAULT_THEME_ID } from '@/shared/constants/sections';
 import logger from '@/shared/utils/logger';
 import { showError } from '@/shared/utils/notifications';
@@ -31,7 +31,7 @@ const TaskChatPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { posts, loading, error } = useSelector((state) => state.post);
+  const { posts, loading, error, comments: allComments } = useSelector((state) => state.post);
   // step: 'list' | 'compose' | 'preview' | 'rating' | 'detail' | 'result' | 'completing'
   const [step, setStep] = useState('list');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,18 +62,8 @@ const TaskChatPage = () => {
   const resultTask = tasks.find(t => t.id === resultTaskId);
   const completionTask = tasks.find(t => t.id === completionTaskId);
 
-  // Комментарии = executions задачи (т.к. /comments endpoint не поддерживает chat_tasks)
-  const taskExecutions = selectedTask?.executions || [];
-  const comments = taskExecutions.map(exec => ({
-    id: exec.message?.id,
-    author_id: exec.message?.author_id,
-    text: exec.message?.text || '',
-    created_at: exec.message?.created_at,
-    type: 'comment',
-    status: exec.message_task?.status,
-    is_partially: exec.message_task?.is_partially,
-    reactions: exec.message?.reactions || null,
-  }));
+  // Комментарии из реального endpoint /messages/{id}/comments
+  const comments = allComments[selectedTaskId] || [];
 
   useEffect(() => {
     dispatch(
@@ -96,7 +86,8 @@ const TaskChatPage = () => {
     setCommentText('');
     setCommentFiles([]);
     setStep('detail');
-  }, []);
+    dispatch(fetchPostComments({ post_id: taskId, section_code: SECTION_CODE, theme_id: THEME_ID }));
+  }, [dispatch]);
 
   const handleTaskComplete = useCallback((taskId, item) => {
     setCompletionTaskId(taskId);
@@ -118,7 +109,7 @@ const TaskChatPage = () => {
     setIsSubmitting(true);
     try {
       await dispatch(
-        createTaskComment({
+        createComment({
           post_id: selectedTaskId,
           message_text: commentText.trim(),
           section_code: SECTION_CODE,
@@ -130,8 +121,8 @@ const TaskChatPage = () => {
       setCommentText('');
       setCommentFiles([]);
 
-      // Перезагружаем задачи чтобы обновить executions
-      dispatch(fetchTasks({ section_code: SECTION_CODE, theme_id: THEME_ID }));
+      // Перезагружаем комментарии
+      dispatch(fetchPostComments({ post_id: selectedTaskId, section_code: SECTION_CODE, theme_id: THEME_ID }));
     } catch (error) {
       console.error('Ошибка добавления комментария:', error);
       const msg = typeof error === 'string' ? error : 'Неизвестная ошибка';
