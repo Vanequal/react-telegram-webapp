@@ -35,7 +35,16 @@ const ExperienceExchangePage = () => {
   const postComments = useSelector(state => state.post.comments)
   const commentsLoadingFlags = useSelector(state => state.post.commentsLoadingFlags)
   const rootThemeId = useSelector(state => state.theme.theme?.id)
+  const allSections = useSelector(state => state.theme.sections)
   const themeId = rootThemeId || null
+
+  // Debug: log all available sections to find correct section_code
+  useEffect(() => {
+    if (allSections?.length) {
+      console.log('📋 [ExperiencePage] Available sections:', allSections)
+      console.log('📋 [ExperiencePage] Section codes:', allSections.map(s => s.section_code))
+    }
+  }, [allSections])
 
   // step: 'list' | 'detail'
   const [step, setStep] = useState('list')
@@ -239,11 +248,7 @@ const ExperienceExchangePage = () => {
       {step === 'list' && (
         <>
           <div className="experience-page__content">
-            {loading && experiences.length === 0 ? (
-              <p className="experience-page__empty-text">Загрузка...</p>
-            ) : experiences.length === 0 ? (
-              <p className="experience-page__empty-text">Опыта пока нет. Будьте первым!</p>
-            ) : (
+            {experiences.length > 0 && (
               <div className="experience-page__list">
                 {experiences.map(exp => (
                   <ExperienceCard
