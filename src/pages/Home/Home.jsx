@@ -88,7 +88,7 @@ function Home() {
             <button className={`home__button home__button--primary ${animate ? 'animate' : ''}`} onClick={handleClick}>
               Обмен опытом
             </button>
-            <button className="home__button home__button--secondary">Описание</button>
+            <button className="home__button home__button--secondary" onClick={() => navigate('/descriptionpage')}>Описание</button>
             <button className="home__button home__button--tertiary">Идеальный результат</button>
             <button className="home__button home__button--quaternary">Модули проекта</button>
           </div>

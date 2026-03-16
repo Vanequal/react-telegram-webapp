@@ -1,4 +1,4 @@
-// ExperienceExchangePage.jsx
+// DescriptionChatPage.jsx
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
@@ -6,32 +6,31 @@ import {
   fetchPostsInSection,
   fetchPostComments,
   fetchMessageReactions,
-  createPost,
   createComment,
 } from '@/store/slices/postSlice'
 import { SECTION_CODES } from '@/shared/constants/sections'
 import { showError } from '@/shared/utils/notifications'
 
 import MindVaultHeader from '@/features/mindvault/components/MindVaultHeader'
-import ExperienceCard from '../components/ExperienceCard'
+import ExperienceCard from '@/features/experience/components/ExperienceCard'
 import CommentThread from '@/features/discussion/components/CommentThread'
 
 import skrepkaIcon from '@/assets/images/skrepkaIcon.webp'
 import sendIcon from '@/assets/images/sendIcon.webp'
 import sendIconActive from '@/assets/images/sendButtonActive.png'
 
-import '@/styles/features/ExperienceExchangePage.scss'
+import '@/styles/features/DescriptionChatPage.scss'
 import '@/styles/features/discussion.scss'
 
-const SECTION_CODE = SECTION_CODES.CHAT_EXPERIENCE
+const SECTION_CODE = SECTION_CODES.DESCRIPTION
 
-const ExperienceExchangePage = () => {
+const DescriptionChatPage = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
   const fileInputRef = useRef(null)
 
-  const { posts, loading, error } = useSelector(state => state.post)
+  const { posts, loading } = useSelector(state => state.post)
   const postComments = useSelector(state => state.post.comments)
   const commentsLoadingFlags = useSelector(state => state.post.commentsLoadingFlags)
   const rootThemeId = useSelector(state => state.theme.theme?.id)
@@ -40,10 +39,6 @@ const ExperienceExchangePage = () => {
   // step: 'list' | 'detail'
   const [step, setStep] = useState('list')
   const [selectedPostId, setSelectedPostId] = useState(null)
-
-  // List mode: composing new post
-  const [postText, setPostText] = useState('')
-  const [postFiles, setPostFiles] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Detail mode: composing comment
@@ -55,14 +50,12 @@ const ExperienceExchangePage = () => {
     [themeId]
   )
 
-  // Fetch posts for this section
   useEffect(() => {
     if (themeId) {
       dispatch(fetchPostsInSection(fetchParams))
     }
   }, [dispatch, themeId])
 
-  // Load reactions and comments for each post
   useEffect(() => {
     if (!posts || posts.length === 0) return
     posts.forEach(post => {
@@ -77,8 +70,7 @@ const ExperienceExchangePage = () => {
     })
   }, [posts?.length, dispatch, themeId, commentsLoadingFlags, postComments])
 
-  // Transform posts to display format
-  const experiences = useMemo(() => {
+  const descriptions = useMemo(() => {
     return (Array.isArray(posts) ? posts : []).map(post => ({
       id: post.id,
       username: post.author?.first_name || post.author?.username || 'Пользователь',
@@ -95,56 +87,10 @@ const ExperienceExchangePage = () => {
     }))
   }, [posts])
 
-  const selectedPost = experiences.find(p => p.id === selectedPostId)
+  const selectedPost = descriptions.find(p => p.id === selectedPostId)
   const comments = postComments[selectedPostId] || []
 
-  // --- Handlers: list mode ---
-  const handleAttachClick = useCallback(() => {
-    fileInputRef.current?.click()
-  }, [])
-
-  const handleFileChange = useCallback(e => {
-    const files = Array.from(e.target.files || [])
-    if (files.length > 0) {
-      setPostFiles(prev => [...prev, ...files])
-    }
-    e.target.value = ''
-  }, [])
-
-  const handleSendPost = useCallback(async () => {
-    if ((!postText.trim() && postFiles.length === 0) || isSubmitting) return
-    setIsSubmitting(true)
-    try {
-      await dispatch(
-        createPost({
-          message_text: postText.trim(),
-          section_code: SECTION_CODE,
-          theme_id: themeId,
-          files: postFiles,
-        })
-      ).unwrap()
-      setPostText('')
-      setPostFiles([])
-      dispatch(fetchPostsInSection(fetchParams))
-    } catch (err) {
-      const msg = typeof err === 'string' ? err : 'Неизвестная ошибка'
-      showError(`Ошибка публикации: ${msg.slice(0, 150)}`)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }, [postText, postFiles, isSubmitting, dispatch, themeId, fetchParams])
-
-  const handlePostKeyPress = useCallback(
-    e => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault()
-        handleSendPost()
-      }
-    },
-    [handleSendPost]
-  )
-
-  // --- Handlers: detail mode ---
+  // --- Detail mode handlers ---
   const handleCommentClick = useCallback(
     postId => {
       setSelectedPostId(postId)
@@ -162,9 +108,7 @@ const ExperienceExchangePage = () => {
 
   const handleCommentFileChange = useCallback(e => {
     const files = Array.from(e.target.files || [])
-    if (files.length > 0) {
-      setCommentFiles(prev => [...prev, ...files])
-    }
+    if (files.length > 0) setCommentFiles(prev => [...prev, ...files])
     e.target.value = ''
   }, [])
 
@@ -202,7 +146,6 @@ const ExperienceExchangePage = () => {
     [handleSendComment]
   )
 
-  // --- Navigation ---
   const handleBackClick = useCallback(() => {
     if (step === 'detail') {
       setStep('list')
@@ -212,25 +155,23 @@ const ExperienceExchangePage = () => {
     }
   }, [step, navigate])
 
-  const canSendPost = (postText.trim() || postFiles.length > 0) && !isSubmitting
   const canSendComment = (commentText.trim() || commentFiles.length > 0) && !isSubmitting
 
   return (
-    <div className="experience-page">
-      {/* Hidden file input */}
+    <div className="description-chat-page">
       <input
         ref={fileInputRef}
         type="file"
         multiple
         accept="*/*"
         style={{ display: 'none' }}
-        onChange={step === 'list' ? handleFileChange : handleCommentFileChange}
+        onChange={handleCommentFileChange}
       />
 
       <MindVaultHeader
         bgColor="#EEEFF1"
         textColor="black"
-        title="Обмен опытом"
+        title="Описание раздела"
         hideSectionTitle
         onBackClick={handleBackClick}
       />
@@ -238,71 +179,41 @@ const ExperienceExchangePage = () => {
       {/* LIST MODE */}
       {step === 'list' && (
         <>
-          <div className="experience-page__content">
-            {experiences.length > 0 && (
-              <div className="experience-page__list">
-                {experiences.map(exp => (
+          <div className="description-chat-page__content">
+            {descriptions.length > 0 && (
+              <div className="description-chat-page__list">
+                {descriptions.map(desc => (
                   <ExperienceCard
-                    key={exp.id}
-                    post={exp}
+                    key={desc.id}
+                    post={desc}
                     onCommentClick={handleCommentClick}
-                    commentCount={postComments[exp.id]?.length || 0}
+                    commentCount={postComments[desc.id]?.length || 0}
                   />
                 ))}
               </div>
             )}
 
-            {/* Bottom hint text — only when no posts */}
-            {experiences.length === 0 && (
-              <p className="experience-page__hint">
-                Поделитесь своим опытом! Опишите, как вы решали конкретную задачу, какие методы использовали,
-                с какими трудностями столкнулись и какие выводы сделали. Прикрепите скриншоты, фото, видео
-                или другие доказательства. Ваш контент размещается безвоздмезно, но пользователи смогут
-                отблагодарить вас.
+            {descriptions.length === 0 && (
+              <p className="description-chat-page__hint">
+                Опиши суть, цели и перспективы этого проектного раздела в свободной форме.
               </p>
             )}
           </div>
 
-          {/* Attached files preview */}
-          {postFiles.length > 0 && (
-            <div className="experience-page__attached-files">
-              {postFiles.map((file, i) => (
-                <span key={i} className="experience-page__attached-file">
-                  {file.name}
-                  <button
-                    className="experience-page__attached-file-remove"
-                    onClick={() => setPostFiles(prev => prev.filter((_, idx) => idx !== i))}
-                  >
-                    ✕
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Footer: compose new post */}
-          <div className="experience-page__footer">
-            <img
-              src={skrepkaIcon}
-              alt="Attach"
-              className="experience-page__footer-icon"
-              onClick={handleAttachClick}
-            />
+          {/* Footer: navigates to compose page */}
+          <div className="description-chat-page__footer" onClick={() => navigate('/descriptioncompose')}>
+            <img src={skrepkaIcon} alt="Attach" className="description-chat-page__footer-icon" />
             <input
               type="text"
-              className="experience-page__footer-input"
-              placeholder="Описать опыт"
-              value={postText}
-              onChange={e => setPostText(e.target.value)}
-              onKeyPress={handlePostKeyPress}
-              disabled={isSubmitting}
+              className="description-chat-page__footer-input"
+              placeholder="Описать раздел"
+              readOnly
             />
             <img
-              src={canSendPost ? sendIconActive : sendIcon}
+              src={sendIcon}
               alt="Send"
-              className="experience-page__footer-send"
-              onClick={canSendPost ? handleSendPost : undefined}
-              style={{ cursor: canSendPost ? 'pointer' : 'default', opacity: canSendPost ? 1 : 0.5 }}
+              className="description-chat-page__footer-send"
+              style={{ opacity: 0.5 }}
             />
           </div>
         </>
@@ -311,8 +222,8 @@ const ExperienceExchangePage = () => {
       {/* DETAIL MODE */}
       {step === 'detail' && selectedPost && (
         <>
-          <div className="experience-page__content">
-            <div className="experience-page__list">
+          <div className="description-chat-page__content">
+            <div className="description-chat-page__list">
               <ExperienceCard
                 post={selectedPost}
                 onCommentClick={() => {}}
@@ -320,9 +231,9 @@ const ExperienceExchangePage = () => {
               />
             </div>
 
-            <div className="experience-page__divider" />
+            <div className="description-chat-page__divider" />
 
-            <div className="experience-page__comments">
+            <div className="description-chat-page__comments">
               {comments.length > 0 ? (
                 comments.map(comment => (
                   <CommentThread
@@ -333,19 +244,18 @@ const ExperienceExchangePage = () => {
                   />
                 ))
               ) : (
-                <p className="experience-page__no-comments">Комментариев пока нет</p>
+                <p className="description-chat-page__no-comments">Комментариев пока нет</p>
               )}
             </div>
           </div>
 
-          {/* Attached comment files preview */}
           {commentFiles.length > 0 && (
-            <div className="experience-page__attached-files">
+            <div className="description-chat-page__attached-files">
               {commentFiles.map((file, i) => (
-                <span key={i} className="experience-page__attached-file">
+                <span key={i} className="description-chat-page__attached-file">
                   {file.name}
                   <button
-                    className="experience-page__attached-file-remove"
+                    className="description-chat-page__attached-file-remove"
                     onClick={() => setCommentFiles(prev => prev.filter((_, idx) => idx !== i))}
                   >
                     ✕
@@ -355,17 +265,16 @@ const ExperienceExchangePage = () => {
             </div>
           )}
 
-          {/* Footer: comment */}
-          <div className="experience-page__footer">
+          <div className="description-chat-page__footer">
             <img
               src={skrepkaIcon}
               alt="Attach"
-              className="experience-page__footer-icon"
+              className="description-chat-page__footer-icon"
               onClick={handleCommentAttachClick}
             />
             <input
               type="text"
-              className="experience-page__footer-input"
+              className="description-chat-page__footer-input"
               placeholder="Комментировать"
               value={commentText}
               onChange={e => setCommentText(e.target.value)}
@@ -375,7 +284,7 @@ const ExperienceExchangePage = () => {
             <img
               src={canSendComment ? sendIconActive : sendIcon}
               alt="Send"
-              className="experience-page__footer-send"
+              className="description-chat-page__footer-send"
               onClick={canSendComment ? handleSendComment : undefined}
               style={{ cursor: canSendComment ? 'pointer' : 'default', opacity: canSendComment ? 1 : 0.5 }}
             />
@@ -386,4 +295,4 @@ const ExperienceExchangePage = () => {
   )
 }
 
-export default ExperienceExchangePage
+export default DescriptionChatPage

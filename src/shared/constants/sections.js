@@ -6,6 +6,7 @@ export const SECTION_CODES = {
   DISCUSSIONS: 'discussions',
   IDEAS: 'ideas',
   CHAT_EXPERIENCE: 'experience_exchange',
+  DESCRIPTION: 'description',
 };
 
 // theme_id теперь UUID, получается из root theme через store.theme.theme.id

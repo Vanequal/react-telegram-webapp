@@ -31,6 +31,8 @@ import PublicationPage from '@/features/publications/pages/PublicationPage'
 import TaskChatPage from '@/features/tasks/pages/TaskChatPage'
 import LaboratoryPage from '@/pages/Home/LaboratoryPage'
 import ExperienceExchangePage from '@/features/experience/pages/ExperienceExchangePage'
+import DescriptionChatPage from '@/features/description/pages/DescriptionChatPage'
+import DescriptionComposePage from '@/features/description/pages/DescriptionComposePage'
 
 import '@/styles/global.scss'
 
@@ -128,6 +130,8 @@ function App() {
         <Route path="/taskchatpage" element={<TaskChatPage />} />
         <Route path="/laboratorypage" element={<LaboratoryPage />} />
         <Route path="/experiencepage" element={<ExperienceExchangePage />} />
+        <Route path="/descriptionpage" element={<DescriptionChatPage />} />
+        <Route path="/descriptioncompose" element={<DescriptionComposePage />} />
       </Routes>
     </Router>
   )

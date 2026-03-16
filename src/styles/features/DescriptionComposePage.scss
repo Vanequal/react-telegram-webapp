@@ -1,0 +1,85 @@
+@import '../variables';
+
+.description-compose {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: $background-main;
+
+  &__content {
+    flex: 1;
+    padding: 24px 16px 120px 16px;
+  }
+
+  &__title-label {
+    font-family: $font-space-grotesk;
+    font-size: 20px;
+    font-weight: 400;
+    color: $text-primary;
+    cursor: text;
+    display: block;
+    text-align: left;
+    line-height: 1.5;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+
+  &__textarea {
+    width: 100%;
+    min-height: 300px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: $font-space-grotesk;
+    font-size: 20px;
+    font-weight: 400;
+    color: $text-primary;
+    line-height: 1.5;
+    resize: none;
+    text-align: left;
+    display: block;
+    box-sizing: border-box;
+
+    &::placeholder {
+      color: $text-secondary;
+    }
+  }
+
+  &__footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+    background: $background-main;
+    z-index: 100;
+  }
+
+  &__publish-btn {
+    background: rgba(0, 122, 255, 1);
+    color: white;
+    border: none;
+    padding: 14px 48px;
+    border-radius: 4px;
+    font-family: $font-roboto;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.2s ease;
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    &--disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
